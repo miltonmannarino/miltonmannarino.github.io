@@ -146,6 +146,32 @@ ol.steps li::before { content: counter(s); font-family: var(--font-display); fon
 ol.steps li p { padding-top: 0.3rem; }
 
 footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 0.9rem; color: var(--muted); }
+
+.seg-unplanned { fill: var(--checker-soft); stroke: var(--checker); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.updated { font-size: 0.95rem; color: var(--muted); }
+
+/* Approve window mock, shaped like the LumoCad dialog */
+.approve { display: grid; grid-template-columns: minmax(0, 22rem) minmax(0, 1fr); gap: 28px; align-items: start; }
+@media (max-width: 760px) { .approve { grid-template-columns: 1fr; } }
+.dialog { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 16px; box-shadow: 0 6px 24px rgba(20, 30, 50, 0.08); font-size: 0.94rem; }
+.dialog .title { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; }
+.dialog .sub { color: var(--muted); font-size: 0.86rem; margin-top: 2px; }
+.dialog .tabs { display: grid; grid-template-columns: 1fr 1fr; background: var(--soft); border-radius: 8px; padding: 3px; font-size: 0.88rem; text-align: center; }
+.dialog .tabs span { padding: 5px 8px; border-radius: 6px; color: var(--muted); }
+.dialog .tabs .on { background: var(--surface); color: var(--fg); font-weight: 600; box-shadow: 0 1px 3px rgba(20, 30, 50, 0.12); }
+.dialog .field { display: grid; gap: 6px; }
+.dialog .field > span { color: var(--muted); font-size: 0.84rem; }
+.dialog .select { border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; }
+.dialog .select::after { content: "⌄"; color: var(--muted); }
+.dialog .select.hot { border-color: var(--checker); box-shadow: 0 0 0 3px var(--checker-soft); }
+.dialog .hint { color: var(--muted); font-size: 0.86rem; }
+.dialog .hint b { color: var(--checker); font-weight: 600; }
+.dialog .tickbox { display: grid; grid-template-columns: 1.1rem 1fr; gap: 8px; align-items: start; }
+.dialog .tickbox i { width: 1rem; height: 1rem; margin-top: 3px; border-radius: 3px; background: var(--checker); color: #fff; font-style: normal; font-size: 0.7rem; display: grid; place-items: center; }
+.dialog .buttons { display: flex; justify-content: flex-end; gap: 8px; }
+.dialog .btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--line); font-size: 0.88rem; }
+.dialog .btn.primary { background: var(--checker); border-color: var(--checker); color: #fff; font-weight: 600; }
+.approve ul { margin: 0; padding-left: 1.2em; display: grid; gap: 10px; }
 </style>
 </head>
 <body>
@@ -155,8 +181,9 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
 <header class="hero">
   <span class="eyebrow">LumoCad · Lumoview server · LumoPlan · October 2026</span>
   <h1>LumoCad QC Hand-In</h1>
-  <p class="lede">When the checker or the corrector finishes their part of a quality check in LumoCad, they press <b>Hand in</b>. The building moves to the next step, the next person gets an email, and LumoPlan shows the step as done. This page explains how that works and what still needs a decision.</p>
+  <p class="lede">When the checker or the corrector finishes their part of a quality check in LumoCad, they press <b>Hand in</b>. The building moves to the next step, the next person gets an email, and LumoPlan shows the step as done. When the checker approves, the building goes to the next stage planned in its LumoPlan timeline.</p>
   <span class="pill">Built and tested · not released yet</span>
+  <p class="updated">Updated 7 October 2026 with Rio's feedback. What changed is listed at the <a href="#changes">bottom of the page</a>.</p>
 </header>
 
 <section>
@@ -167,15 +194,15 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
   <div class="roles">
     <div class="role" style="--c: var(--checker)">
       <span class="tag">Checker</span>
-      <p>Reviews the 3D model or the 2D plans in LumoCad, ticks the checklists and flags every problem found.</p>
+      <p>Reviews the 3D model or the 2D plans in LumoCad, ticks the checklists and flags every problem found. When nothing is left, approves and picks who works on the building next.</p>
     </div>
     <div class="role" style="--c: var(--corrector)">
       <span class="tag">Corrector</span>
-      <p>Fixes the problems the checker flagged, then hands the building back so the checker can look again.</p>
+      <p>Usually the person in charge of the building. Fixes the problems the checker flagged, then hands the building back for a re-check.</p>
     </div>
     <div class="role" style="--c: var(--done)">
       <span class="tag">Coordinator</span>
-      <p>Plans the work in LumoPlan and needs to see which steps are really finished, without asking everyone every day.</p>
+      <p>Plans the work in LumoPlan, including which buildings need a room book, and sees which steps are really finished without asking everyone every day.</p>
     </div>
   </div>
 </section>
@@ -187,66 +214,118 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
   </div>
   <figure>
     <div class="scroll">
-    <svg viewBox="0 0 1000 350" role="img" aria-label="The 3D QC loop: setting up QC sends mail 1 to the checker. The checker either finds problems and hands in, sending mail 2 to the corrector, or approves and the building moves on to 2D postprocessing. The corrector hands back, sending mail 3 to the checker for a re-check.">
+    <svg viewBox="0 0 1000 420" role="img" aria-label="The 3D QC loop. Setting up QC sends mail 1 to the checker. From 3D QC the checker either finds problems, sending mail 2 to the corrector, or approves. The corrector hands back into the new status 3D QC corrections check, sending mail 3 to the checker. From the corrections check the checker either finds problems again, mail 2, or approves. Approving moves the building to the next stage in its LumoPlan timeline and sends mail 4 to the person the checker picked.">
       <defs>
-        <marker id="a-fg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="f-fg"/></marker>
         <marker id="a-ch" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="f-checker"/></marker>
         <marker id="a-co" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="f-corrector"/></marker>
         <marker id="a-dn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="f-done"/></marker>
       </defs>
 
       <!-- Entry: QC set up -->
-      <text x="20" y="168" class="t-b">QC set up</text>
-      <text x="20" y="186" class="t-checker">✉ Mail 1 → checker</text>
-      <line x1="20" y1="200" x2="146" y2="200" class="l-checker" marker-end="url(#a-ch)"/>
+      <text x="20" y="152" class="t-b">QC set up</text>
+      <text x="20" y="170" class="t-checker">✉ Mail 1 → checker</text>
+      <line x1="20" y1="184" x2="146" y2="184" class="l-checker" marker-end="url(#a-ch)"/>
 
       <!-- A: 3D QC -->
-      <rect x="150" y="150" width="190" height="90" rx="10" class="n-checker"/>
-      <text x="245" y="186" text-anchor="middle" class="t-b">3D QC</text>
-      <text x="245" y="207" text-anchor="middle" class="t-checker">checker reviews</text>
-      <text x="245" y="225" text-anchor="middle" class="t-m">first check or re-check</text>
+      <rect x="150" y="140" width="180" height="90" rx="10" class="n-checker"/>
+      <text x="240" y="176" text-anchor="middle" class="t-b">3D QC</text>
+      <text x="240" y="197" text-anchor="middle" class="t-checker">checker reviews</text>
+      <text x="240" y="215" text-anchor="middle" class="t-m">first check</text>
 
       <!-- B: 3D QC corrections -->
-      <rect x="480" y="150" width="190" height="90" rx="10" class="n-corrector"/>
-      <text x="575" y="186" text-anchor="middle" class="t-b">3D QC corrections</text>
-      <text x="575" y="207" text-anchor="middle" class="t-corrector">corrector fixes</text>
-      <text x="575" y="225" text-anchor="middle" class="t-m">resolves flagged issues</text>
+      <rect x="440" y="140" width="200" height="90" rx="10" class="n-corrector"/>
+      <text x="540" y="176" text-anchor="middle" class="t-b">3D QC corrections</text>
+      <text x="540" y="197" text-anchor="middle" class="t-corrector">corrector fixes</text>
+      <text x="540" y="215" text-anchor="middle" class="t-m">resolves flagged issues</text>
 
-      <!-- C: next phase -->
-      <rect x="800" y="150" width="180" height="90" rx="10" class="n-done"/>
-      <text x="890" y="186" text-anchor="middle" class="t-b">2D postprocessing</text>
-      <text x="890" y="207" text-anchor="middle" class="t-done">3D QC finished</text>
-      <text x="890" y="225" text-anchor="middle" class="t-m">next phase starts</text>
+      <!-- C: 3D QC corrections check -->
+      <rect x="440" y="310" width="200" height="90" rx="10" class="n-checker"/>
+      <text x="540" y="346" text-anchor="middle" class="t-b">3D QC corrections check</text>
+      <text x="540" y="367" text-anchor="middle" class="t-checker">checker re-checks</text>
+      <text x="540" y="385" text-anchor="middle" class="t-m">new status</text>
 
-      <!-- A -> B: corrections needed -->
-      <line x1="340" y1="195" x2="476" y2="195" class="l-corrector" marker-end="url(#a-co)"/>
-      <text x="408" y="183" text-anchor="middle" class="t">Problems found</text>
-      <text x="408" y="216" text-anchor="middle" class="t-corrector">✉ Mail 2</text>
+      <!-- D: next stage from the timeline -->
+      <rect x="780" y="190" width="200" height="120" rx="10" class="n-done"/>
+      <text x="880" y="222" text-anchor="middle" class="t-b">Next stage</text>
+      <text x="880" y="242" text-anchor="middle" class="t-done">from the LumoPlan timeline</text>
+      <text x="880" y="266" text-anchor="middle" class="t-m">2D postprocessing,</text>
+      <text x="880" y="283" text-anchor="middle" class="t-m">Roombook or</text>
+      <text x="880" y="300" text-anchor="middle" class="t-m">Ready for delivery</text>
 
-      <!-- B -> A: handed back -->
-      <path d="M575 240 C 575 320, 245 320, 245 244" class="l-checker" marker-end="url(#a-ch)"/>
-      <text x="410" y="300" text-anchor="middle" class="t">Corrections done, handed back for a re-check</text>
-      <text x="410" y="320" text-anchor="middle" class="t-checker">✉ Mail 3 → checker</text>
+      <!-- A -> B: problems found -->
+      <line x1="330" y1="185" x2="436" y2="185" class="l-corrector" marker-end="url(#a-co)"/>
+      <text x="383" y="174" text-anchor="middle" class="t">Problems</text>
+      <text x="383" y="205" text-anchor="middle" class="t-corrector">✉ Mail 2</text>
 
-      <!-- A -> C: approved -->
-      <path d="M300 150 C 300 50, 890 50, 890 146" class="l-done" marker-end="url(#a-dn)"/>
-      <text x="595" y="74" text-anchor="middle" class="t">Approved, nothing left to fix</text>
-      <text x="595" y="94" text-anchor="middle" class="t-m">moves on, no QC email</text>
+      <!-- B -> C: corrections done -->
+      <line x1="600" y1="230" x2="600" y2="306" class="l-checker" marker-end="url(#a-ch)"/>
+      <text x="612" y="262" class="t">Corrections done</text>
+      <text x="612" y="281" class="t-checker">✉ Mail 3 → checker</text>
+
+      <!-- C -> B: problems again -->
+      <line x1="480" y1="310" x2="480" y2="234" class="l-corrector" marker-end="url(#a-co)"/>
+      <text x="468" y="262" text-anchor="end" class="t">Problems again</text>
+      <text x="468" y="281" text-anchor="end" class="t-corrector">✉ Mail 2</text>
+
+      <!-- A -> D: approved on the first check -->
+      <path d="M240 140 C 240 60, 880 60, 880 186" class="l-done" marker-end="url(#a-dn)"/>
+      <text x="560" y="40" text-anchor="middle" class="t">Approved on the first check</text>
+      <text x="560" y="60" text-anchor="middle" class="t-done">✉ Mail 4 → person picked</text>
+
+      <!-- C -> D: approved after the re-check -->
+      <path d="M640 355 C 720 355, 760 330, 800 314" class="l-done" marker-end="url(#a-dn)"/>
+      <text x="745" y="380" text-anchor="middle" class="t">Approved</text>
+      <text x="745" y="398" text-anchor="middle" class="t-done">✉ Mail 4</text>
     </svg>
     </div>
-    <figcaption>The 3D round. 2D works the same way with the 2D steps; an approved 2D QC goes to <b>Ready for delivery</b>. A building can go around the loop as many times as needed.</figcaption>
+    <figcaption>The 3D round. 2D works the same way with the 2D steps; an approved 2D QC goes to Roombook or Ready for delivery. A building can go around the loop as many times as needed.</figcaption>
   </figure>
-  <p class="col">In LumoCad the button only lights up when the person's part is complete: for the checker, every checklist is ticked; for the corrector, every flagged issue is resolved. The hand-in window then asks who gets the building next. LumoCad suggests someone sensible, and it never suggests the checker as their own corrector.</p>
+  <p class="col">In LumoCad the button only lights up when the person's part is complete: for the checker, every checklist is ticked; for the corrector, every flagged issue is resolved. The hand-in window then asks who gets the building next. LumoCad suggests someone sensible, and it never suggests the checker as their own corrector or as the next person after approval.</p>
+  <p class="col muted">Every QC step has a <i>pending</i> and an <i>in progress</i> status, the re-check included. The hand-in sets the pending one. When the checker starts, they set it to in progress in the status dropdown, so time spent checking can be told apart from time waiting.</p>
+</section>
+
+<section>
+  <div class="intro">
+    <h2>Approving: where the building goes next</h2>
+    <p>Not every building has the same stages after QC. Some need a room book, some go straight to delivery. That is planned in the building's timeline in LumoPlan, so the approve window asks LumoPlan which stage comes next.</p>
+  </div>
+  <div class="approve">
+    <div class="dialog" role="img" aria-label="The LumoCad approve window: Hand in 2D QC for Musterstraße 5, Approved selected, Next stage Roombook with the note that the LumoPlan timeline plans Roombook next, Person in charge Ben, the confirmation ticked, and a Hand in button.">
+      <div>
+        <div class="title">Hand in 2D QC</div>
+        <div class="sub">Musterstraße 5</div>
+      </div>
+      <div class="tabs"><span>Corrections needed</span><span class="on">Approved</span></div>
+      <div class="field">
+        <span>Next stage</span>
+        <div class="select hot">Roombook</div>
+        <p class="hint">The timeline in LumoPlan plans <b>Roombook</b> next.</p>
+      </div>
+      <div class="field">
+        <span>Person in charge</span>
+        <div class="select">Ben</div>
+      </div>
+      <div class="tickbox"><i>✓</i><span>I've reviewed this building and flagged all issues I found.</span></div>
+      <div class="buttons"><span class="btn">Cancel</span><span class="btn primary">Hand in</span></div>
+    </div>
+    <ul>
+      <li><b>Pre-selected from the plan.</b> LumoCad asks LumoPlan once, when the window opens. LumoPlan looks at the stages planned after the QC loop and names the first one.</li>
+      <li><b>The checker can change it.</b> The choices are 2D postprocessing (3D QC only), Roombook and Ready for delivery, plus whatever LumoPlan names.</li>
+      <li><b>Always works.</b> If LumoPlan can't be reached or has no plan for the building, the window falls back to the usual next stage: 2D postprocessing after 3D QC, Ready for delivery after 2D QC.</li>
+      <li><b>The checker picks the next person</b>, normally the person in charge of the building. They become the building's assignee and get an email.</li>
+    </ul>
+  </div>
+  <p class="note"><b>Room book in LumoPlan.</b> Room book is now a stage LumoPlan can plan. It is optional: no standard timeline includes it. Coordinators add it for the buildings that need one, per building or through the project type. The plan stays in LumoPlan; the platform only gets the status the checker confirms.</p>
 </section>
 
 <section>
   <div class="intro">
     <h2>What one button press sets off</h2>
-    <p>LumoCad, the Lumoview server and LumoPlan never talk to each other directly. They all work from the same building record, which keeps a log of every status change.</p>
+    <p>The building record on the Lumoview server is the one place everything meets. It keeps a log of every status change and who the building was handed to. The only direct call between the apps is the approve window asking LumoPlan for the next stage.</p>
   </div>
   <figure>
     <div class="scroll">
-    <svg viewBox="0 0 1000 300" role="img" aria-label="Pressing Hand in in LumoCad changes the building's status on the Lumoview server. The server logs the change and sends one email to the next person. LumoPlan reads the status log when its page loads and ticks the finished QC step.">
+    <svg viewBox="0 0 1000 340" role="img" aria-label="Pressing Hand in in LumoCad changes the building's status on the Lumoview server, together with the next person. The server logs the change and sends one email to the next person. LumoPlan reads the status log when its page loads and ticks the finished QC step. When approving, LumoCad first asks LumoPlan which stage is next.">
       <defs>
         <marker id="b-fg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="f-fg"/></marker>
         <marker id="b-dn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="f-done"/></marker>
@@ -254,44 +333,50 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
       </defs>
 
       <!-- LumoCad -->
-      <rect x="20" y="95" width="220" height="110" rx="10" class="n-box"/>
-      <text x="130" y="128" text-anchor="middle" class="t-b">LumoCad</text>
-      <text x="130" y="150" text-anchor="middle" class="t-m">in the cloud</text>
-      <rect x="62" y="164" width="136" height="28" rx="6" class="n-checker"/>
-      <text x="130" y="183" text-anchor="middle" class="t-checker">Hand in</text>
+      <rect x="20" y="135" width="220" height="110" rx="10" class="n-box"/>
+      <text x="130" y="168" text-anchor="middle" class="t-b">LumoCad</text>
+      <text x="130" y="190" text-anchor="middle" class="t-m">in the cloud</text>
+      <rect x="62" y="204" width="136" height="28" rx="6" class="n-checker"/>
+      <text x="130" y="223" text-anchor="middle" class="t-checker">Hand in</text>
 
       <!-- Server -->
-      <rect x="370" y="40" width="260" height="220" rx="10" class="n-box"/>
-      <text x="500" y="72" text-anchor="middle" class="t-b">Lumoview server</text>
-      <rect x="392" y="90" width="216" height="64" rx="8" class="n-soft"/>
-      <text x="500" y="116" text-anchor="middle" class="t">Building record</text>
-      <text x="500" y="136" text-anchor="middle" class="t-m">new status + log entry</text>
-      <rect x="392" y="172" width="216" height="64" rx="8" class="n-soft"/>
-      <text x="500" y="198" text-anchor="middle" class="t">Email sender</text>
-      <text x="500" y="218" text-anchor="middle" class="t-m">picks the right QC email</text>
-      <line x1="500" y1="154" x2="500" y2="168" class="l-fg" marker-end="url(#b-fg)"/>
+      <rect x="370" y="100" width="260" height="220" rx="10" class="n-box"/>
+      <text x="500" y="132" text-anchor="middle" class="t-b">Lumoview server</text>
+      <rect x="392" y="150" width="216" height="64" rx="8" class="n-soft"/>
+      <text x="500" y="176" text-anchor="middle" class="t">Building record</text>
+      <text x="500" y="196" text-anchor="middle" class="t-m">new status + log entry</text>
+      <rect x="392" y="232" width="216" height="64" rx="8" class="n-soft"/>
+      <text x="500" y="258" text-anchor="middle" class="t">Email sender</text>
+      <text x="500" y="278" text-anchor="middle" class="t-m">picks the right QC email</text>
+      <line x1="500" y1="214" x2="500" y2="228" class="l-fg" marker-end="url(#b-fg)"/>
 
       <!-- LumoPlan -->
-      <rect x="770" y="30" width="210" height="90" rx="10" class="n-done"/>
-      <text x="875" y="66" text-anchor="middle" class="t-b">LumoPlan</text>
-      <text x="875" y="88" text-anchor="middle" class="t-done">ticks the finished step</text>
+      <rect x="770" y="90" width="210" height="90" rx="10" class="n-done"/>
+      <text x="875" y="126" text-anchor="middle" class="t-b">LumoPlan</text>
+      <text x="875" y="148" text-anchor="middle" class="t-done">ticks the finished step</text>
+      <text x="875" y="166" text-anchor="middle" class="t-m">holds the timeline</text>
 
       <!-- Inbox -->
-      <rect x="770" y="180" width="210" height="90" rx="10" class="n-checker"/>
-      <text x="875" y="216" text-anchor="middle" class="t-b">Next person's inbox</text>
-      <text x="875" y="238" text-anchor="middle" class="t-checker">one email, right away</text>
+      <rect x="770" y="240" width="210" height="90" rx="10" class="n-checker"/>
+      <text x="875" y="276" text-anchor="middle" class="t-b">Next person's inbox</text>
+      <text x="875" y="298" text-anchor="middle" class="t-checker">one email, right away</text>
+
+      <!-- LumoCad asks LumoPlan (approve only) -->
+      <path d="M130 135 C 130 70, 700 55, 820 86" class="l-muted" marker-end="url(#b-fg)"/>
+      <text x="470" y="30" text-anchor="middle" class="t">asks which stage is next</text>
+      <text x="470" y="48" text-anchor="middle" class="t-m">approve window only · falls back if no answer</text>
 
       <!-- arrows -->
-      <line x1="240" y1="150" x2="388" y2="122" class="l-fg" marker-end="url(#b-fg)"/>
-      <text x="312" y="118" text-anchor="middle" class="t">changes status</text>
-      <text x="312" y="172" text-anchor="middle" class="t-m">+ next person</text>
+      <line x1="240" y1="190" x2="388" y2="182" class="l-fg" marker-end="url(#b-fg)"/>
+      <text x="312" y="172" text-anchor="middle" class="t">changes status</text>
+      <text x="312" y="212" text-anchor="middle" class="t-m">+ next person</text>
 
-      <line x1="608" y1="210" x2="766" y2="225" class="l-checker" marker-end="url(#b-ch)"/>
-      <text x="687" y="204" text-anchor="middle" class="t-checker">sends</text>
+      <line x1="608" y1="270" x2="766" y2="285" class="l-checker" marker-end="url(#b-ch)"/>
+      <text x="687" y="264" text-anchor="middle" class="t-checker">sends</text>
 
-      <line x1="766" y1="75" x2="612" y2="120" class="l-done" marker-end="url(#b-dn)" stroke-dasharray="6 4"/>
-      <text x="690" y="72" text-anchor="middle" class="t-done">reads the log</text>
-      <text x="702" y="134" text-anchor="middle" class="t-m">when the page loads</text>
+      <line x1="766" y1="140" x2="612" y2="180" class="l-done" marker-end="url(#b-dn)" stroke-dasharray="6 4"/>
+      <text x="694" y="134" text-anchor="middle" class="t-done">reads the log</text>
+      <text x="704" y="196" text-anchor="middle" class="t-m">when the page loads</text>
     </svg>
     </div>
     <figcaption>The email goes out at once. LumoPlan picks the change up the next time someone opens or refreshes the page, so it can lag by a few minutes. Nobody has to tick anything twice.</figcaption>
@@ -300,8 +385,8 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
 
 <section>
   <div class="intro">
-    <h2>The three emails</h2>
-    <p>Each email names the QC step and the building, and the building name links straight into the right QC mode in LumoCad. Before this, people got a vague "Work item assigned" email, sometimes several at once.</p>
+    <h2>The four emails</h2>
+    <p>Each email names the QC step and the building, and the building name links straight into LumoCad. One action sends one email. Before this, people got a vague "Work item assigned" or "New building assigned" email, sometimes several at once.</p>
   </div>
   <div class="mails">
     <div class="mail">
@@ -310,7 +395,7 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
         <p class="text">Hi [name]!<br>You have been assigned to the 3D QC check for <a href="#mails">Musterstraße 5</a>.<br>Your Lumoview Team.</p>
       </div>
       <div class="meta">
-        <div><b>Sent when</b>QC checklists are set up for a building, or the checker is changed later</div>
+        <div><b>Mail 1 · sent when</b>QC checklists are set up for a building, or the checker is changed later</div>
         <div><b>Goes to</b><span class="chip checker">Checker</span></div>
       </div>
     </div>
@@ -320,7 +405,7 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
         <p class="text">Hi [name]!<br>The 3D QC check for <a href="#mails">Musterstraße 5</a> was handed in and the corrections are assigned to you.<br>Your Lumoview Team.</p>
       </div>
       <div class="meta">
-        <div><b>Sent when</b>The checker hands in with problems found</div>
+        <div><b>Mail 2 · sent when</b>The checker hands in with problems found, on the first check or a re-check</div>
         <div><b>Goes to</b><span class="chip corrector">Corrector</span> chosen in the hand-in window</div>
       </div>
     </div>
@@ -330,68 +415,105 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
         <p class="text">Hi [name]!<br>The 3D QC corrections for <a href="#mails">Musterstraße 5</a> were handed in and the check is assigned to you.<br>Your Lumoview Team.</p>
       </div>
       <div class="meta">
-        <div><b>Sent when</b>The corrector hands the building back</div>
+        <div><b>Mail 3 · sent when</b>The corrector hands the building back, which moves it to "3D QC corrections check"</div>
         <div><b>Goes to</b><span class="chip checker">Checker</span> chosen in the hand-in window</div>
       </div>
     </div>
+    <div class="mail">
+      <div class="body">
+        <span class="subject">LumoWorld: 3D QC approved, 2D Postprocessing assigned to you</span>
+        <p class="text">Hi [name]!<br>The 3D QC check for <a href="#mails">Musterstraße 5</a> was approved. The building moved on to 2D Postprocessing and is assigned to you.<br>Your Lumoview Team.</p>
+      </div>
+      <div class="meta">
+        <div><b>Mail 4 · sent when</b>The checker approves. The subject names the stage picked.</div>
+        <div><b>Goes to</b><span class="chip corrector">Person in charge</span> picked in the approve window</div>
+      </div>
+    </div>
   </div>
-  <p class="note">One action, one email. Handing in also makes the next person the building's assignee, which used to send an extra "New building assigned" email. That extra email is now skipped for QC hand-ins.</p>
+  <p class="note"><b>Approved into Ready for delivery:</b> no mail 4. The existing "LumoWorld: Building ready for delivery" email goes out instead, now to the person the checker picked rather than to whoever happened to be the assignee.</p>
 </section>
 
 <section>
   <div class="intro">
     <h2>What the coordinator sees in LumoPlan</h2>
-    <p>The postprocessing board already shows the plan. Since September it also shows which steps are really done. Now a hand-in in LumoCad ticks the QC step by itself.</p>
+    <p>The postprocessing board shows the plan and which steps are really done. A hand-in in LumoCad ticks the QC step by itself, and the tooltip says who checked and who it went to.</p>
   </div>
   <figure>
     <div class="scroll">
-    <svg viewBox="0 0 1000 250" role="img" aria-label="A LumoPlan board row for Musterstraße 5. 3D postprocessing and 3D QC are solid green with a tick, 3D QC was handed in from LumoCad. 3D QC corrections is the current step. 2D postprocessing is still only planned and shown faded.">
+    <svg viewBox="0 0 1000 360" role="img" aria-label="Two LumoPlan board rows. Musterstraße 5: 3D postprocessing and 3D QC are solid green with a tick, 3D QC was checked in LumoCad by Anna and handed to Ben. 3D QC corrections is the current step, 2D postprocessing and Roombook are planned and faded. Hauptstraße 12: 3D QC and corrections are done, and a dashed strip along the bottom shows a second QC round that is running but was not planned, with an Add to plan button.">
       <!-- week grid -->
       <g>
-        <line x1="200" y1="40" x2="200" y2="170" class="l-grid"/>
-        <line x1="400" y1="40" x2="400" y2="170" class="l-grid"/>
-        <line x1="600" y1="40" x2="600" y2="170" class="l-grid"/>
-        <line x1="800" y1="40" x2="800" y2="170" class="l-grid"/>
-        <line x1="980" y1="40" x2="980" y2="170" class="l-grid"/>
+        <line x1="200" y1="40" x2="200" y2="330" class="l-grid"/>
+        <line x1="400" y1="40" x2="400" y2="330" class="l-grid"/>
+        <line x1="600" y1="40" x2="600" y2="330" class="l-grid"/>
+        <line x1="800" y1="40" x2="800" y2="330" class="l-grid"/>
+        <line x1="980" y1="40" x2="980" y2="330" class="l-grid"/>
         <text x="300" y="30" text-anchor="middle" class="t-m">Week 40</text>
         <text x="500" y="30" text-anchor="middle" class="t-m">Week 41</text>
         <text x="700" y="30" text-anchor="middle" class="t-m">Week 42</text>
         <text x="890" y="30" text-anchor="middle" class="t-m">Week 43</text>
       </g>
-      <text x="20" y="104" class="t-b">Musterstraße 5</text>
-      <text x="20" y="124" class="t-m">example building</text>
 
-      <rect x="204" y="84" width="150" height="40" rx="6" class="seg-done"/>
-      <text x="279" y="109" text-anchor="middle" class="t" style="fill: var(--surface); font-weight: 600">✓ 3D post</text>
-      <rect x="358" y="84" width="150" height="40" rx="6" class="seg-done"/>
-      <text x="433" y="109" text-anchor="middle" class="t" style="fill: var(--surface); font-weight: 600">✓ 3D QC</text>
-      <rect x="512" y="84" width="170" height="40" rx="6" class="seg-current"/>
-      <text x="597" y="109" text-anchor="middle" class="t" style="fill: var(--surface); font-weight: 600">3D QC corrections</text>
-      <rect x="686" y="84" width="290" height="40" rx="6" class="seg-plan"/>
-      <text x="831" y="109" text-anchor="middle" class="t">2D postprocessing (planned)</text>
+      <!-- Row 1 -->
+      <text x="20" y="84" class="t-b">Musterstraße 5</text>
+      <text x="20" y="104" class="t-m">needs a room book</text>
+      <rect x="204" y="64" width="150" height="40" rx="6" class="seg-done"/>
+      <text x="279" y="89" text-anchor="middle" class="t" style="fill: var(--surface); font-weight: 600">✓ 3D post</text>
+      <rect x="358" y="64" width="150" height="40" rx="6" class="seg-done"/>
+      <text x="433" y="89" text-anchor="middle" class="t" style="fill: var(--surface); font-weight: 600">✓ 3D QC</text>
+      <rect x="512" y="64" width="170" height="40" rx="6" class="seg-current"/>
+      <text x="597" y="89" text-anchor="middle" class="t" style="fill: var(--surface); font-weight: 600">3D QC corrections</text>
+      <rect x="686" y="64" width="170" height="40" rx="6" class="seg-plan"/>
+      <text x="771" y="89" text-anchor="middle" class="t">2D post (planned)</text>
+      <rect x="860" y="64" width="116" height="40" rx="6" class="seg-plan"/>
+      <text x="918" y="89" text-anchor="middle" class="t">Roombook</text>
 
       <!-- tooltip -->
-      <line x1="433" y1="128" x2="433" y2="168" class="l-fg"/>
-      <rect x="250" y="168" width="366" height="62" rx="8" class="n-box"/>
-      <text x="268" y="194" class="t-done">✓ Handed in from LumoCad</text>
-      <text x="268" y="216" class="t">by the checker on Tue 6 Oct · planned until Thu 8 Oct</text>
+      <line x1="433" y1="108" x2="433" y2="132" class="l-fg"/>
+      <rect x="230" y="132" width="420" height="62" rx="8" class="n-box"/>
+      <text x="248" y="158" class="t-done">✓ Checked in LumoCad by Anna on 06.10., handed to Ben</text>
+      <text x="248" y="180" class="t-m">planned until Thu 8 Oct</text>
+
+      <!-- Row 2 -->
+      <text x="20" y="250" class="t-b">Hauptstraße 12</text>
+      <text x="20" y="270" class="t-m">second round not planned</text>
+      <rect x="204" y="230" width="150" height="40" rx="6" class="seg-done"/>
+      <text x="279" y="255" text-anchor="middle" class="t" style="fill: var(--surface); font-weight: 600">✓ 3D QC</text>
+      <rect x="358" y="230" width="150" height="40" rx="6" class="seg-done"/>
+      <text x="433" y="255" text-anchor="middle" class="t" style="fill: var(--surface); font-weight: 600">✓ Corrections</text>
+      <rect x="512" y="230" width="464" height="40" rx="6" class="seg-plan"/>
+      <text x="744" y="255" text-anchor="middle" class="t">2D postprocessing (planned)</text>
+      <rect x="512" y="278" width="180" height="26" rx="6" class="seg-unplanned"/>
+      <text x="602" y="296" text-anchor="middle" class="t-checker">3D QC 2 · not planned</text>
+      <rect x="704" y="278" width="108" height="26" rx="6" class="n-box"/>
+      <text x="758" y="296" text-anchor="middle" class="t">+ Add to plan</text>
     </svg>
     </div>
-    <figcaption>Solid green with a tick means done. The current step is in full color. Steps that are only planned look faded. Hovering a ticked step shows who handed it in and when.</figcaption>
+    <figcaption>Solid green with a tick means done. The current step is in full color. Planned steps look faded. A QC round nobody planned shows up by itself as a dashed strip under the row, with its real dates. <b>Add to plan</b> makes it a planned step; nothing else in the plan moves.</figcaption>
   </figure>
 
   <div class="table-wrap">
     <table>
-      <thead><tr><th>When this happens in LumoCad</th><th>LumoPlan ticks</th></tr></thead>
+      <thead><tr><th>When this happens in LumoCad or the cloud</th><th>LumoPlan shows</th></tr></thead>
       <tbody>
         <tr><td>Checker hands in with problems found</td><td class="tick">✓ 3D QC</td></tr>
         <tr><td>Corrector hands the building back</td><td class="tick">✓ 3D QC corrections</td></tr>
-        <tr><td>Checker approves after a re-check</td><td class="tick">✓ the re-check round (3D QC, round 2)</td></tr>
-        <tr><td>Checker approves on the first check</td><td class="tick">✓ 3D QC</td></tr>
+        <tr><td>Checker finds problems again in the re-check</td><td class="tick">✓ 3D QC, round 2</td></tr>
+        <tr><td>Checker approves, on the first check or after a re-check</td><td class="tick">✓ that QC round</td></tr>
+        <tr><td>Someone sets the status back in the cloud</td><td>The tick goes away again</td></tr>
+        <tr><td>The same after a client revision</td><td class="tick">✓ in that revision's rounds</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="col muted">The same applies to 2D. Coordinators can still tick a step by hand, as before. If they did, their tick counts. Ticking only says "done". It never moves the planned dates; coordinators adjust the plan themselves.</p>
+  <p class="col muted">The same applies to 2D. <b>Only the hand-in completes a QC step.</b> LumoPlan can't see the checklists, so on the QC and corrections steps it offers <b>Open checklist in LumoCad</b> instead of <b>Mark done</b>. Other steps, like 3D and 2D postprocessing, keep the manual tick. Ticking only says "done"; it never moves the planned dates.</p>
+</section>
+
+<section>
+  <div class="intro">
+    <h2>Fixing a mistake</h2>
+    <p>If someone hands in by mistake, an admin sets the building's status back in the cloud. LumoPlan follows the status log, so the tick disappears by itself and nobody has to undo anything in LumoPlan.</p>
+  </div>
+  <p class="col muted">This needed the new "corrections check" status. Before, handing back and undoing a hand-in were the same status change, and moving the status back added a second tick instead of removing one.</p>
 </section>
 
 <section>
@@ -448,57 +570,31 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
   </figure>
 </section>
 
-<section>
+<section id="changes">
   <div class="intro">
-    <h2>Decisions we need</h2>
-    <p>The original request left these open. Each one already has a working answer, so nothing is blocked, but the answers should be confirmed or changed.</p>
+    <h2>What changed after Rio's feedback</h2>
+    <p>Rio went through the first version of this page on 7 October. All the open questions now have an answer, and the answers are built.</p>
   </div>
-  <div class="decisions">
-    <div class="decision">
-      <div class="q"><span class="num">1</span><h3>What status means "corrections done, waiting for a re-check"?</h3></div>
-      <div class="grid">
-        <div><span class="lbl">For now</span><p>The building goes back to <b>Pending 3D QC</b> (or 2D). Emails and LumoPlan still know it's a re-check because the building just came from corrections.</p></div>
-        <div><span class="lbl">Other option</span><p>A new status such as "3D QC corrections check". Clearer in lists and reports, but every tool needs updating.</p></div>
-      </div>
-      <p class="ask">Is going back to "Pending QC" fine?</p>
-    </div>
-    <div class="decision">
-      <div class="q"><span class="num">2</span><h3>Where does an approved 2D QC go, and who hears about it?</h3></div>
-      <div class="grid">
-        <div><span class="lbl">For now</span><p>Approved 2D goes straight to <b>Ready for delivery</b> and skips Room book. The existing "ready for delivery" email goes to the building's assignee, who at that point is the checker who just approved. Approved 3D moves to 2D postprocessing without an email.</p></div>
-        <div><span class="lbl">Other options</span><p>Send buildings that need a room book there first. Let the checker pick the next person when approving, and email them.</p></div>
-      </div>
-      <p class="ask">Room book: always, never, or only for some buildings? Who should be told after approval?</p>
-    </div>
-    <div class="decision">
-      <div class="q"><span class="num">3</span><h3>Status changes made by hand look like hand-ins</h3></div>
-      <div class="grid">
-        <div><span class="lbl">For now</span><p>If someone changes the status by hand in the cloud admin screen, the same email goes out and LumoPlan ticks the step. The status log doesn't say where a change came from.</p></div>
-        <div><span class="lbl">Other option</span><p>Record whether each change came from the Hand in button or from a manual edit, and only react to the button.</p></div>
-      </div>
-      <p class="ask">Fine as is? A manual change usually means the same thing.</p>
-    </div>
-    <div class="decision">
-      <div class="q"><span class="num">4</span><h3>Who may press which button?</h3></div>
-      <div class="grid">
-        <div><span class="lbl">For now</span><p>The Checker / Corrector switch in LumoCad is remembered per browser only. Anyone with access to the building can switch and hand in either way.</p></div>
-        <div><span class="lbl">Other option</span><p>Store who the checker and corrector are on each building, and only show each person their own button.</p></div>
-      </div>
-      <p class="ask">Is trust enough for now?</p>
-    </div>
-    <div class="decision">
-      <div class="q"><span class="num">5</span><h3>Undoing a LumoCad tick in LumoPlan</h3></div>
-      <div class="grid">
-        <div><span class="lbl">For now</span><p>A step ticked by a LumoCad hand-in can't be un-ticked in LumoPlan. To correct a mistake, someone changes the status back in the cloud.</p></div>
-        <div><span class="lbl">Other option</span><p>Let coordinators override the tick in LumoPlan.</p></div>
-      </div>
-      <p class="ask">Do coordinators need that?</p>
-    </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Question</th><th>First version</th><th>Now</th></tr></thead>
+      <tbody>
+        <tr><td>Status for "corrections done, waiting for a re-check"</td><td>Back to Pending 3D QC</td><td>New status <b>3D / 2D QC corrections check</b>, pending and in progress</td></tr>
+        <tr><td>Where an approved QC goes</td><td>Always 2D postprocessing (3D) or Ready for delivery (2D)</td><td>The next stage in the LumoPlan timeline, which the checker can change; Roombook where planned</td></tr>
+        <tr><td>Who hears about an approval</td><td>Nobody (3D) or the checker (2D)</td><td>The person the checker picks, usually the person in charge</td></tr>
+        <tr><td>Manual status changes in the cloud</td><td>Count like hand-ins</td><td>Unchanged. They mean the same thing</td></tr>
+        <tr><td>Who was checker and corrector</td><td>Not recorded</td><td>Every handover records who the building went to; LumoPlan shows it</td></tr>
+        <tr><td>Ticking QC by hand in LumoPlan</td><td>Allowed</td><td>Only the LumoCad hand-in completes a QC step</td></tr>
+        <tr><td>Undoing a hand-in</td><td>Didn't work properly</td><td>Set the status back in the cloud; the tick goes away</td></tr>
+        <tr><td>A QC round nobody planned</td><td>Not shown</td><td>Shown by itself, with Add to plan</td></tr>
+        <tr><td>Rounds after a client revision</td><td>Not ticked</td><td>Ticked like the first round</td></tr>
+      </tbody>
+    </table>
   </div>
-  <h3 style="margin-top: 8px">Smaller points</h3>
+  <h3 style="margin-top: 8px">Still open</h3>
   <ul class="small-list">
-    <li>LumoPlan only ticks QC rounds that are in the plan. If a building needs a second QC round that wasn't planned, that round isn't shown until a coordinator adds it.</li>
-    <li>Rounds after a client revision aren't ticked automatically yet. Coordinators tick those by hand.</li>
+    <li>Every stage needing both a pending and an in-progress status makes for many statuses. Parked for a better general solution later, such as one status per stage plus a "started" flag.</li>
+    <li>If an admin undoes a corrector's hand-in by setting the status back to corrections, it looks the same as the checker finding problems again, so LumoPlan counts another QC round.</li>
   </ul>
 </section>
 
@@ -507,15 +603,16 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
     <h2>Before it goes live</h2>
   </div>
   <ol class="steps">
-    <li><p><b>Full test run on the test system:</b> set up QC, hand in with problems, hand back, approve, change the checker. Check every email and the LumoPlan board.</p></li>
-    <li><p><b>Release the Lumoview server first.</b> It carries the emails and the new "change checker" handling. If LumoCad were released first, changing the checker would fail.</p></li>
-    <li><p><b>Release LumoCad and LumoPlan.</b> The Hand in buttons go live and LumoPlan starts ticking QC steps.</p></li>
-    <li><p><b>Tell the team</b> how the round works now and which email to expect at each step.</p></li>
+    <li><p><b>Full test run on the test system:</b> set up QC, hand in with problems, hand back, approve into each kind of next stage, change the checker. Check every email and the LumoPlan board.</p></li>
+    <li><p><b>Release the Lumoview server first.</b> It carries the emails, the new statuses and the "change checker" handling.</p></li>
+    <li><p><b>Release LumoPlan, then LumoCad.</b> LumoPlan answers the approve window's question and can plan room books. LumoCad's Hand in buttons then go live.</p></li>
+    <li><p><b>Switch LumoPlan over on the go-live day.</b> One date setting makes QC steps complete only through the hand-in from that day on. Earlier ticks stay as they are.</p></li>
+    <li><p><b>Tell the team</b> how the round works now, which email to expect at each step, and that room books are planned in LumoPlan.</p></li>
   </ol>
 </section>
 
 <footer>
-  Covers the Notion request "Add Mail Templates for QC Work" and the follow-up from the meeting with Rio: a hand-in in LumoCad should finish the step in LumoPlan. Technical plan: <span class="mono">docs/lumocad-qc-hand-in-2026-10-06.md</span> in LumoPlan.
+  Covers the Notion request "Add Mail Templates for QC Work", the follow-up from the meeting with Rio (a hand-in in LumoCad should finish the step in LumoPlan) and Rio's feedback of 7 October. Technical notes in LumoPlan: <span class="mono">docs/lumocad-qc-hand-in-2026-10-06.md</span> and <span class="mono">docs/lumocad-qc-rio-feedback-2026-10-07.md</span>.
 </footer>
 
 </div>
