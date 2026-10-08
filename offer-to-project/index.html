@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Offer to Project</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  body { margin: 0 }
+  img { max-width: 100% }
+  /* Layout: one reading column; the cycle is a vertical track of steps, each tagged with who acts. */
+  :root {
+    --bg: #f6f7fa;
+    --surface: #ffffff;
+    --ink: #17203a;
+    --muted: #5b6480;
+    --line: #dde1ea;
+    --brand: #d32f2f;
+    --brand-soft: #fbe9e9;
+    --navy: #1f3a8a;
+    --navy-soft: #e8edf9;
+    --auto: #0f766e;
+    --auto-soft: #e3f4f1;
+    --team: #8a4b08;
+    --team-soft: #f8eedf;
+    --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+    --body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10141f; --surface: #171d2b; --ink: #e8ebf3; --muted: #9aa3bd; --line: #2a3246;
+      --brand: #f26b6b; --brand-soft: #3a1d22; --navy: #9fb4f2; --navy-soft: #1d2744;
+      --auto: #5fd0c2; --auto-soft: #14302d; --team: #e9b26a; --team-soft: #33281a;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10141f; --surface: #171d2b; --ink: #e8ebf3; --muted: #9aa3bd; --line: #2a3246;
+    --brand: #f26b6b; --brand-soft: #3a1d22; --navy: #9fb4f2; --navy-soft: #1d2744;
+    --auto: #5fd0c2; --auto-soft: #14302d; --team: #e9b26a; --team-soft: #33281a;
+    color-scheme: dark;
+  }
+
+  body { background: var(--bg); color: var(--ink); font: 16px/1.6 var(--body); }
+  .wrap { max-width: 860px; margin: 0 auto; padding-inline: 20px; padding-block: 48px 72px; display: grid; gap: 56px; }
+  h1, h2, h3 { font-family: var(--display); line-height: 1.15; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(2.2rem, 6vw, 3.2rem); letter-spacing: -0.02em; }
+  h2 { font-size: 1.6rem; }
+  h3 { font-size: 1.15rem; }
+  p { margin: 0; max-width: 65ch; }
+  .eyebrow { font: 500 0.75rem/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--brand); }
+  header { display: grid; gap: 16px; }
+  .lede { font-size: 1.15rem; color: var(--muted); }
+
+  .chain { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font: 500 0.85rem/1 var(--mono); }
+  .chain span { padding: 7px 10px; border-radius: 6px; background: var(--surface); border: 1px solid var(--line); }
+  .chain i { font-style: normal; color: var(--muted); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: 0.9rem; color: var(--muted); }
+  .legend > span { display: inline-flex; align-items: center; gap: 8px; }
+
+  .who { display: inline-flex; align-items: center; gap: 6px; font: 500 0.72rem/1 var(--mono); letter-spacing: 0.04em; text-transform: uppercase; padding: 5px 8px; border-radius: 999px; white-space: nowrap; }
+  .who::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .who.sales { color: var(--navy); background: var(--navy-soft); }
+  .who.auto { color: var(--auto); background: var(--auto-soft); }
+  .who.team { color: var(--team); background: var(--team-soft); }
+
+  ol.track { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; counter-reset: step; }
+  ol.track > li { counter-increment: step; display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 0 18px; position: relative; padding-bottom: 32px; }
+  ol.track > li::before {
+    content: counter(step); grid-row: 1 / span 2; width: 44px; height: 44px; border-radius: 50%;
+    display: grid; place-items: center; font: 700 1.1rem/1 var(--display);
+    background: var(--surface); border: 2px solid var(--line); color: var(--ink); position: relative; z-index: 1;
+  }
+  ol.track > li:not(:last-child)::after { content: ""; position: absolute; left: 21px; top: 44px; bottom: 0; width: 2px; background: var(--line); }
+  ol.track > li.key::before { border-color: var(--brand); color: var(--brand); }
+  .step-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-height: 44px; }
+  .step-body { display: grid; gap: 12px; padding-top: 6px; min-width: 0; }
+  .step-body ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 6px; max-width: 65ch; }
+  .where { font: 500 0.85rem/1.4 var(--mono); color: var(--muted); }
+  kbd, .ui { font: 500 0.85em/1 var(--mono); padding: 2px 6px; border-radius: 4px; background: var(--surface); border: 1px solid var(--line); white-space: nowrap; }
+
+  .auto-box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; display: grid; gap: 14px; }
+  .auto-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px 24px; }
+  .auto-grid h4 { margin: 0 0 6px; font: 600 0.8rem/1.2 var(--body); letter-spacing: 0.04em; text-transform: uppercase; color: var(--auto); }
+  .auto-grid ul { padding-left: 1rem; font-size: 0.95rem; }
+
+  .gate { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 10px; background: var(--brand-soft); color: var(--ink); }
+  .gate strong { color: var(--brand); }
+
+  section { display: grid; gap: 18px; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 0.95rem; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  th { font: 600 0.75rem/1.2 var(--body); letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+  td:first-child { white-space: nowrap; }
+  .status { font: 500 0.82rem/1 var(--mono); padding: 4px 8px; border-radius: 4px; background: var(--bg); border: 1px solid var(--line); }
+
+  .rules { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .rules li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; }
+  .rules li::before { content: "→"; color: var(--brand); font-weight: 600; }
+  footer { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 18px; }
+
+  @media (max-width: 480px) {
+    .wrap { padding-block: 32px 56px; gap: 44px; }
+    ol.track > li { grid-template-columns: 36px minmax(0, 1fr); gap: 0 12px; }
+    ol.track > li::before { width: 36px; height: 36px; font-size: 0.95rem; }
+    ol.track > li:not(:last-child)::after { left: 17px; top: 36px; }
+    .step-head { min-height: 36px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">LumoPlan · Sales to delivery</span>
+    <h1>Offer to Project</h1>
+    <p class="lede">Every project starts as an offer in LumoPlan. Once the customer has signed, we upload the contract, accept the offer, and LumoPlan creates the project, sets it up in Notion and tells the team. Nobody creates projects or offers by hand in Notion any more.</p>
+    <div class="chain" aria-label="The cycle">
+      <span>Offer</span><i>→</i><span>Sign &amp; send</span><i>→</i><span>Signed contract</span><i>→</i><span>Accept</span><i>→</i><span>Project</span><i>→</i><span>Team setup</span>
+    </div>
+    <div class="legend">
+      <span><span class="who sales">Sales</span> the offer's author</span>
+      <span><span class="who auto">LumoPlan</span> happens automatically</span>
+      <span><span class="who team">Hendrik &amp; Rio</span> project setup</span>
+    </div>
+  </header>
+
+  <section aria-labelledby="flow">
+    <h2 id="flow">The cycle, step by step</h2>
+    <ol class="track">
+      <li>
+        <div class="step-head"><h3>Write the offer</h3><span class="who sales">Sales</span></div>
+        <div class="step-body">
+          <span class="where">LumoPlan → Offers → choose the customer → New offer</span>
+          <ul>
+            <li>Pick the contract type (one-off or framework with prepayment annex), tick the services and set quantities, prices and discounts.</li>
+            <li>LumoPlan gives the offer its number (for example <span class="ui">2026-10-12_Offer-DE-2026-10-0012-Customer</span>) and adds it to the Notion offers database with status <span class="status">In Preparation</span>.</li>
+            <li>Content stays editable at every status. Changes save automatically.</li>
+          </ul>
+        </div>
+      </li>
+      <li>
+        <div class="step-head"><h3>Sign and send</h3><span class="who sales">Sales</span></div>
+        <div class="step-body">
+          <span class="where">Offer toolbar → Details → Signatory, then <span class="ui">Sign &amp; Export</span></span>
+          <ul>
+            <li>Choose the signatory (Silvan, Janis or Malte). Only the selected signatory can sign; their signature is placed into the PDF.</li>
+            <li>Send the PDF to the customer, then set the status to <span class="status">Waiting For Response</span> and the <em>Sent At</em> date. <em>Valid Until</em> fills in 20 days later.</li>
+          </ul>
+        </div>
+      </li>
+      <li>
+        <div class="step-head"><h3>Upload the signed contract</h3><span class="who sales">Sales</span></div>
+        <div class="step-body">
+          <span class="where">Offer toolbar → <span class="ui">Files</span> → Upload signed contract</span>
+          <ul>
+            <li>The signed contract is the offer the customer signed. Add other contractual documents with <span class="ui">Upload other documents</span>.</li>
+            <li>Several files at once; PDF, image, Word or Excel, up to 20 MB each. Files are stored in LumoPlan with the offer.</li>
+          </ul>
+        </div>
+      </li>
+      <li class="key">
+        <div class="step-head"><h3>Accept the offer</h3><span class="who sales">Sales</span></div>
+        <div class="step-body">
+          <span class="where">Details → Status → <span class="status">Accepted</span></span>
+          <p>Choosing Accepted opens the accept dialog. It shows the offer's files and lets you upload anything still missing.</p>
+          <div class="gate"><span><strong>No contract, no acceptance.</strong> <span class="ui">Accept offer</span> stays disabled until at least one signed contract is uploaded, and LumoPlan refuses the change otherwise.</span></div>
+        </div>
+      </li>
+      <li>
+        <div class="step-head"><h3>LumoPlan creates the project</h3><span class="who auto">LumoPlan</span></div>
+        <div class="step-body">
+          <div class="auto-box">
+            <div class="auto-grid">
+              <div>
+                <h4>Project</h4>
+                <ul>
+                  <li>Named <span class="ui">YYYY-MM Customer</span>, with the address added if the name is taken</li>
+                  <li>Status <span class="status">Pipeline / Paused</span>, priority Normal</li>
+                  <li>Type of invoicing from the contract type</li>
+                  <li>Account manager: the offer's author</li>
+                  <li>The offer's buildings join the project</li>
+                </ul>
+              </div>
+              <div>
+                <h4>Notion</h4>
+                <ul>
+                  <li>Project page made from the Customer Project template</li>
+                  <li>Customer linked to its Notion customer page when the name matches one</li>
+                  <li>Offer row linked to the new project</li>
+                </ul>
+              </div>
+              <div>
+                <h4>Email</h4>
+                <ul>
+                  <li>To Hendrik and Rio: which offer, which customer, the signed contract's file name</li>
+                  <li>Links to the project and to the offer with its files</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="step-head"><h3>Set up the project</h3><span class="who team">Hendrik &amp; Rio</span></div>
+        <div class="step-body">
+          <span class="where">Email link → LumoPlan project page</span>
+          <ul>
+            <li>Assign the coordinator and the team, check the buildings, and move the project out of Pipeline / Paused when work starts.</li>
+            <li>The signed contract is one click away on the offer if questions come up.</li>
+          </ul>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="statuses">
+    <h2 id="statuses">Offer statuses</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Status</th><th>Meaning</th><th>What LumoPlan does</th></tr></thead>
+        <tbody>
+          <tr><td><span class="status">In Preparation</span></td><td>Being written</td><td>Keeps the Notion row in sync</td></tr>
+          <tr><td><span class="status">Waiting For Response</span></td><td>Sent to the customer</td><td>Same</td></tr>
+          <tr><td><span class="status">Accepted</span></td><td>Customer signed; contract uploaded</td><td>Creates the project, sets up Notion, emails Hendrik and Rio</td></tr>
+          <tr><td><span class="status">Changed</span></td><td>The offer had to be reworked after sending</td><td>Offers to create a new copy in In Preparation with the current content</td></tr>
+          <tr><td><span class="status">Rejected</span></td><td>Customer declined</td><td>Nothing else</td></tr>
+          <tr><td><span class="status">Cancelled</span></td><td>We withdrew the offer</td><td>Nothing else</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="rules">
+    <h2 id="rules">Ground rules</h2>
+    <ul class="rules">
+      <li><span>Offers and projects start in LumoPlan. Don't create offer rows or project pages in Notion by hand: that is how duplicates appear.</span></li>
+      <li><span>Accept only in LumoPlan, and only once the signed contract is uploaded.</span></li>
+      <li><span>An accepted offer always keeps at least one contract. To replace it, upload the new file first, then delete the old one.</span></li>
+      <li><span>If the project page in Notion looks empty right after accepting, give it a minute: Notion fills in the template in the background.</span></li>
+    </ul>
+  </section>
+
+  <footer>LumoPlan · plan.lumoview.com · October 2026</footer>
+</div>
+</body>
+</html>
