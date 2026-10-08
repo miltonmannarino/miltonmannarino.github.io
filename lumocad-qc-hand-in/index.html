@@ -144,6 +144,7 @@ ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: g
 ol.steps li { counter-increment: s; display: grid; grid-template-columns: 2.2rem minmax(0, 1fr); gap: 12px; align-items: start; }
 ol.steps li::before { content: counter(s); font-family: var(--font-display); font-weight: 700; width: 2.2rem; height: 2.2rem; border-radius: 50%; display: grid; place-items: center; background: var(--checker-soft); color: var(--checker); }
 ol.steps li p { padding-top: 0.3rem; }
+ol.steps li.done::before { content: "✓"; background: var(--done-soft); color: var(--done); }
 
 footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 0.9rem; color: var(--muted); }
 
@@ -182,8 +183,8 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
   <span class="eyebrow">LumoCad · Lumoview server · LumoPlan · October 2026</span>
   <h1>LumoCad QC Hand-In</h1>
   <p class="lede">When the checker or the corrector finishes their part of a quality check in LumoCad, they press <b>Hand in</b>. The building moves to the next step, the next person gets an email, and LumoPlan shows the step as done. When the checker approves, the building goes to the next stage planned in its LumoPlan timeline.</p>
-  <span class="pill">Built and tested · not released yet</span>
-  <p class="updated">Updated 7 October 2026 with Rio's feedback. What changed is listed at the <a href="#changes">bottom of the page</a>.</p>
+  <span class="pill">Live in LumoCad, the Lumoview server and LumoPlan · LumoPlan switch-over still to come</span>
+  <p class="updated">Updated 7 October 2026 with Rio's feedback; released 8 October 2026. What changed is listed at the <a href="#changes">bottom of the page</a>.</p>
 </header>
 
 <section>
@@ -505,13 +506,13 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
       </tbody>
     </table>
   </div>
-  <p class="col muted">The same applies to 2D. <b>Only the hand-in completes a QC step.</b> LumoPlan can't see the checklists, so on the QC and corrections steps it offers <b>Open checklist in LumoCad</b> instead of <b>Mark done</b>. Other steps, like 3D and 2D postprocessing, keep the manual tick. Ticking only says "done"; it never moves the planned dates.</p>
+  <p class="col muted">The same applies to 2D. <b>From the switch-over day on, only the hand-in completes a QC step.</b> LumoPlan can't see the checklists, so on the QC and corrections steps it offers <b>Open checklist in LumoCad</b> instead of <b>Mark done</b>. Other steps, like 3D and 2D postprocessing, keep the manual tick. Ticking only says "done"; it never moves the planned dates.</p>
 </section>
 
 <section>
   <div class="intro">
     <h2>Fixing a mistake</h2>
-    <p>If someone hands in by mistake, an admin sets the building's status back in the cloud. LumoPlan follows the status log, so the tick disappears by itself and nobody has to undo anything in LumoPlan.</p>
+    <p>From the switch-over day on: if someone hands in by mistake, an admin sets the building's status back in the cloud. LumoPlan follows the status log, so the tick disappears by itself and nobody has to undo anything in LumoPlan.</p>
   </div>
   <p class="col muted">This needed the new "corrections check" status. Before, handing back and undoing a hand-in were the same status change, and moving the status back added a second tick instead of removing one.</p>
 </section>
@@ -600,13 +601,13 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
 
 <section>
   <div class="intro">
-    <h2>Before it goes live</h2>
+    <h2>Release</h2>
   </div>
   <ol class="steps">
-    <li><p><b>Full test run on the test system:</b> set up QC, hand in with problems, hand back, approve into each kind of next stage, change the checker. Check every email and the LumoPlan board.</p></li>
-    <li><p><b>Release the Lumoview server first.</b> It carries the emails, the new statuses and the "change checker" handling.</p></li>
-    <li><p><b>Release LumoPlan, then LumoCad.</b> LumoPlan answers the approve window's question and can plan room books. LumoCad's Hand in buttons then go live.</p></li>
-    <li><p><b>Switch LumoPlan over on the go-live day.</b> One date setting makes QC steps complete only through the hand-in from that day on. Earlier ticks stay as they are.</p></li>
+    <li class="done"><p><b>Lumoview server released</b> (8 October). It carries the emails, the new statuses and the "change checker" handling.</p></li>
+    <li class="done"><p><b>LumoPlan, then LumoCad released</b> (8 October). LumoPlan answers the approve window's question and can plan room books; LumoCad's Hand in buttons are live.</p></li>
+    <li><p><b>First real QC round:</b> set up QC, hand in with problems, hand back, approve into each kind of next stage, change the checker. Check every email and the LumoPlan board.</p></li>
+    <li><p><b>Switch LumoPlan over on the go-live day.</b> Until then the board ticks QC steps the old way. One date setting makes QC steps complete only through the hand-in from that day on. Earlier ticks stay as they are.</p></li>
     <li><p><b>Tell the team</b> how the round works now, which email to expect at each step, and that room books are planned in LumoPlan.</p></li>
   </ol>
 </section>
