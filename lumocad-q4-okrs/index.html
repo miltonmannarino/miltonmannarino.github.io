@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LumoCad Q4 OKRs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@500&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root {
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --fg: #18202c;
+  --muted: #566173;
+  --line: #d3d9e2;
+  --soft: #e9edf3;
+  --accent: #2453c0;
+  --accent-soft: #e6ecfa;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11151c; --surface: #19202a; --fg: #e5e9f0; --muted: #9ba6b6;
+    --line: #2d3644; --soft: #212a36; --accent: #86a8ff; --accent-soft: #1f2a44;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11151c; --surface: #19202a; --fg: #e5e9f0; --muted: #9ba6b6;
+  --line: #2d3644; --soft: #212a36; --accent: #86a8ff; --accent-soft: #1f2a44;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 17px; line-height: 1.6;
+  padding-inline: 16px; padding-block: 48px 80px;
+}
+main { max-width: 820px; margin: 0 auto; display: grid; gap: 56px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 2.6rem); line-height: 1.15; font-weight: 700; }
+h2 { font-size: 1.6rem; line-height: 1.25; font-weight: 700; }
+h3 { font-size: 1.08rem; line-height: 1.35; font-weight: 600; }
+p { margin: 0; }
+a { color: var(--accent); }
+.eyebrow {
+  font-family: var(--display); font-size: 0.78rem; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+}
+header.top { display: grid; gap: 16px; }
+.lede { color: var(--muted); max-width: 64ch; }
+
+/* dependency chain */
+.chain {
+  display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; gap: 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px;
+}
+.chain .stack { display: grid; gap: 8px; }
+.node {
+  display: block; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--bg); text-decoration: none; color: var(--fg);
+}
+.node:hover, .node:focus-visible { border-color: var(--accent); outline: none; }
+.node b { font-family: var(--display); font-weight: 600; display: block; }
+.node span { font-size: 0.86rem; color: var(--muted); }
+.arrow { font-family: var(--mono); color: var(--muted); font-size: 1.1rem; }
+@media (max-width: 640px) {
+  .chain { grid-template-columns: 1fr; }
+  .arrow { transform: rotate(90deg); justify-self: center; }
+}
+
+/* OKR sections */
+section.okr { display: grid; gap: 22px; padding-top: 40px; border-top: 1px solid var(--line); scroll-margin-top: 16px; }
+.okr-head { display: grid; gap: 10px; }
+.meta { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: 0.95rem; }
+.meta dt { color: var(--muted); }
+.meta dd { margin: 0; }
+.objective { max-width: 68ch; }
+
+ol.results { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; counter-reset: r; }
+ol.results > li {
+  display: grid; grid-template-columns: 2.6rem 1fr; gap: 0 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 18px 18px 14px;
+}
+.num {
+  font-family: var(--mono); font-weight: 500; font-size: 0.95rem; color: var(--accent);
+  font-variant-numeric: tabular-nums; padding-top: 2px; text-align: right;
+}
+.body { display: grid; gap: 8px; min-width: 0; }
+.body ul { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; }
+.body li::marker { color: var(--muted); }
+.done {
+  font-size: 0.94rem; background: var(--accent-soft); border-radius: 6px; padding: 8px 10px;
+}
+.done b { font-family: var(--display); font-weight: 600; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); margin-right: 6px; }
+.note { font-size: 0.94rem; color: var(--muted); }
+.term { font-style: italic; }
+footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--line); padding-top: 20px; }
+@media (max-width: 480px) {
+  ol.results > li { grid-template-columns: 1fr; padding: 16px; }
+  .num { text-align: left; padding-bottom: 4px; }
+}
+</style>
+
+</head>
+<body>
+<main>
+  <header class="top">
+    <div class="eyebrow">OKR period 2026-Q4 · Software</div>
+    <h1>LumoCad Q4 OKRs</h1>
+    <p class="lede">Project results for four key results: Staircase, Roof, FloorPlan and Room Book. Together they get us to one goal for the quarter: a complete room book, delivered on top of a finished floor plan, modelled end to end in LumoCad.</p>
+    <nav class="chain" aria-label="Dependencies between the key results">
+      <div class="stack">
+        <a class="node" href="#staircase"><b>Staircase</b><span>8 results</span></a>
+        <a class="node" href="#roof"><b>Roof</b><span>9 results</span></a>
+      </div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <a class="node" href="#floorplan"><b>FloorPlan</b><span>9 results</span></a>
+      <div class="arrow" aria-hidden="true">→</div>
+      <a class="node" href="#roombook"><b>Room Book</b><span>8 results</span></a>
+    </nav>
+    <p class="note">Stairs and roof are the two blockers for the floor plan. The floor plan is the input for the room book. Work that belongs to the <span class="term">2026-Q4 End2End LumoCad Workflow</span> key result (multi-slab, drone model, tapered boundaries, BGF assignment tool, 3D crop box) is listed as a dependency and not repeated here.</p>
+  </header>
+
+  <!-- STAIRCASE -->
+  <section class="okr" id="staircase">
+    <div class="okr-head">
+      <div class="eyebrow">Key result</div>
+      <h2>2026-Q4 Staircase</h2>
+      <dl class="meta">
+        <dt>Team</dt><dd>Milton Mannarino, Piotr Podziemski</dd>
+        <dt>Depends on</dt><dd>Multi-slab support in LumoCad; 3D crop box (both End2End LumoCad Workflow)</dd>
+      </dl>
+    </div>
+    <p class="objective">The core stair workflow is in good shape: in recent modelling, the automatic fine-tuning had nothing left to correct after the stairs were placed. This quarter closes the remaining gaps, so that any staircase we meet in our buildings can be modelled, edited and exported to 2D without manual rework.</p>
+    <ol class="results">
+      <li><div class="num">1</div><div class="body">
+        <h3>Stair work merged and attached to slabs</h3>
+        <p>The stair features built so far (winding stairs, start and end landings, attaching to a floor or a destination level, detached stairs with a custom height, offsets from base and top) are merged into production once multi-slab support is live. The bottom and top of a stair can then be attached to a specific slab within a storey, not only to the storey itself.</p>
+        <p class="done"><b>Done when</b>The stair features are in production and a stair between two slabs of the same storey models and exports correctly.</p>
+      </div></li>
+      <li><div class="num">2</div><div class="body">
+        <h3>Stairs that span several floors</h3>
+        <p>A stair that spans several floors repeats its turn pattern on every floor again, a behaviour lost in a recent refactor. Today a higher target floor stretches the stair instead. The continuous single run stays available as an explicit option, for cases like a shopping hall stair that runs from the ground floor to the second floor in one flight.</p>
+        <p class="done"><b>Done when</b>A U-shaped stair over four storeys repeats its turn per floor, and the continuous run can be chosen per stair.</p>
+      </div></li>
+      <li><div class="num">3</div><div class="body">
+        <h3>Editing stairs after placement</h3>
+        <ul>
+          <li>Stairs can be selected in the 3D view as well as the 2D top view, and the selection is shown in all views.</li>
+          <li>A placed stair can be rotated (shortcut R), moved and aligned without drawing it again.</li>
+          <li>The position of the first step is set as an exact distance to the wall on plan. Modellers can then check clearances against the section scans, for example whether two people can pass.</li>
+        </ul>
+        <p class="done"><b>Done when</b>Rotate, move and align work in 2D and 3D, and the first-step distance is a numeric parameter.</p>
+      </div></li>
+      <li><div class="num">4</div><div class="body">
+        <h3>Flexible flights and landings</h3>
+        <ul>
+          <li>One straight stair type with a "number of landings" parameter replaces the separate two-run type, so stairs with three or more runs can be built the same way.</li>
+          <li>U-shaped and half-winding stairs get a parameter for the stair eye (<span class="term">Treppenauge</span>), the gap between the two flights.</li>
+          <li>Landings with irregular shapes are trimmed by the surrounding walls instead of being drawn point by point.</li>
+          <li>A single step can be selected and widened, for stairs whose first steps are wider than the rest.</li>
+        </ul>
+        <p class="done"><b>Done when</b>Each of these cases is modelled on a test building without workarounds.</p>
+      </div></li>
+      <li><div class="num">5</div><div class="body">
+        <h3>New stair types</h3>
+        <p>Spiral stairs, radial stairs, S-shaped stairs and winding stairs with custom angles join the existing types, in the stair tool and in the 2D and 3D export. Ramps (typically 6 % slope, with turns and landings) are the stretch goal for a full score.</p>
+        <p class="done"><b>Done when</b>Spiral, radial, S-shaped and custom-angle winding stairs can be placed, edited and exported.</p>
+      </div></li>
+      <li><div class="num">6</div><div class="body">
+        <h3>Slab openings follow the stair</h3>
+        <p>A stair automatically cuts an opening into the slab above. That opening is now removed when the stair is deleted, and it can be adjusted with control points on its edges. No orphaned openings remain in the model.</p>
+        <p class="done"><b>Done when</b>Deleting a stair leaves the slab closed, and an opening can be reshaped by its edge points.</p>
+      </div></li>
+      <li><div class="num">7</div><div class="body">
+        <h3>Clear stair representation in 3D and 2D</h3>
+        <ul>
+          <li>Simple railings are shown in LumoCad. The export already writes railings in 2D and 3D.</li>
+          <li>The top and bottom faces of stairs are modelled properly in 3D, with improved colours.</li>
+          <li>Stair thickness is shown in sections and in 3D.</li>
+          <li>The walking line arrow ends at the diagonal cut line, and on landings it sits where the two flight paths meet.</li>
+          <li>Stairs get their own visibility toggle, separate from the walls toggle.</li>
+        </ul>
+        <p class="done"><b>Done when</b>All five points are in production.</p>
+      </div></li>
+      <li><div class="num">8</div><div class="body">
+        <h3>Validated against the common stair types</h3>
+        <p>Every configuration in the modelling team's stair test set is modelled on a test building and exported to the floor plan with the correct walking line, cut line and railings. Djunejt Ljapo signs off on the result.</p>
+        <p class="done"><b>Done when</b>The full test set passes and is signed off by the modelling team.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <!-- ROOF -->
+  <section class="okr" id="roof">
+    <div class="okr-head">
+      <div class="eyebrow">Key result</div>
+      <h2>2026-Q4 Roof (including inner roof)</h2>
+      <dl class="meta">
+        <dt>Team</dt><dd>Milton Mannarino</dd>
+        <dt>Depends on</dt><dd>Drone model support, tapered boundaries for attic floors, multi-slab support (End2End LumoCad Workflow)</dd>
+      </dl>
+    </div>
+    <p class="objective">Simple roofs based on a slab already work in a single click. Custom roofs still lack precision: points are placed without distances to walls or edges, and editing a surface can create geometry the modeller did not intend. This quarter makes custom roofs precise and predictable, so the team can model the roof shapes we meet on site and trust the inner roof that attic heights, Wohnfläche and BGF are calculated from.</p>
+    <ol class="results">
+      <li><div class="num">1</div><div class="body">
+        <h3>Roof editing never changes other elements</h3>
+        <p>Moving roof nodes no longer moves room boundaries on the same or other floors. The fix is covered by an automated regression test so the bug cannot come back.</p>
+        <p class="done"><b>Done when</b>The regression test runs on every change and no boundary corruption is reported for the rest of the quarter.</p>
+      </div></li>
+      <li><div class="num">2</div><div class="body">
+        <h3>Predictable rules for editing roof surfaces</h3>
+        <p>A clear set of rules decides how nodes, edges, ridges, eaves and hips can move:</p>
+        <ul>
+          <li>Nodes move along their edges and keep the face flat.</li>
+          <li>Edges move horizontally. Raising or lowering an edge slides it along the adjacent edges.</li>
+          <li>A face only splits into two triangles when the modeller deliberately moves a node off its plane.</li>
+          <li>Faces that are not flat are marked visibly in 3D, not only in the section view.</li>
+        </ul>
+        <p>The rules are defined with the modelling team after reviewing how Revit and similar tools handle roofs. The aim is a workflow that is easier than Revit's.</p>
+        <p class="done"><b>Done when</b>The rules are agreed, documented and implemented, and a roof walkthrough session with the modelling team has taken place.</p>
+      </div></li>
+      <li><div class="num">3</div><div class="body">
+        <h3>Precise roof placement</h3>
+        <ul>
+          <li>Pick lines: select a wall or slab edge, enter an overhang (for example 1 m), and the eave is placed at that offset with a live preview.</li>
+          <li>Live distances to walls, edges and the slab while a roof outline is drawn point by point.</li>
+          <li>Nodes align horizontally, vertically and at 45°, the same way boundary snapping works.</li>
+          <li>The roof can follow the full slab outline or specific walls, for slabs that extend past the roof edge.</li>
+        </ul>
+        <p class="done"><b>Done when</b>A custom roof outline can be placed to the centimetre without measuring by hand.</p>
+      </div></li>
+      <li><div class="num">4</div><div class="body">
+        <h3>Cutting and extending roofs</h3>
+        <ul>
+          <li>Part of a roof can be cut away with a rectangle, as in Revit.</li>
+          <li>A single roof face can be extended downward, for example a lower shed-style extension.</li>
+          <li>A building can have several roofs, combined into shapes such as hip-and-valley roofs.</li>
+        </ul>
+        <p class="done"><b>Done when</b>All three operations are available and survive saving and reloading.</p>
+      </div></li>
+      <li><div class="num">5</div><div class="body">
+        <h3>The right references in every view</h3>
+        <ul>
+          <li>While creating a roof, the slab outline and the walls are visible.</li>
+          <li>The roof view shows the rooms and walls below as dashed lines by default, following the usual 2D drawing convention, with a toggle to hide them.</li>
+          <li>The wall and boundary views hide the roof by default, with a toggle to show it.</li>
+          <li>Roof mode keeps a clean 3D view: boundary visualisations stay hidden unless switched on, and the view options match normal 3D navigation.</li>
+        </ul>
+        <p class="done"><b>Done when</b>These defaults and toggles are live in all three views.</p>
+      </div></li>
+      <li><div class="num">6</div><div class="body">
+        <h3>Ceiling slope as a room property</h3>
+        <p>Rooms get a ceiling slope property (angle, optionally direction), taken from the section measurements and entered in the room panel or the section view. The roof view overlays each room with its slope and direction, and flags any room where the modelled roof does not match the measured slope.</p>
+        <p class="done"><b>Done when</b>Slopes can be entered per room and mismatches with the roof are highlighted in the roof view.</p>
+      </div></li>
+      <li><div class="num">7</div><div class="body">
+        <h3>Clean roof and dormer geometry</h3>
+        <ul>
+          <li>Roof corners have correct geometry and roof meshes no longer intersect.</li>
+          <li>Dormers cut the roof in 3D the same way they do in 2D, with the correct section representation.</li>
+          <li>Dormer windows have their own dimensions, including several windows per dormer.</li>
+          <li>Roofs and dormers can be selected in 3D and deleted with Delete or Backspace.</li>
+        </ul>
+        <p class="done"><b>Done when</b>The test roofs show no geometry errors in 3D, section or 2D.</p>
+      </div></li>
+      <li><div class="num">8</div><div class="body">
+        <h3>Coverage of the common roof shapes</h3>
+        <p>The roof tool is validated against the shapes we meet on site: gable, hip, M-shaped, jerkinhead (<span class="term">Krüppelwalm</span>), Dutch gable, hip-and-valley and gambrel (<span class="term">Mansard</span>) roofs, with dormers. A score of 7 means every shape in the common part of the roof test set can be modelled; a score of 10 adds the advanced part. Curved roofs are out of scope and are simplified to straight segments.</p>
+        <p class="done"><b>Done when</b>The modelling team has modelled the test set and signed off.</p>
+      </div></li>
+      <li><div class="num">9</div><div class="body">
+        <h3>Inner roof and drone model as reference</h3>
+        <ul>
+          <li>The inner roof is derived from the roof and its thickness, and serves as the ceiling of attic rooms. It feeds room heights, Wohnfläche and BGF, together with the tapered boundaries.</li>
+          <li>The drone model (AirTM OBJ) and the FastFusion link are fetched automatically from the platform for each building and shown as a 3D reference in roof mode, including openings.</li>
+        </ul>
+        <p class="done"><b>Done when</b>Attic room heights come from the inner roof, and the drone model appears in roof mode without a manual upload.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <!-- FLOORPLAN -->
+  <section class="okr" id="floorplan">
+    <div class="okr-head">
+      <div class="eyebrow">Key result</div>
+      <h2>2026-Q4 FloorPlan</h2>
+      <dl class="meta">
+        <dt>Team</dt><dd>Milton Mannarino</dd>
+        <dt>Depends on</dt><dd>2026-Q4 Staircase, 2026-Q4 Roof, BGF / flat area assignment tool (End2End LumoCad Workflow)</dd>
+      </dl>
+    </div>
+    <p class="objective">A complete, deliverable 2D set produced fully in LumoCad: floor plans, sections, elevations, area plans and marketing plans, exported to PDF and DWG without going through Revit or AutoCAD. The floor plan is also the input for the room book.</p>
+    <ol class="results">
+      <li><div class="num">1</div><div class="body">
+        <h3>Stairs and roofs drawn correctly in 2D</h3>
+        <p>Stairs show the walking line, railings and cut line according to drawing standards. The roof outline and the walls under sloped ceilings are drawn as dashed lines, as is conventional in 2D plans.</p>
+        <p class="done"><b>Done when</b>Stairs and roofs from the Staircase and Roof test sets appear correctly on the exported plans.</p>
+      </div></li>
+      <li><div class="num">2</div><div class="body">
+        <h3>Clean elevations and sections</h3>
+        <ul>
+          <li>Elevations show no line where two walls, or a wall and a slab, are flush.</li>
+          <li>Every line in a section belongs to a known element and can be traced back to it. Stray lines of unknown origin are removed.</li>
+        </ul>
+        <p class="done"><b>Done when</b>The elevations and sections of a reference building need no manual clean-up.</p>
+      </div></li>
+      <li><div class="num">3</div><div class="body">
+        <h3>Dimensions you can rely on</h3>
+        <ul>
+          <li>A dimension snapped to a crossing stays attached to it and moves when the crossing moves.</li>
+          <li>Dimensions snap to crossings without holding Shift.</li>
+          <li>Automatic dimension chains leave out door widths.</li>
+          <li>Automatic dimensions no longer snap to elements they should ignore.</li>
+        </ul>
+        <p class="done"><b>Done when</b>The dimensions on a reference building stay correct after walls are moved, with no manual corrections.</p>
+      </div></li>
+      <li><div class="num">4</div><div class="body">
+        <h3>Sheet dimensions separate from modelling measurements</h3>
+        <p>Modellers measure many small distances while modelling. Those measurements stay in the modelling workspace and never appear on 2D sheets, so nobody has to clean them up before delivery.</p>
+        <p class="done"><b>Done when</b>Sheets only show dimensions placed on them, and no modelling measurement reaches a PDF or DWG.</p>
+      </div></li>
+      <li><div class="num">5</div><div class="body">
+        <h3>Title block and PDF export</h3>
+        <ul>
+          <li>Title block text never overlaps, and the storey field (<span class="term">Geschoss</span>) is filled correctly on section and elevation sheets.</li>
+          <li>A Revision Index field is added to the title block.</li>
+          <li>The PDF export can switch the title block on or off. The need is confirmed with Elias.</li>
+        </ul>
+        <p class="done"><b>Done when</b>Every sheet type exports with a correct, readable title block.</p>
+      </div></li>
+      <li><div class="num">6</div><div class="body">
+        <h3>Automatic marketing plans</h3>
+        <ul>
+          <li>Rooms that belong to the same apartment or group are placed on their own marketing sheet automatically.</li>
+          <li>The crop area is generated along the outer edges of the surrounding walls instead of being drawn by hand.</li>
+          <li>Area plans and marketing plans each appear as their own pages instead of being stacked in one category.</li>
+        </ul>
+        <p class="done"><b>Done when</b>A building with several apartments produces one marketing sheet per apartment in one step.</p>
+      </div></li>
+      <li><div class="num">7</div><div class="body">
+        <h3>Areas on the plan</h3>
+        <p>Rooms are labelled with their areas. Measured and not-measured areas, taken from the BGF assignment tool, are shown distinctly. Balconies are counted with the agreed factor of 0.5. The title block's BGF (DIN 277) and NRF (DIN 277) fields are filled in automatically per sheet.</p>
+        <p class="done"><b>Done when</b>Area labels and title block totals match the model for a reference building.</p>
+      </div></li>
+      <li><div class="num">8</div><div class="body">
+        <h3>DWG and DXF export for building services</h3>
+        <p>Building services symbols (lights, communication devices and similar families from TGA V2) export directly to DWG and DXF, each symbol family on its own layer, with layer names and colours matching our reference drawing from the clinic refurbishment project. This replaces the previous route through Revit and AutoCAD.</p>
+        <p class="done"><b>Done when</b>A TGA plan opens in AutoCAD with the expected layers and colours and needs no rework.</p>
+      </div></li>
+      <li><div class="num">9</div><div class="body">
+        <h3>One building delivered fully from LumoCad</h3>
+        <ul>
+          <li>The modelling team's floor plan review is collected into one gap list, and every item on it is closed.</li>
+          <li>Plans load and delete quickly and render without a washed-out look.</li>
+          <li>Handing a building in to 2D quality control works end to end.</li>
+          <li>A real building's 2D set is delivered without using Revit or AutoCAD.</li>
+        </ul>
+        <p class="done"><b>Done when</b>One customer building has been delivered with its full 2D set produced in LumoCad.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <!-- ROOM BOOK -->
+  <section class="okr" id="roombook">
+    <div class="okr-head">
+      <div class="eyebrow">Key result</div>
+      <h2>2026-Q4 Room Book (incl. Wohnfläche, BGF)</h2>
+      <dl class="meta">
+        <dt>Team</dt><dd>Milton Mannarino</dd>
+        <dt>Depends on</dt><dd>2026-Q4 FloorPlan, 2026-Q4 Roof (inner roof, ceiling slope), BGF assignment tool and multi-slab support (End2End LumoCad Workflow)</dd>
+      </dl>
+    </div>
+    <p class="objective">A complete room book generated from a finished floor plan: every level, apartment and room with its areas, including Wohnfläche and BGF. The first customer delivery is the Gewobag handover room book.</p>
+    <ol class="results">
+      <li><div class="num">1</div><div class="body">
+        <h3>One agreed room book format</h3>
+        <p>The modelling team's Excel template (level, apartment, room, areas) and Alexandra's existing format are combined into one schema, approved internally. Every room book we produce follows it.</p>
+        <p class="done"><b>Done when</b>The template is approved and shared with the team.</p>
+      </div></li>
+      <li><div class="num">2</div><div class="body">
+        <h3>Gewobag handover room book export</h3>
+        <p>The checkpoints collected in the measurement app are exported into the agreed Excel format. The export is built and tested on test data now, so the format is proven before real project data arrives. A first preview is reviewed with Rio in October.</p>
+        <p class="done"><b>Done when</b>Rio has approved the preview and the export runs on real Gewobag data.</p>
+      </div></li>
+      <li><div class="num">3</div><div class="body">
+        <h3>Complete room data</h3>
+        <p>Every room carries what the room book needs: the apartment or unit it belongs to, its use, its ceiling height and, where relevant, its ceiling slope from the roof model. All of it is available to the export.</p>
+        <p class="done"><b>Done when</b>No room in a finished model is missing a field the room book requires.</p>
+      </div></li>
+      <li><div class="num">4</div><div class="body">
+        <h3>Wohnfläche according to WoFlV</h3>
+        <p>Living area is calculated according to the Wohnflächenverordnung. Under sloped ceilings, floor area counts in full from 2 m clear height, at half between 1 m and 2 m, and not at all below 1 m, using the inner roof. Balconies and terraces are counted with the agreed factor. Totals are given per room, per apartment and per building.</p>
+        <p class="done"><b>Done when</b>The calculated Wohnfläche of a reference attic flat matches a manual calculation.</p>
+      </div></li>
+      <li><div class="num">5</div><div class="body">
+        <h3>BGF and NRF per storey according to DIN 277</h3>
+        <p>Gross floor area (BGF) and net room area (NRF) are calculated per storey from the multi-slab model and the BGF assignment tool. Measured and not-measured areas are flagged, and balcony slabs are counted separately.</p>
+        <p class="done"><b>Done when</b>BGF and NRF per storey appear in the room book and match the floor plan title blocks.</p>
+      </div></li>
+      <li><div class="num">6</div><div class="body">
+        <h3>One-click generation from the floor plan</h3>
+        <p>A finished floor plan produces the room book in one step, with no manual work in Excel. Mapping onto a customer's template is AI-assisted, so a new customer format can be added quickly.</p>
+        <p class="done"><b>Done when</b>The room book of a finished building is generated in one step and needs no manual edits.</p>
+      </div></li>
+      <li><div class="num">7</div><div class="body">
+        <h3>Consistency checks before delivery</h3>
+        <p>Before a room book goes out, its totals are checked automatically against the floor plan area labels and the BGF and NRF in the title blocks. Any difference is listed so it can be fixed before delivery.</p>
+        <p class="done"><b>Done when</b>Every generated room book comes with a consistency report.</p>
+      </div></li>
+      <li><div class="num">8</div><div class="body">
+        <h3>Room book delivered to the customer</h3>
+        <p>The Gewobag room book is delivered end to end from a finished floor plan. For a full score, a second building is delivered the same way with no manual edits.</p>
+        <p class="done"><b>Done when</b>The Gewobag room book has been accepted by the customer.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <footer>Draft of 8 October 2026 · Milton Mannarino</footer>
+</main>
+</body>
+</html>
