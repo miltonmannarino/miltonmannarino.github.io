@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lumoview Work Hub</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: app shell. Sidebar (nav, sources, domain filter) + one working pane per screen; drafting-grid ground ties it to the CAD world. */
+:root {
+  --bg: #f3f5f8;
+  --grid: rgba(36, 87, 214, .045);
+  --surface: #ffffff;
+  --surface-2: #f8f9fb;
+  --ink: #16202c;
+  --muted: #5b6676;
+  --faint: #8a94a3;
+  --line: #dde2ea;
+  --accent: #2457d6;
+  --accent-soft: #e6edfc;
+  --ok: #217a4b;  --ok-soft: #e2f3e9;
+  --warn: #9a6400; --warn-soft: #fbf0d9;
+  --crit: #b8382a; --crit-soft: #fbe6e2;
+  --shadow: 0 1px 2px rgba(22,32,44,.06), 0 4px 16px rgba(22,32,44,.05);
+  --f-ui: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e131a; --grid: rgba(111,149,255,.05); --surface: #161d27; --surface-2: #1b2430; --ink: #e5eaf1; --muted: #9aa6b7; --faint: #6f7b8c; --line: #273243;
+  --accent: #7397ff; --accent-soft: #1d2a47; --ok: #5cc28a; --ok-soft: #15291f; --warn: #e0a83d; --warn-soft: #2c2312; --crit: #ef7b6b; --crit-soft: #321a17;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0e131a; --grid: rgba(111,149,255,.05); --surface: #161d27; --surface-2: #1b2430; --ink: #e5eaf1; --muted: #9aa6b7; --faint: #6f7b8c; --line: #273243;
+  --accent: #7397ff; --accent-soft: #1d2a47; --ok: #5cc28a; --ok-soft: #15291f; --warn: #e0a83d; --warn-soft: #2c2312; --crit: #ef7b6b; --crit-soft: #321a17;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25); color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--ink); font: 14px/1.5 var(--f-ui);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.mono { font-family: var(--f-mono); font-size: 12px; }
+
+.shell { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100%; }
+.side {
+  background: var(--surface); border-right: 1px solid var(--line);
+  padding: 20px 14px; display: flex; flex-direction: column; gap: 22px;
+  position: sticky; top: env(safe-area-inset-top, 0px); height: 100vh; overflow-y: auto;
+}
+.brand { display: flex; align-items: center; gap: 10px; padding: 0 6px; }
+.brand-mark { width: 26px; height: 26px; border-radius: 6px; background: var(--accent); display: grid; place-items: center; }
+.brand-mark svg { width: 16px; height: 16px; }
+.brand b { font-size: 15px; letter-spacing: -.01em; }
+.brand small { display: block; color: var(--faint); font-size: 11px; line-height: 1.2; }
+.nav { display: flex; flex-direction: column; gap: 2px; }
+.nav button {
+  display: flex; align-items: center; gap: 10px; border: 0; background: none; text-align: left;
+  padding: 8px 10px; border-radius: 7px; color: var(--muted); font-weight: 500;
+}
+.nav button svg { width: 16px; height: 16px; flex: none; }
+.nav button:hover { background: var(--surface-2); color: var(--ink); }
+.nav button[aria-current="page"] { background: var(--accent-soft); color: var(--accent); }
+.nav .count { margin-left: auto; font: 500 11px var(--f-mono); background: var(--accent); color: var(--surface); border-radius: 10px; padding: 1px 7px; }
+.nav .count.quiet { background: var(--line); color: var(--muted); }
+.side h4 { margin: 0 0 8px; padding: 0 6px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 600; }
+.sources { display: flex; flex-direction: column; gap: 7px; padding: 0 6px; }
+.src-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+.src-row .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); flex: none; }
+.src-row .when { margin-left: auto; color: var(--faint); font: 11px var(--f-mono); }
+.scan { margin: 4px 6px 0; border: 1px solid var(--line); background: var(--surface-2); border-radius: 7px; padding: 6px 10px; font-size: 12.5px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.scan:hover { border-color: var(--accent); color: var(--accent); }
+.scan svg { width: 14px; height: 14px; }
+.scan.spin svg { animation: spin .9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.side .filters { display: flex; flex-wrap: wrap; gap: 5px; padding: 0 6px; }
+.side .foot { margin-top: auto; padding: 0 6px; font-size: 11px; color: var(--faint); line-height: 1.45; }
+
+main { min-width: 0; padding-block: 24px 64px; padding-left: max(28px, env(safe-area-inset-left, 0px)); padding-right: max(28px, env(safe-area-inset-right, 0px)); }
+.screen { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+.head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.head h1 { margin: 0; font-size: 24px; letter-spacing: -.02em; text-wrap: balance; }
+.head p { margin: 2px 0 0; color: var(--muted); max-width: 68ch; }
+.sample { font: 500 10.5px var(--f-mono); color: var(--warn); background: var(--warn-soft); border-radius: 4px; padding: 2px 6px; text-transform: uppercase; letter-spacing: .05em; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 7px; padding: 7px 12px; font-weight: 500; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover { border-color: var(--faint); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.ghost { border-color: transparent; background: none; color: var(--muted); }
+.btn.ghost:hover { color: var(--ink); background: var(--surface-2); }
+.btn svg { width: 14px; height: 14px; }
+
+.chip { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 2px 9px; font-size: 12px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+button.chip:hover { border-color: var(--faint); }
+.chip.on { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+.chip.add { border-style: dashed; background: none; }
+.chip svg { width: 12px; height: 12px; }
+.link { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; max-width: 100%; }
+.link svg { width: 12px; height: 12px; color: var(--muted); flex: none; }
+.link span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 5px; padding: 1px 7px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.s-not { color: var(--muted); background: var(--surface-2); border: 1px solid var(--line); }
+.s-prog { color: var(--accent); background: var(--accent-soft); }
+.s-rev { color: var(--warn); background: var(--warn-soft); }
+.s-done { color: var(--ok); background: var(--ok-soft); }
+.flag { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; border-radius: 5px; padding: 1px 7px; white-space: nowrap; }
+.flag svg { width: 12px; height: 12px; }
+.flag.conflict { color: var(--crit); background: var(--crit-soft); }
+.flag.stale, .flag.blocked { color: var(--warn); background: var(--warn-soft); }
+.flag.agree { color: var(--ok); background: var(--ok-soft); }
+
+/* Inbox */
+.inbox { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 16px; align-items: start; }
+.notes-list { padding: 8px; display: flex; flex-direction: column; gap: 2px; }
+.notes-list button { border: 0; background: none; text-align: left; border-radius: 7px; padding: 9px 10px; display: flex; flex-direction: column; gap: 2px; }
+.notes-list button:hover { background: var(--surface-2); }
+.notes-list button.sel { background: var(--accent-soft); }
+.notes-list b { font-size: 13px; font-weight: 600; }
+.notes-list small { font-size: 11.5px; color: var(--muted); }
+.notes-list .new-paste { border: 1px dashed var(--line); color: var(--muted); flex-direction: row; align-items: center; gap: 6px; justify-content: center; font-size: 12.5px; margin-top: 6px; }
+.notes-list .new-paste svg { width: 14px; height: 14px; }
+.editor { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.4fr); }
+.editor > section { min-width: 0; display: flex; flex-direction: column; }
+.editor > section + section { border-left: 1px solid var(--line); }
+.pane-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); min-height: 48px; }
+.pane-head h3 { margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 600; }
+.pane-head .status { font-size: 12px; color: var(--ok); display: inline-flex; align-items: center; gap: 5px; }
+.pane-head .status svg { width: 13px; height: 13px; }
+textarea#raw { flex: 1; min-height: 360px; border: 0; resize: vertical; padding: 14px; background: var(--surface-2); color: var(--ink); font: 12.5px/1.7 var(--f-mono); border-bottom-left-radius: 10px; }
+textarea#raw:focus-visible { outline-offset: -2px; }
+.draft { padding: 6px 14px 14px; display: flex; flex-direction: column; }
+.sec { padding: 14px 0; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+.sec:last-child { border-bottom: 0; }
+.sec h4 { margin: 0; font-size: 15px; letter-spacing: -.01em; }
+.sec p { margin: 0; color: var(--ink); max-width: 68ch; }
+.sec .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.sec .meta .sep { width: 1px; height: 16px; background: var(--line); margin: 0 2px; }
+.sec .prop { font-size: 11.5px; font-weight: 600; color: var(--accent); display: inline-flex; align-items: center; gap: 4px; }
+.sec .prop svg { width: 12px; height: 12px; }
+.sec .notmine { font-size: 11.5px; color: var(--faint); }
+.savebar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 14px; border-top: 1px solid var(--line); background: var(--surface-2); border-radius: 0 0 10px 10px; }
+.savebar .path { color: var(--muted); min-width: 0; overflow-wrap: anywhere; }
+.savebar .spacer { flex: 1; }
+.thinking { display: flex; align-items: center; gap: 10px; color: var(--muted); padding: 40px 0; justify-content: center; }
+.thinking i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 1s ease-in-out infinite; }
+.thinking i:nth-child(2) { animation-delay: .15s; } .thinking i:nth-child(3) { animation-delay: .3s; }
+@keyframes pulse { 0%,100% { opacity: .25; } 50% { opacity: 1; } }
+
+/* Review */
+.review-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 14px; }
+.review-top .tally { display: flex; gap: 14px; font-size: 13px; color: var(--muted); }
+.review-top .tally b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.review-top .spacer { flex: 1; }
+.cards { display: flex; flex-direction: column; gap: 12px; }
+.card { padding: 16px; display: grid; grid-template-columns: 120px minmax(0, 1fr) auto; gap: 16px; align-items: start; transition: opacity .2s; }
+.card.skipped { opacity: .45; }
+.card.accepted { border-color: var(--ok); }
+.kind { display: flex; flex-direction: column; gap: 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .07em; font-weight: 600; color: var(--muted); }
+.kind .ico { width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink); }
+.kind .ico svg { width: 17px; height: 17px; }
+.card h3 { margin: 0 0 4px; font-size: 15px; letter-spacing: -.01em; }
+.card .change { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 6px 0 10px; }
+.card .change .arrow { color: var(--faint); }
+.card .why { margin: 0 0 10px; color: var(--muted); max-width: 70ch; }
+.card .why b { color: var(--ink); font-weight: 600; }
+.evidence { display: flex; flex-direction: column; gap: 6px; }
+.ev { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 10px; font-size: 12.5px; align-items: baseline; }
+.ev .src { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: 11.5px; font-weight: 600; }
+.ev .src svg { width: 12px; height: 12px; }
+.ev q { quotes: "“" "”"; color: var(--ink); }
+.ev code { font: 11.5px var(--f-mono); background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; overflow-wrap: anywhere; }
+.actions { display: flex; flex-direction: column; gap: 6px; min-width: 128px; }
+.actions .btn { justify-content: center; }
+.btn.ok-on { background: var(--ok); border-color: var(--ok); color: var(--surface); }
+
+/* OKRs */
+.goal { padding: 0; overflow: hidden; }
+.goal-head { padding: 14px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+.goal-head h2 { margin: 0; font-size: 15px; letter-spacing: -.01em; }
+.goal-head .eyebrow { font: 500 11px var(--f-mono); color: var(--faint); }
+.kr { border-bottom: 1px solid var(--line); }
+.kr:last-child { border-bottom: 0; }
+.kr-row { width: 100%; border: 0; background: none; text-align: left; padding: 13px 16px; display: grid; grid-template-columns: 18px minmax(0, 2.2fr) minmax(120px, 1fr) minmax(0, 1.4fr) auto; gap: 14px; align-items: center; }
+.kr-row:hover { background: var(--surface-2); }
+.kr-row .caret { width: 14px; height: 14px; color: var(--faint); transition: transform .15s; }
+.kr.open .caret { transform: rotate(90deg); }
+.kr-row .name b { display: block; font-weight: 600; }
+.kr-row .name small { color: var(--muted); font-size: 12px; }
+.bar { display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar .track { height: 6px; border-radius: 3px; background: var(--line); display: flex; overflow: hidden; }
+.bar .track i { display: block; height: 100%; }
+.bar .track .d { background: var(--ok); } .bar .track .r { background: var(--warn); } .bar .track .p { background: var(--accent); }
+.kr-row .last { font-size: 12px; color: var(--muted); min-width: 0; }
+.kr-row .last b { color: var(--ink); font-weight: 500; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kr-row .flags { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
+.kr-body { display: none; padding: 0 16px 14px 48px; }
+.kr.open .kr-body { display: block; }
+.tk-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tk-table th { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.tk-table td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.tk-table tr:last-child td { border-bottom: 0; }
+.tk-table tr.click { cursor: pointer; }
+.tk-table tr.click:hover td { background: var(--surface-2); }
+.scroll-x { overflow-x: auto; }
+
+/* Tickets board */
+.board { display: grid; grid-template-columns: repeat(4, minmax(220px, 1fr)); gap: 12px; align-items: start; }
+.col { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.col h3 { margin: 2px 4px 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); display: flex; align-items: center; justify-content: space-between; }
+.col h3 span { font: 500 11px var(--f-mono); }
+.tcard { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 10px 11px; text-align: left; display: flex; flex-direction: column; gap: 7px; box-shadow: var(--shadow); }
+.tcard:hover { border-color: var(--faint); }
+.tcard b { font-weight: 600; font-size: 13px; line-height: 1.35; }
+.tcard .kr-label { font-size: 11.5px; color: var(--muted); }
+.tcard .row { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.srcdots { display: flex; gap: 4px; margin-left: auto; }
+.srcdots span { width: 20px; height: 20px; border-radius: 5px; display: grid; place-items: center; background: var(--surface-2); border: 1px solid var(--line); color: var(--faint); }
+.srcdots span.has { color: var(--ink); border-color: var(--faint); }
+.srcdots svg { width: 11px; height: 11px; }
+
+/* Drawer */
+.scrim { position: fixed; inset: 0; background: rgba(10,14,20,.35); z-index: 20; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(520px, 100%); background: var(--surface); border-left: 1px solid var(--line); z-index: 21; overflow-y: auto; box-shadow: -10px 0 30px rgba(0,0,0,.12);
+  padding: calc(20px + env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) 20px; display: flex; flex-direction: column; gap: 16px; }
+.drawer h2 { margin: 0; font-size: 18px; letter-spacing: -.01em; text-wrap: balance; }
+.drawer .close { position: absolute; top: calc(14px + env(safe-area-inset-top, 0px)); right: max(14px, env(safe-area-inset-right, 0px)); }
+.verdict { border-radius: 8px; padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start; }
+.verdict svg { width: 16px; height: 16px; flex: none; margin-top: 2px; }
+.verdict.conflict { background: var(--crit-soft); color: var(--ink); } .verdict.conflict svg { color: var(--crit); }
+.verdict.agree { background: var(--ok-soft); } .verdict.agree svg { color: var(--ok); }
+.verdict.stale { background: var(--warn-soft); } .verdict.stale svg { color: var(--warn); }
+.matrix { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.mrow { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.mrow:last-child { border-bottom: 0; }
+.mrow .src { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12px; color: var(--muted); }
+.mrow .src svg { width: 13px; height: 13px; }
+.mrow .says { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.mrow .says small { color: var(--faint); font: 11px var(--f-mono); overflow-wrap: anywhere; }
+.mrow.official { background: var(--surface-2); }
+
+/* Repos */
+.feature { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+.feature-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.feature-head h2 { margin: 0; font-size: 15px; }
+.strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.strip > div { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.strip > div + div { border-left: 1px solid var(--line); }
+.strip .repo { font: 600 12px var(--f-mono); }
+.strip .st { font-size: 12.5px; display: flex; align-items: center; gap: 6px; }
+.strip .st svg { width: 14px; height: 14px; flex: none; }
+.strip .st.ok svg { color: var(--ok); } .strip .st.wait svg { color: var(--warn); }
+.strip small { color: var(--muted); font-size: 11.5px; overflow-wrap: anywhere; }
+.repos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.repo-card { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.repo-head { padding: 12px 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+.repo-head b { font: 600 14px var(--f-mono); }
+.branch { display: inline-flex; align-items: center; gap: 4px; font: 11.5px var(--f-mono); color: var(--muted); background: var(--surface-2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; overflow-wrap: anywhere; }
+.branch svg { width: 11px; height: 11px; }
+.repo-head .when { margin-left: auto; font: 11px var(--f-mono); color: var(--faint); }
+.docs { display: flex; flex-direction: column; }
+.doc { padding: 10px 14px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
+.doc:last-child { border-bottom: 0; }
+.doc .path { font: 12px var(--f-mono); overflow-wrap: anywhere; }
+.doc .line { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--muted); }
+.doc q { color: var(--ink); }
+.commits { padding: 10px 14px; background: var(--surface-2); border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px; margin-top: auto; }
+.commits h5 { margin: 0 0 2px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); }
+.commit { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 8px; font-size: 12px; }
+.commit code { font: 11.5px var(--f-mono); color: var(--muted); }
+.commit span { overflow-wrap: anywhere; }
+.how { padding: 14px 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; font-size: 12.5px; color: var(--muted); }
+.how b { display: block; color: var(--ink); font-size: 13px; margin-bottom: 2px; }
+
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 9px 14px; border-radius: 8px; font-size: 13px; z-index: 30; box-shadow: var(--shadow); max-width: calc(100% - 32px); }
+
+@media (max-width: 1100px) {
+  .card { grid-template-columns: minmax(0, 1fr); }
+  .kind { flex-direction: row; align-items: center; }
+  .actions { flex-direction: row; flex-wrap: wrap; }
+  .board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kr-row { grid-template-columns: 18px minmax(0, 1fr) minmax(110px, .6fr) auto; }
+  .kr-row .last { display: none; }
+}
+@media (max-width: 900px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .side { position: sticky; height: auto; flex-direction: row; align-items: center; gap: 12px; padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); border-right: 0; border-bottom: 1px solid var(--line); overflow-x: auto; z-index: 10; }
+  .side .brand small, .side h4, .side .sources, .side .filters, .side .foot, .side .scan { display: none; }
+  .nav { flex-direction: row; }
+  .nav button { white-space: nowrap; }
+  main { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .inbox { grid-template-columns: minmax(0, 1fr); }
+  .notes-list { flex-direction: row; overflow-x: auto; }
+  .notes-list button { flex: none; }
+  .editor { grid-template-columns: minmax(0, 1fr); }
+  .editor > section + section { border-left: 0; border-top: 1px solid var(--line); }
+  textarea#raw { min-height: 200px; border-radius: 0; }
+  .repos, .how { grid-template-columns: minmax(0, 1fr); }
+  .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .strip > div:nth-child(3) { border-left: 0; }
+  .strip > div:nth-child(n+3) { border-top: 1px solid var(--line); }
+}
+@media (max-width: 560px) {
+  .board { grid-template-columns: minmax(0, 1fr); }
+  .kr-row { grid-template-columns: 18px minmax(0, 1fr); }
+  .kr-row .bar, .kr-row .flags { grid-column: 2; justify-content: flex-start; }
+  .kr-body { padding-left: 16px; }
+  .ev { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .nav button span.lbl { display: none; }
+  .nav button[aria-current="page"] span.lbl { display: inline; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; } }
+body { margin: 0 }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="side">
+    <div class="brand">
+      <div class="brand-mark"><svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6"><path d="M2 13V3h5v4h7v6z"/><path d="M7 7v6"/></svg></div>
+      <div><b>Work Hub</b><small>notes · tickets · OKRs · repos</small></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div>
+      <h4>Sources</h4>
+      <div class="sources">
+        <div class="src-row"><span class="dot"></span>Notion<span class="when">2 min</span></div>
+        <div class="src-row"><span class="dot"></span>Obsidian vault<span class="when">now</span></div>
+        <div class="src-row"><span class="dot"></span>4 repos<span class="when" id="repoWhen">12 min</span></div>
+      </div>
+      <button class="scan" id="scan" type="button"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13.5 8A5.5 5.5 0 1 1 11.9 4.1"/><path d="M13.5 2.5v3h-3"/></svg>Scan repos now</button>
+    </div>
+    <div>
+      <h4>Domains</h4>
+      <div class="filters" id="filters"></div>
+    </div>
+    <p class="foot">Runs on your Mac at localhost:3100. Claude runs through your local Claude Code login. Nothing reaches Notion until you approve it.</p>
+  </aside>
+  <main id="main"></main>
+</div>
+<div id="overlay"></div>
+
+<script>
+const I = {
+  inbox: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 9.5 3.8 3h8.4L14 9.5V13H2z"/><path d="M2 9.5h3.5l1 1.5h3l1-1.5H14"/></svg>',
+  review: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2" width="11" height="12" rx="1.5"/><path d="m5.5 8 1.7 1.7L10.8 6"/></svg>',
+  okr: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="3"/><circle cx="8" cy="8" r=".6" fill="currentColor"/></svg>',
+  tickets: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2.5" width="3.5" height="11" rx="1"/><rect x="6.5" y="2.5" width="3.5" height="7" rx="1"/><rect x="11" y="2.5" width="3" height="9" rx="1"/></svg>',
+  repos: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="4.5" cy="3.5" r="1.5"/><circle cx="4.5" cy="12.5" r="1.5"/><circle cx="11.5" cy="5.5" r="1.5"/><path d="M4.5 5v6M11.5 7c0 3-7 2-7 4"/></svg>',
+  note: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 2h7l3 3v9H3z"/><path d="M5.5 7h5M5.5 10h5"/></svg>',
+  notion: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="11" height="11" rx="2"/><path d="M6 11V5l4 6V5"/></svg>',
+  doc: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 2h10v12H3z"/><path d="M5.5 5.5h1.5m-1.5 3h5m-5 3h5"/><path d="M9 5.5h1.5"/></svg>',
+  git: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="2.5"/><path d="M1.5 8h4M10.5 8h4"/></svg>',
+  branch: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="4.5" cy="3.5" r="1.5"/><circle cx="4.5" cy="12.5" r="1.5"/><circle cx="11.5" cy="5.5" r="1.5"/><path d="M4.5 5v6M11.5 7c0 3-7 2-7 4"/></svg>',
+  kr: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="5.5"/><circle cx="8" cy="8" r="2"/></svg>',
+  plus: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3v10M3 8h10"/></svg>',
+  swap: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h9l-2.5-2.5M13 11H4l2.5 2.5"/></svg>',
+  merge: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="4.5" cy="3.5" r="1.5"/><circle cx="4.5" cy="12.5" r="1.5"/><circle cx="11.5" cy="12.5" r="1.5"/><path d="M4.5 5v6M4.5 5c0 4 7 3 7 6"/></svg>',
+  edit: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10.5 2.5l3 3L6 13H3v-3z"/></svg>',
+  comment: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 3h11v8H7l-3 2.5V11H2.5z"/></svg>',
+  eye: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2"/></svg>',
+  warn: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.5v3M8 11.5v.5"/></svg>',
+  check: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 8.5 3 3 7-7"/></svg>',
+  clock: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.5 1.5"/></svg>',
+  caret: '<svg class="caret" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m6 3.5 4.5 4.5L6 12.5"/></svg>',
+  spark: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 1.5v3M8 11.5v3M1.5 8h3M11.5 8h3M3.5 3.5l2 2M10.5 10.5l2 2M12.5 3.5l-2 2M5.5 10.5l-2 2"/></svg>',
+  arrow: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h10M9 4l4 4-4 4"/></svg>',
+  x: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m4 4 8 8M12 4l-8 8"/></svg>',
+};
+
+const DOMAINS = ["Lumoplan", "LumoCad", "FloorPlan", "Roof", "Stairs", "App"];
+const STATUS = { not: ["Not started", "s-not"], prog: ["In progress", "s-prog"], rev: ["In review", "s-rev"], done: ["Done", "s-done"] };
+const pill = s => `<span class="pill ${STATUS[s][1]}">${STATUS[s][0]}</span>`;
+const FLAG = {
+  conflict: ['conflict', I.warn, 'Sources disagree'],
+  stale: ['stale', I.clock, 'Repo doc may be stale'],
+  blocked: ['blocked', I.warn, 'Blocked'],
+  agree: ['agree', I.check, 'Sources agree'],
+};
+const flag = f => `<span class="flag ${FLAG[f][0]}">${FLAG[f][1]}${FLAG[f][2]}</span>`;
+
+const TICKETS = {
+  "t-qc": { title: "LumoCad QC hand-in: mails, buttons, stage completion", kr: "kr-qc", status: "prog", domains: ["Lumoplan", "LumoCad"], flags: ["conflict"],
+    verdict: ["conflict", "Notion says In progress. Code says most of it is built: the API part is merged and types are released, but the platform branch is not merged yet. Suggest <b>In review</b>."],
+    src: [
+      ["notion", "Notion", "In progress", "Work item · edited 9 days ago"],
+      ["note", "Notes", "“QC hand-in works, used it on two buildings this week”", "Meetings/2026-10-14 Sync w Rio.md"],
+      ["doc", "Repo docs", "“Status (2026-10-06): built, local commits only”", "lumoplan/docs/lumocad-qc-hand-in-2026-10-06.md · 8 days old, behind git"],
+      ["git", "Git", "api: PR #52 feat/qc-hand-in-mails merged · types 1.1.72 released · platform: lumocad/qc-hand-in not merged", "3 repos · last commit today"],
+    ] },
+  "t-qc-fb": { title: "Reply to Rio's open questions on the QC hand-in", kr: "kr-qc", status: "prog", domains: ["Lumoplan"], flags: ["agree"],
+    verdict: ["agree", "Notion, notes and the feedback doc all show this as open."],
+    src: [
+      ["notion", "Notion", "In progress", "Work item · edited 6 days ago"],
+      ["doc", "Repo docs", "“…and what still needs a reply”", "lumoplan/docs/lumocad-qc-rio-feedback-2026-10-07.md"],
+    ] },
+  "t-fallback": { title: "Fallback planning", kr: "kr-plan", status: "prog", domains: ["Lumoplan"], flags: [],
+    verdict: ["agree", "Built on a branch, not tested end to end. Holding the merge until the v1 scope is agreed fits the notes."],
+    src: [
+      ["notion", "Notion", "In progress", "Work item · edited 3 weeks ago"],
+      ["note", "Notes", "“Define a clear version one … and iterate from there”", "Lumoplan/sync w Hendrik 8-oct.md"],
+      ["note", "Notes", "“v1 = one fallback per unit, no automatic reassignment”", "Meetings/2026-10-14 Sync w Rio.md"],
+      ["git", "Git", "Feature branch, not merged", "lumoplan"],
+    ] },
+  "t-measplan": { title: "Measurement plan and fallback cover synced to Notion", kr: "kr-plan", status: "done", domains: ["Lumoplan"], flags: ["agree"],
+    verdict: ["agree", "Done in Notion. The sync databases exist and update."],
+    src: [["notion", "Notion", "Done", "Work item"], ["doc", "Repo docs", "notion-measurement-planning.md", "lumoplan/docs"]] },
+  "t-stair-merge": { title: "Merge stair work once multi-slab support is live", kr: "kr-stairs", status: "prog", domains: ["Stairs", "LumoCad"], flags: ["blocked"],
+    verdict: ["stale", "Step 0 is implemented but waits on multi-slab support. Nothing to change in Notion; worth a KR comment."],
+    src: [
+      ["notion", "Notion", "In progress", "Work item"],
+      ["doc", "Repo docs", "“Status: implemented in the working tree”", "platform/PLAN_STAIRS_V2_step0.md · 5 weeks old"],
+      ["note", "Notes", "Depends on multi-slab support in LumoCad", "2026 4Q OKRs.md"],
+    ] },
+  "t-stair-floors": { title: "Repeat the turn pattern on every floor of a multi-storey stair", kr: "kr-stairs", status: "not", domains: ["Stairs"], flags: [],
+    verdict: ["agree", "No code or notes since the OKR was written."], src: [["notion", "Notion", "Not started", "Work item"], ["note", "Notes", "KR 2 of Staircase", "2026 4Q OKRs.md"]] },
+  "t-stair-edit": { title: "Rotate, move and align placed stairs in 2D and 3D", kr: "kr-stairs", status: "not", domains: ["Stairs"], flags: [],
+    verdict: ["agree", "No code or notes since the OKR was written."], src: [["notion", "Notion", "Not started", "Work item"], ["note", "Notes", "KR 3 of Staircase", "2026 4Q OKRs.md"]] },
+  "t-roof-d": { title: "Roof Phase D: compound roof acceptance pass", kr: "kr-roof", status: "prog", domains: ["Roof"], flags: ["stale"],
+    verdict: ["stale", "The plan says “Nearly complete” but was last touched 3 months ago. Either finish the acceptance pass or update the plan."],
+    src: [
+      ["notion", "Notion", "In progress", "Work item · edited 2 months ago"],
+      ["doc", "Repo docs", "Phase D “Nearly complete” · 29 of 36 checks ticked", "platform/ROOF_EXECUTION_PLAN.md · 3 months old"],
+    ] },
+  "t-roof-q": { title: "File-to-Roof: Airteam OBJ and survey report", kr: "kr-roof", status: "prog", domains: ["Roof"], flags: [],
+    verdict: ["agree", "Groundwork done in July, rest still open."], src: [["notion", "Notion", "In progress", "Work item"], ["doc", "Repo docs", "Phase Q “Done (groundwork, 2026-07-22)”", "platform/ROOF_EXECUTION_PLAN.md"]] },
+  "t-inner-roof": { title: "Inner roof modelling", kr: "kr-roof", status: "not", domains: ["Roof", "LumoCad"], flags: ["blocked"],
+    verdict: ["stale", "Not started. Waits on multi-slab support."], src: [["notion", "Notion", "Not started", "Work item"], ["note", "Notes", "“Inner roof not started, waiting on multi-slab”", "Meetings/2026-10-14 Sync w Rio.md"]] },
+  "t-dwg": { title: "DWG layers for the customer deliverable", kr: "kr-floor", status: "prog", domains: ["FloorPlan"], flags: [],
+    verdict: ["agree", "In progress everywhere."], src: [["notion", "Notion", "In progress", "Work item"], ["note", "Notes", "Customer deliverable, DWG layers and validation kickoff", "2D FloorPlan OKR/"]] },
+  "t-roomtags": { title: "Room name tags on DWG export", kr: "kr-floor", status: "not", domains: ["FloorPlan"], flags: ["conflict"],
+    verdict: ["conflict", "Still Not started in Notion, but it came up again today with a concrete failing case. Suggest moving it to In progress or raising its priority."],
+    src: [["notion", "Notion", "Not started", "Work item"], ["note", "Notes", "“Room tags wrong for bathroom + WC rooms”", "Meetings/2026-10-14 Sync w Rio.md"], ["note", "Notes", "Feedback on room names and tags", "2D FloorPlan OKR/Alexandra feedback on Roomnames -tags.md"]] },
+};
+
+const OKRS = [
+  { goal: "End2End LumoCad Workflow", prio: "Very High", krs: [
+    { id: "kr-stairs", name: "Staircase", team: "Milton, Piotr", domains: ["Stairs", "LumoCad"], last: ["LumoCad OKR sync", "2 Oct"], flags: ["blocked"] },
+    { id: "kr-roof", name: "Roof (including inner roof)", team: "Milton, Piotr", domains: ["Roof", "LumoCad"], last: ["Sync w Rio", "today"], flags: ["stale", "blocked"] },
+    { id: "kr-floor", name: "FloorPlan", team: "Milton", domains: ["FloorPlan"], last: ["Sync w Rio", "today"], flags: ["conflict"] },
+  ] },
+  { goal: "LumoPlan only (no Google Sheets, no Notion, no Drive)", prio: "Normal", krs: [
+    { id: "kr-plan", name: "Plan measurements only in LumoPlan", team: "Milton, Hendrik", domains: ["Lumoplan"], last: ["Sync w Rio", "today"], flags: [] },
+    { id: "kr-qc", name: "LumoPlan & Quality control (QC)", team: "Milton, Rio", domains: ["Lumoplan", "LumoCad"], last: ["Sync w Rio", "today"], flags: ["conflict"] },
+  ] },
+];
+
+const PROPOSALS = [
+  { id: "p1", kind: "Status change", icon: I.swap, title: "LumoCad QC hand-in", ticket: "t-qc",
+    change: `${pill("prog")}<span class="arrow">→</span>${pill("rev")}`,
+    why: "Most of the feature is built: <b>API merged, types released</b>. The platform branch is the only part not merged, so it isn't Done yet.",
+    ev: [["note", "Note", "<q>QC hand-in works, used it on two buildings this week</q>"], ["git", "Git", "<code>api</code> PR #52 <code>feat/qc-hand-in-mails</code> merged · <code>platform</code> branch <code>lumocad/qc-hand-in</code> not merged"], ["doc", "Repo doc", "<code>lumocad-qc-hand-in-2026-10-06.md</code> still says <q>built, local commits only</q>. That's out of date."]],
+    actions: ["Accept", "Edit", "Skip"] },
+  { id: "p2", kind: "Add to ticket", icon: I.merge, title: "Show who took the building on, in the stage timeline", ticket: "t-qc",
+    change: `<span class="link">${I.notion}<span>Add as a to-do on “LumoCad QC hand-in”</span></span>`,
+    why: "Rio asked for this as new work, but <b>half of it exists</b>: the hand-over is already recorded. Only showing it in the timeline is missing. Adding it to the existing ticket avoids a duplicate.",
+    ev: [["note", "Note", "<q>Wants the timeline to show who took the building on after QC</q>"], ["git", "Git", "<code>types</code> ca0b5c2 record who a status change handed the building to · <code>platform</code> 8a48e6d pick who takes the building on when QC is approved"]],
+    actions: ["Accept", "New ticket instead", "Skip"] },
+  { id: "p3", kind: "Update ticket", icon: I.edit, title: "Fallback planning: write down the v1 scope", ticket: "t-fallback",
+    change: `<span class="link">${I.edit}<span>Description gets: “v1: one fallback person per unit. No automatic reassignment.”</span></span>`,
+    why: "Rio and Hendrik both agreed to ship a smaller first version before merging the branch.",
+    ev: [["note", "Note", "<q>ok with v1: 1 fallback per unit, no auto reassign</q> · Sync w Rio, today"], ["note", "Note", "<q>Define a clear version one … and iterate from there</q> · Sync w Hendrik, 8 Oct"]],
+    actions: ["Accept", "Edit", "Skip"] },
+  { id: "p4", kind: "KR comment", icon: I.comment, title: "Roof (including inner roof)", kr: "kr-roof",
+    change: `<span class="link">${I.comment}<span>“Inner roof not started. Blocked by multi-slab support (Piotr). Phase Q groundwork done.”</span></span>`,
+    why: "Puts the blocker on the KR page so the next check-in sees it without reading meeting notes.",
+    ev: [["note", "Note", "<q>inner roof not started, waiting on Piotr's multi-slab work</q>"], ["doc", "Repo doc", "<code>ROOF_EXECUTION_PLAN.md</code> Phase Q: <q>Done (groundwork, 2026-07-22)</q>"]],
+    actions: ["Accept", "Edit", "Skip"] },
+  { id: "p5", kind: "Needs a look", icon: I.eye, title: "Roof plan doc looks out of date", ticket: "t-roof-d",
+    change: `<span class="flag stale">${I.clock}Last touched 3 months ago</span>`,
+    why: "The roof plan says Phase D is <b>nearly complete</b> (29 of 36 checks). No commits under the roof code since. Either the acceptance pass is done and the plan wasn't updated, or the ticket is stuck.",
+    ev: [["doc", "Repo doc", "<code>platform/ROOF_EXECUTION_PLAN.md</code> · <q>[Now] Phase D acceptance pass</q>"], ["notion", "Notion", "Ticket In progress, edited 2 months ago"]],
+    actions: ["Open plan", "Mark Done", "Dismiss"] },
+];
+
+const NOTES = [
+  { id: "n1", title: "Sync w Rio", date: "Today, 14 Oct", state: "Pasted · not saved", path: "Meetings/2026-10-14 Sync w Rio.md" },
+  { id: "n2", title: "Sync w Hendrik", date: "8 Oct", state: "Saved · 3 updates applied", path: "Meetings/2026-10-08 Sync w Hendrik.md" },
+  { id: "n3", title: "LumoCad OKR sync", date: "2 Oct", state: "Saved · 1 update applied", path: "Meetings/2026-10-02 LumoCad OKR sync.md" },
+];
+const RAW = `sync rio 14/10
+
+- qc hand in works!! used on 2 bldgs this wk,
+  mails ok, stage moves
+- wants timeline to show who took bldg after QC
+- DWG export: room tags wrong for bad+wc combos
+- inner roof not started, waiting piotr multislab
+- fallback: ok w v1 -> 1 fallback per unit,
+  no auto reassign
+- dashboards: rio drafts first version next wk`;
+
+const SECTIONS = [
+  { h: "QC hand-in in daily use", p: "Rio used the LumoCad QC hand-in on two buildings this week. It works end to end: the mails arrive and the stage moves forward in LumoPlan.", d: ["Lumoplan", "LumoCad"], kr: "kr-qc", t: "t-qc", prop: "Status change" },
+  { h: "Who took the building on", p: "Rio wants the stage timeline to show who picked up a building after QC was approved, so coordinators don't have to ask around.", d: ["Lumoplan"], kr: "kr-qc", t: "t-qc", prop: "Add to ticket" },
+  { h: "Room names on the DWG export", p: "Combined rooms, such as a bathroom with a WC, still get the wrong name tag in the DWG export.", d: ["FloorPlan"], kr: "kr-floor", t: "t-roomtags", prop: null },
+  { h: "Inner roof waits on multi-slab", p: "Inner roof work has not started. It depends on multi-slab support in LumoCad, which Piotr is building.", d: ["Roof", "LumoCad"], kr: "kr-roof", t: "t-inner-roof", prop: "KR comment" },
+  { h: "Fallback planning, version one", p: "Rio agrees with the smaller first version: one fallback person per unit, and no automatic reassignment.", d: ["Lumoplan"], kr: "kr-plan", t: "t-fallback", prop: "Update ticket" },
+  { h: "Building dashboards", p: "Rio drafts the first version of the building dashboards next week.", d: ["Lumoplan"], kr: null, t: null, prop: null, notMine: "Dashboards KR is Rio's · kept as a note only" },
+];
+
+const REPOS = [
+  { name: "platform", branch: "lumocad/qc-hand-in", when: "today", docs: [
+      { path: "ROOF_EXECUTION_PLAN.md", q: "Phase D “Nearly complete”", checks: [29, 36], age: "3 months", flags: ["stale"], t: "t-roof-d" },
+      { path: "PLAN_STAIRS_V2_step0.md", q: "“Status: implemented in the working tree”", age: "5 weeks", flags: [], t: "t-stair-merge" },
+      { path: "OBSERVATIONS_LIST.md", q: "No status line found", age: "6 weeks", flags: [], t: null },
+    ], commits: [["ce0bb48", "feat(lumocad): approve picks the next stage from the LumoPlan timeline"], ["8a48e6d", "feat(lumocad): pick who takes the building on when QC is approved"], ["df170b2", "feat(lumocad): hand QC corrections back to the corrections check status"]] },
+  { name: "lumoplan", branch: "development", when: "yesterday", docs: [
+      { path: "docs/lumocad-qc-hand-in-2026-10-06.md", q: "“Status (2026-10-06): built, local commits only”", age: "8 days", flags: ["conflict"], t: "t-qc", note: "Behind git: API merged since" },
+      { path: "docs/lumocad-qc-rio-feedback-2026-10-07.md", q: "Open replies to Rio", age: "7 days", flags: [], t: "t-qc-fb" },
+      { path: "docs/notion-measurement-planning.md", q: "Describes the shipped sync", age: "4 weeks", flags: [], t: "t-measplan" },
+    ], commits: [["240f489", "feat(projects): one overview card on the project page"], ["e7fd670", "feat(buildings): create a new building from a project"]] },
+  { name: "api", branch: "development", when: "2 days ago", docs: [], commits: [["bbbff88", "Merge PR #52 from feat/qc-hand-in-mails"], ["781471e", "fix(notion): stop creating projects from Notion pages"]] },
+  { name: "types", branch: "feat/status-history-assignees", when: "3 days ago", docs: [], commits: [["392927a", "chore: bump types to 1.1.72"], ["ca0b5c2", "feat(building): record who a status change handed the building to"]] },
+];
+
+const state = { screen: "inbox", note: "n1", expanded: true, saved: false, domains: new Set(), decisions: {}, open: new Set(["kr-qc"]), secDomains: SECTIONS.map(s => new Set(s.d)) };
+try { const s = localStorage.getItem("wh-screen"); if (s) state.screen = s; } catch (e) {}
+if (/^#(inbox|review|okrs|tickets|repos)$/.test(location.hash)) state.screen = location.hash.slice(1);
+
+const krName = id => { for (const g of OKRS) for (const k of g.krs) if (k.id === id) return k.name; return ""; };
+const ticketsFor = kr => Object.entries(TICKETS).filter(([, t]) => t.kr === kr);
+const pending = () => PROPOSALS.filter(p => !state.decisions[p.id]).length;
+const domainOk = ds => state.domains.size === 0 || ds.some(d => state.domains.has(d));
+
+function renderNav() {
+  const items = [["inbox", "Inbox", I.inbox, state.saved ? 0 : 1], ["review", "Review", I.review, pending()], ["okrs", "OKRs", I.okr, 0], ["tickets", "Tickets", I.tickets, 0], ["repos", "Repos", I.repos, 0]];
+  document.getElementById("nav").innerHTML = items.map(([id, label, ico, n]) =>
+    `<button type="button" data-go="${id}" ${state.screen === id ? 'aria-current="page"' : ""}>${ico}<span class="lbl">${label}</span>${n ? `<span class="count">${n}</span>` : ""}</button>`).join("");
+  document.getElementById("filters").innerHTML = DOMAINS.map(d => `<button type="button" class="chip ${state.domains.has(d) ? "on" : ""}" data-filter="${d}">${d}</button>`).join("");
+}
+
+function screenInbox() {
+  const note = NOTES.find(n => n.id === state.note);
+  const list = NOTES.map(n => `<button type="button" class="${n.id === state.note ? "sel" : ""}" data-note="${n.id}"><b>${n.title}</b><small>${n.date} · ${n.id === "n1" && state.saved ? "Saved" : n.state}</small></button>`).join("")
+    + `<button type="button" class="new-paste">${I.plus}Paste new notes</button>`;
+  const sections = SECTIONS.map((s, i) => {
+    const doms = state.secDomains[i];
+    const chips = DOMAINS.filter(d => doms.has(d)).map(d => `<button type="button" class="chip on" data-secdom="${i}|${d}">${d}</button>`).join("")
+      + `<button type="button" class="chip add" data-secadd="${i}">${I.plus}domain</button>`;
+    const links = (s.kr ? `<span class="link">${I.kr}<span>KR · ${krName(s.kr)}</span></span>` : "")
+      + (s.t ? `<span class="link" role="button" tabindex="0" data-ticket="${s.t}">${I.notion}<span>${TICKETS[s.t].title}</span></span>` : "")
+      + (s.prop ? `<span class="prop">${I.arrow}${s.prop}</span>` : "")
+      + (s.notMine ? `<span class="notmine">${s.notMine}</span>` : "");
+    return `<div class="sec"><h4>${s.h}</h4><p>${s.p}</p><div class="meta">${chips}<span class="sep"></span>${links}</div></div>`;
+  }).join("");
+  const allDoms = [...new Set(state.secDomains.flatMap(s => [...s]))];
+  const draft = state.expanded ? `<div class="draft">${sections}</div>` : `<div class="thinking"><i></i><i></i><i></i>Claude is expanding your notes and matching them to tickets and KRs…</div>`;
+  return `<div class="screen">
+    <div class="head"><div><h1>Inbox</h1><p>Paste a Granola note. Claude writes it out in full, tags each section with its domains, and links it to the KRs and tickets it touches. You edit, then save to the vault.</p></div><span class="sample">Sample data</span></div>
+    <div class="inbox">
+      <div class="panel notes-list">${list}</div>
+      <div class="panel">
+        <div class="editor">
+          <section>
+            <div class="pane-head"><h3>Raw · from Granola</h3><button type="button" class="btn" id="expand">${I.spark}Expand again</button></div>
+            <textarea id="raw" spellcheck="false" aria-label="Raw notes">${RAW}</textarea>
+          </section>
+          <section>
+            <div class="pane-head"><h3>Expanded · editable</h3>${state.expanded ? `<span class="status">${I.check}Expanded by Claude · 6 sections</span>` : ""}</div>
+            ${draft}
+          </section>
+        </div>
+        <div class="savebar">
+          <span class="mono path">${note.path}</span>
+          <span class="mono path">domains: [${allDoms.map(d => d.toLowerCase()).join(", ")}]</span>
+          <span class="spacer"></span>
+          <button type="button" class="btn ${state.saved ? "" : "primary"}" id="save">${state.saved ? I.check + "Saved to vault" : "Save to vault"}</button>
+          <button type="button" class="btn" data-go="review">Review ${pending()} updates ${I.arrow}</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function screenReview() {
+  const acc = Object.values(state.decisions).filter(v => v === "acc").length;
+  const skip = Object.values(state.decisions).filter(v => v === "skip").length;
+  const cards = PROPOSALS.map(p => {
+    const d = state.decisions[p.id];
+    const ev = p.ev.map(([k, label, html]) => `<div class="ev"><span class="src">${I[k]}${label}</span><span>${html}</span></div>`).join("");
+    const [a1, a2, a3] = p.actions;
+    return `<article class="panel card ${d === "acc" ? "accepted" : d === "skip" ? "skipped" : ""}">
+      <div class="kind"><span class="ico">${p.icon}</span>${p.kind}</div>
+      <div>
+        <h3>${p.title}</h3>
+        <div class="change">${p.change}</div>
+        <p class="why">${p.why}</p>
+        <div class="evidence">${ev}</div>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn ${d === "acc" ? "ok-on" : "primary"}" data-dec="${p.id}|acc">${d === "acc" ? I.check + "Accepted" : a1}</button>
+        <button type="button" class="btn" ${p.ticket ? `data-ticket="${p.ticket}"` : ""}>${a2}</button>
+        <button type="button" class="btn ghost" data-dec="${p.id}|skip">${d === "skip" ? "Skipped" : a3}</button>
+      </div>
+    </article>`;
+  }).join("");
+  return `<div class="screen">
+    <div class="head"><div><h1>Review updates</h1><p>What changed since your last review, from today's note and the latest repo scan. Each change shows the evidence behind it. Nothing reaches Notion until you apply it.</p></div><span class="sample">Sample data</span></div>
+    <div class="panel review-top">
+      <div class="tally"><span><b>${pending()}</b> to review</span><span><b>${acc}</b> accepted</span><span><b>${skip}</b> skipped</span></div>
+      <span class="spacer"></span>
+      <button type="button" class="btn ghost" id="accAll">Accept all</button>
+      <button type="button" class="btn primary" id="apply" ${acc ? "" : "disabled"}>Apply ${acc} to Notion</button>
+    </div>
+    <div class="cards">${cards}</div>
+  </div>`;
+}
+
+function krBar(id) {
+  const ts = ticketsFor(id).map(([, t]) => t.status);
+  const n = ts.length, c = s => ts.filter(x => x === s).length;
+  const w = s => (c(s) / n * 100).toFixed(1) + "%";
+  return `<div class="bar"><span>${c("done")} of ${n} done${c("rev") ? ` · ${c("rev")} in review` : ""}</span><div class="track"><i class="d" style="width:${w("done")}"></i><i class="r" style="width:${w("rev")}"></i><i class="p" style="width:${w("prog")}"></i></div></div>`;
+}
+function screenOkrs() {
+  const goals = OKRS.map(g => {
+    const krs = g.krs.filter(k => domainOk(k.domains));
+    if (!krs.length) return "";
+    return `<section class="panel goal">
+      <div class="goal-head"><span class="eyebrow">2026-Q4 · Goal</span><h2>${g.goal}</h2>${g.prio === "Very High" ? `<span class="pill s-rev">Very high priority</span>` : ""}</div>
+      ${krs.map(k => `<div class="kr ${state.open.has(k.id) ? "open" : ""}">
+        <button type="button" class="kr-row" data-kr="${k.id}" aria-expanded="${state.open.has(k.id)}">
+          ${I.caret}
+          <span class="name"><b>${k.name}</b><small>${k.team} · ${k.domains.join(", ")}</small></span>
+          ${krBar(k.id)}
+          <span class="last">Last mentioned<b>${k.last[0]} · ${k.last[1]}</b></span>
+          <span class="flags">${k.flags.map(flag).join("")}</span>
+        </button>
+        <div class="kr-body"><div class="scroll-x"><table class="tk-table">
+          <thead><tr><th>Ticket</th><th>Notion</th><th>What the sources say</th></tr></thead>
+          <tbody>${ticketsFor(k.id).map(([id, t]) => `<tr class="click" data-ticket="${id}" tabindex="0"><td>${t.title}</td><td>${pill(t.status)}</td><td>${t.flags.length ? t.flags.map(flag).join(" ") : `<span class="flag agree">${I.check}Sources agree</span>`}</td></tr>`).join("")}</tbody>
+        </table></div></div>
+      </div>`).join("")}
+    </section>`;
+  }).join("");
+  return `<div class="screen">
+    <div class="head"><div><h1>OKRs · 2026-Q4</h1><p>Your key results from Notion, with the tickets under each one. Flags show where Notion, your notes and the code disagree.</p></div><span class="sample">Sample data</span></div>
+    ${goals || `<div class="panel" style="padding:24px;color:var(--muted)">No key results in the selected domains.</div>`}
+  </div>`;
+}
+
+function srcDots(t) {
+  const has = new Set(t.src.map(s => s[0]));
+  return `<span class="srcdots" aria-label="Sources">${["note", "doc", "git"].map(k => `<span class="${has.has(k) ? "has" : ""}" title="${k}">${I[k]}</span>`).join("")}</span>`;
+}
+function screenTickets() {
+  const cols = ["not", "prog", "rev", "done"].map(s => {
+    const items = Object.entries(TICKETS).filter(([, t]) => t.status === s && domainOk(t.domains));
+    return `<div class="col"><h3>${STATUS[s][0]}<span>${items.length}</span></h3>
+      ${items.map(([id, t]) => `<button type="button" class="tcard" data-ticket="${id}"><b>${t.title}</b><span class="kr-label">${krName(t.kr)}</span><span class="row">${t.flags.filter(f => f !== "agree").map(flag).join("")}${srcDots(t)}</span></button>`).join("")}
+    </div>`;
+  }).join("");
+  return `<div class="screen">
+    <div class="head"><div><h1>My tickets</h1><p>Work items assigned to you in Notion, by status. The small icons show which sources mention each ticket: notes, repo docs, git.</p></div><span class="sample">Sample data</span></div>
+    <div class="board">${cols}</div>
+  </div>`;
+}
+
+function screenRepos() {
+  const strip = [["api", "ok", "Merged", "PR #52 feat/qc-hand-in-mails"], ["types", "ok", "Released", "1.1.72 · records who took the building on"], ["platform", "wait", "On a branch", "lumocad/qc-hand-in · 8 commits, not merged"], ["lumoplan", "wait", "Doc says local only", "Plan doc from 6 Oct, not updated since"]];
+  const repos = REPOS.map(r => `<section class="panel repo-card">
+    <div class="repo-head"><b>${r.name}</b><span class="branch">${I.branch}${r.branch}</span><span class="when">last commit ${r.when}</span></div>
+    <div class="docs">${r.docs.length ? r.docs.map(d => `<div class="doc">
+      <span class="path">${d.path}</span>
+      <span class="line"><q>${d.q}</q>${d.checks ? ` · ${d.checks[0]}/${d.checks[1]} checks` : ""} · updated ${d.age} ago ${d.flags.map(flag).join(" ")}${d.note ? ` · ${d.note}` : ""}</span>
+      <span class="line">${d.t ? `<span class="link" role="button" tabindex="0" data-ticket="${d.t}">${I.notion}<span>${TICKETS[d.t].title}</span></span>` : `<button type="button" class="chip add">${I.plus}Link to a ticket</button>`}</span>
+    </div>`).join("") : `<div class="doc"><span class="line">No plan docs. Status comes from branches, commits and merged PRs.</span></div>`}</div>
+    <div class="commits"><h5>Recent commits</h5>${r.commits.map(([h, m]) => `<div class="commit"><code>${h}</code><span>${m}</span></div>`).join("")}</div>
+  </section>`).join("");
+  return `<div class="screen">
+    <div class="head"><div><h1>Repos</h1><p>What the code says. Claude reads the plan docs in each repo, plus branches, commits and merged PRs, and matches them to your tickets. Read-only: it never commits or pushes.</p></div><span class="sample">Sample data</span></div>
+    <section class="panel feature">
+      <div class="feature-head"><h2>LumoCad QC hand-in</h2><span class="flag conflict">${I.warn}Notion says In progress</span><span class="link" role="button" tabindex="0" data-ticket="t-qc">${I.notion}<span>Open ticket</span></span></div>
+      <div class="strip">${strip.map(([n, c, s, d]) => `<div><span class="repo">${n}</span><span class="st ${c}">${c === "ok" ? I.check : I.clock}${s}</span><small>${d}</small></div>`).join("")}</div>
+    </section>
+    <div class="repos">${repos}</div>
+    <section class="panel how">
+      <div><b>Plan docs</b>Status lines, phase headings marked Completed or Nearly complete, and ticked checkboxes in *.md files.</div>
+      <div><b>Git</b>Current branch, recent commits, and PRs merged into development. Commits are matched to tickets by topic.</div>
+      <div><b>Staleness</b>A doc is flagged when git has moved past it, or when it hasn't changed in weeks while its ticket is still open.</div>
+    </section>
+  </div>`;
+}
+
+function openTicket(id) {
+  const t = TICKETS[id];
+  const v = t.verdict;
+  const vIcon = v[0] === "agree" ? I.check : v[0] === "stale" ? I.clock : I.warn;
+  document.getElementById("overlay").innerHTML = `<div class="scrim" data-close></div>
+  <aside class="drawer" role="dialog" aria-modal="true" aria-label="${t.title}">
+    <button type="button" class="btn ghost close" data-close aria-label="Close">${I.x}</button>
+    <div><span class="mono" style="color:var(--faint)">${krName(t.kr)}</span><h2>${t.title}</h2></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">${pill(t.status)}${t.domains.map(d => `<span class="chip">${d}</span>`).join("")}</div>
+    <div class="verdict ${v[0]}">${vIcon}<span>${v[1]}</span></div>
+    <div class="matrix">${t.src.map(([k, label, says, where]) => `<div class="mrow ${k === "notion" ? "official" : ""}"><span class="src">${I[k]}${label}</span><span class="says"><span>${says}</span><small>${where}</small></span></div>`).join("")}</div>
+    <p style="margin:0;color:var(--muted);font-size:12.5px">Notion is the official status. Notes, repo docs and git are evidence. When they disagree, a proposal appears in Review.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn primary">Open in Notion</button><button type="button" class="btn">Open notes</button></div>
+  </aside>`;
+  document.querySelector(".drawer .close").focus();
+}
+
+function toast(msg) {
+  const el = document.createElement("div"); el.className = "toast"; el.textContent = msg;
+  document.body.appendChild(el); setTimeout(() => el.remove(), 2600);
+}
+
+function render() {
+  renderNav();
+  const s = { inbox: screenInbox, review: screenReview, okrs: screenOkrs, tickets: screenTickets, repos: screenRepos }[state.screen];
+  document.getElementById("main").innerHTML = s();
+}
+
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-go],[data-filter],[data-note],[data-secdom],[data-secadd],[data-dec],[data-kr],[data-ticket],[data-close],#save,#expand,#accAll,#apply,#scan");
+  if (!t) return;
+  if (t.dataset.go) { state.screen = t.dataset.go; try { localStorage.setItem("wh-screen", state.screen); } catch (err) {} render(); window.scrollTo(0, 0); return; }
+  if (t.dataset.filter) { const d = t.dataset.filter; state.domains.has(d) ? state.domains.delete(d) : state.domains.add(d); render(); return; }
+  if (t.dataset.note) { state.note = t.dataset.note; render(); return; }
+  if (t.dataset.secdom) { const [i, d] = t.dataset.secdom.split("|"); state.secDomains[i].delete(d); render(); return; }
+  if (t.dataset.secadd) { const set = state.secDomains[t.dataset.secadd]; const next = DOMAINS.find(d => !set.has(d)); if (next) set.add(next); render(); return; }
+  if (t.dataset.dec) { const [id, v] = t.dataset.dec.split("|"); state.decisions[id] = state.decisions[id] === v ? undefined : v; if (!state.decisions[id]) delete state.decisions[id]; render(); return; }
+  if (t.dataset.kr) { const id = t.dataset.kr; state.open.has(id) ? state.open.delete(id) : state.open.add(id); render(); return; }
+  if (t.dataset.ticket) { openTicket(t.dataset.ticket); return; }
+  if (t.hasAttribute("data-close")) { document.getElementById("overlay").innerHTML = ""; return; }
+  if (t.id === "save") { state.saved = true; render(); toast("Saved to Meetings/2026-10-14 Sync w Rio.md"); return; }
+  if (t.id === "expand") { state.expanded = false; render(); setTimeout(() => { state.expanded = true; render(); }, 1400); return; }
+  if (t.id === "accAll") { PROPOSALS.forEach(p => { if (!state.decisions[p.id]) state.decisions[p.id] = "acc"; }); render(); return; }
+  if (t.id === "apply") { const n = Object.values(state.decisions).filter(v => v === "acc").length; toast(`Applied ${n} changes to Notion (mockup, nothing was sent)`); return; }
+  if (t.id === "scan") { t.classList.add("spin"); setTimeout(() => { t.classList.remove("spin"); document.getElementById("repoWhen").textContent = "now"; toast("Scanned 4 repos · no new changes"); }, 1200); return; }
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") document.getElementById("overlay").innerHTML = "";
+  if (e.key === "Enter" && e.target.matches("[data-ticket][tabindex]")) openTicket(e.target.dataset.ticket);
+});
+render();
+</script>
+</body>
+</html>
