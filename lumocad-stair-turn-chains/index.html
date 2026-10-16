@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Stair Turn Chains PR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,560&display=swap">
+<style>
+/* Layout: single reading column, a riser-chain strip under the header, three
+   numbered sections (the order is real: change → verify → follow up). */
+:root {
+  --bg: #f6f7f8;
+  --surface: #ffffff;
+  --fg: #1c2229;
+  --muted: #5b6672;
+  --line: #dde2e7;
+  --accent: #1f5fa8;
+  --accent-soft: #e6eef8;
+  --ok: #1d7a4a;
+  --ok-soft: #e4f3ea;
+  --warn: #9a5b00;
+  --warn-soft: #fbf0dc;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161b; --surface: #1a2027; --fg: #e3e8ee; --muted: #9aa6b2; --line: #2c343d;
+    --accent: #7fb0ea; --accent-soft: #1d2b3c; --ok: #6fcf9b; --ok-soft: #15291f;
+    --warn: #f0b860; --warn-soft: #2e2414; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161b; --surface: #1a2027; --fg: #e3e8ee; --muted: #9aa6b2; --line: #2c343d;
+  --accent: #7fb0ea; --accent-soft: #1d2b3c; --ok: #6fcf9b; --ok-soft: #15291f;
+  --warn: #f0b860; --warn-soft: #2e2414; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.6; padding: 0 16px; }
+main { max-width: 760px; margin: 0 auto; padding-block: 40px 64px; display: flex; flex-direction: column; gap: 40px; }
+h1, h2 { font-family: var(--font-display); font-weight: 560; text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(1.7rem, 4vw, 2.3rem); line-height: 1.15; }
+h2 { font-size: 1.45rem; display: flex; align-items: baseline; gap: 12px; }
+h2 .n { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); font-weight: 500; }
+h3 { font-size: 1rem; font-weight: 600; margin: 0; }
+p { margin: 0; }
+code { font-family: var(--font-mono); font-size: 0.86em; background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+a { color: var(--accent); }
+.eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+header { display: flex; flex-direction: column; gap: 14px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { font-family: var(--font-mono); font-size: 0.78rem; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font-variant-numeric: tabular-nums; }
+.pill.warn { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+.lede { color: var(--muted); max-width: 65ch; }
+
+/* Riser chain strip: the PR's core idea, a stair as an ordered list of turns. */
+.chain-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.chain { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.seg { font-family: var(--font-mono); font-size: 0.8rem; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--line); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.seg.flight { background: var(--bg); }
+.seg.landing { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+.seg.winder { background: var(--warn-soft); border-color: transparent; color: var(--warn); }
+.arrow { color: var(--muted); font-size: 0.8rem; }
+.chain-note { font-size: 0.86rem; color: var(--muted); }
+
+section { display: flex; flex-direction: column; gap: 18px; }
+.group { display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+.group ul, .group ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 5px; }
+.group li { max-width: 68ch; }
+.tag { font-family: var(--font-mono); font-size: 0.74rem; color: var(--accent); margin-right: 6px; }
+
+.steps { counter-reset: step; list-style: none; padding: 0 !important; }
+.steps > li { counter-increment: step; position: relative; padding-left: 34px !important; }
+.steps > li::before { content: counter(step); position: absolute; left: 0; top: 1px; width: 22px; height: 22px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-family: var(--font-mono); font-size: 0.75rem; display: grid; place-items: center; }
+.expect { display: block; color: var(--muted); font-size: 0.9rem; }
+.expect::before { content: "Expect: "; color: var(--ok); font-weight: 500; }
+
+.checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.check { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.check b { font-family: var(--font-mono); font-size: 1.05rem; font-weight: 500; color: var(--ok); font-variant-numeric: tabular-nums; }
+.check span { font-size: 0.84rem; color: var(--muted); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 0.9rem; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 500; }
+tr:last-child td { border-bottom: 0; }
+td.kind { white-space: nowrap; }
+.k { font-family: var(--font-mono); font-size: 0.74rem; padding: 2px 7px; border-radius: 4px; }
+.k.block { background: var(--warn-soft); color: var(--warn); }
+.k.decide { background: var(--accent-soft); color: var(--accent); }
+.k.later { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); padding-top: 16px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="eyebrow">PR #77 · lumocad/stair-sprint-2-2 → development</span>
+    <h1>Stairs as a chain of turns, plus sprint 2.2 fixes</h1>
+    <div class="meta">
+      <span class="pill warn">Draft · not browser-checked</span>
+      <span class="pill ok">Mergeable</span>
+      <span class="pill">46 files · +14,508 / −794 before merge</span>
+      <span class="pill">development merged in · 24ae08fdb</span>
+    </div>
+    <p class="lede">This PR turns the sprint 2.2 stair feedback from René and Djunejt into code. Any stair is now one ordered list of landings and winders, so shapes that matched no IFC type can be built and saved. It also fixes four bugs from the sprint review. On 16 Oct it was merged with Piotr's multi-slab work.</p>
+    <div class="chain-wrap" aria-label="Example turn chain">
+      <div class="chain">
+        <span class="seg flight">4 risers</span><span class="arrow">→</span>
+        <span class="seg landing">Landing · straight on</span><span class="arrow">→</span>
+        <span class="seg flight">5 risers</span><span class="arrow">→</span>
+        <span class="seg landing">Landing · 90° left</span><span class="arrow">→</span>
+        <span class="seg flight">3 risers</span><span class="arrow">→</span>
+        <span class="seg winder">Winder · 90° left · 3</span><span class="arrow">→</span>
+        <span class="seg flight">2 risers</span>
+      </div>
+      <p class="chain-note">No IFC preset matches this example, so it saves as <code>USERDEFINED</code> and the type select reads “Custom turns”. One builder, <code>buildChainGeometry</code>, walks the list. The 20 preset shapes produce the same geometry as before.</p>
+    </div>
+  </header>
+
+  <section id="changed">
+    <h2><span class="n">1</span>What changed</h2>
+
+    <div class="group">
+      <h3>Turn chain (P1)</h3>
+      <ul>
+        <li><span class="tag">ST-1</span>Stairs are an ordered list of landings (straight on, 90°, 180°) and winders (90°, 180°). Each turn has its own side. IFC stair types are now presets that fill in this list.</li>
+        <li>The <b>Turns</b> section in the stair panel has an <b>Add</b> menu, a remove button on each turn, and a <b>Turn angle</b> select. A straight stair shows the section too, so landings can be added to it.</li>
+        <li><code>stairMachine</code> gains <code>turn.add</code> and <code>turn.remove</code>. Changing a turn's kind or angle re-derives the type.</li>
+        <li>On load, the chain is rebuilt from the saved children (winder flights, flights meeting at a landing, headings), not from the stored type. If the stored preset disagrees with the children, it is corrected and flagged.</li>
+        <li>At placement, the side click mirrors the whole chain instead of forcing every turn to one side, so a Z-shape keeps its shape.</li>
+        <li>The landing field is labelled “Landing width” for a U-turn landing and “Landing depth” for a straight-on one.</li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>Sprint fixes (P0)</h3>
+      <ul>
+        <li><span class="tag">ST-2</span>The stairwell well width (Treppenauge) now works for half-winding stairs too. Half winders with a well fan around a real eye.</li>
+        <li><span class="tag">ST-5</span>Stairs have their own layer and a <b>Toggle stairs</b> button in the orbit view. Hiding walls no longer hides stairs.</li>
+        <li><span class="tag">ST-6</span>Deleting a stair now removes its slab void. Copying a slab boundary to other floors used to copy stair voids with fresh ids the stair could not find. On delete, the stair also clears matching copies already in saved buildings.</li>
+        <li><span class="tag">ST-11</span>In plan, the path arrow tip sits on the lower break line. Landing paths meet at a corner, and the walking line on winders follows the arc.</li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>Merged with multi-slab (16 Oct)</h3>
+      <ul>
+        <li>The turn editor and stair panel now use Piotr's stair sidebar components. <code>StairActionButton</code> now forwards a ref so it can open the Add menu.</li>
+        <li>Stairs that span several slabs mirror their turns the same way single-slab stairs do.</li>
+        <li><b>Copy slabs</b> (<code>copyStoreySlabs</code>) no longer copies stair openings. The target slab keeps its own openings as long as they still fit the new outline.</li>
+        <li><code>profile.replace.curves</code> follows Piotr's rule: an explicit void list is final. Keeping a slab's own stair voids is opt-in through <code>keepOwnStairVoids</code>, which only the old copy-boundary dialog sets.</li>
+        <li>On delete, the sweep for copied stair voids now checks every slab on each floor.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="test">
+    <h2><span class="n">2</span>How to test</h2>
+
+    <div class="checks">
+      <div class="check"><b>tsc -b clean</b><span>Full project typecheck after merge</span></div>
+      <div class="check"><b>9,714 passed</b><span>Full vitest suite, 1 skipped, 0 failed</span></div>
+      <div class="check"><b>20 / 20</b><span>Preset golden snapshots unchanged</span></div>
+    </div>
+
+    <div class="group">
+      <h3>In the app (CAD mode, stair work mode, a building with two slabbed floors)</h3>
+      <ol class="steps">
+        <li>Start placing a straight stair. Open <b>Turns</b> and use <b>Add → Landing, straight on</b> twice.
+          <span class="expect">the preview shows three flights, and the type select reads “Custom turns” (disabled, not offered as a preset).</span></li>
+        <li>Add <b>Winder, 90° turn</b> and set it to Left. Place the stair, clicking the other side for the turn.
+          <span class="expect">the whole chain mirrors. Turns that pointed opposite ways still point opposite ways.</span></li>
+        <li>Select the placed stair and reload the page.
+          <span class="expect">the same chain comes back, and the Turns section lists the same landings and winder.</span></li>
+        <li>Pick a preset again in <b>Stair type</b>, for example Quarter turn.
+          <span class="expect">the custom chain is replaced by the preset's turns.</span></li>
+        <li>Place a half-winding stair and set <b>Stairwell well width</b> to 200 mm.
+          <span class="expect">the winders fan around an open eye with no gap or overlap.</span></li>
+        <li>In the orbit view, turn off <b>Toggle walls</b>, then <b>Toggle stairs</b>.
+          <span class="expect">stairs stay visible with walls off, and disappear only with their own toggle.</span></li>
+        <li>Put a stair through a slab. Use <b>Copy boundary to all levels</b> from the floor with the opening, then delete the stair.
+          <span class="expect">no stair opening appears on the other floors, and deleting the stair leaves no void anywhere.</span></li>
+        <li>Export a floor plan (DXF/PDF) with a cut stair.
+          <span class="expect">the arrow tip touches the lower break line, and landing paths meet at the landing centre.</span></li>
+        <li>Multi-slab: place a stair attached to two slabs with a custom chain, then edit its turns.
+          <span class="expect">both runs update and the slab openings follow. Nobody has tried this case yet.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="missing">
+    <h2><span class="n">3</span>What's missing</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Kind</th><th>Item</th><th>Owner</th></tr></thead>
+        <tbody>
+          <tr><td class="kind"><span class="k block">Blocks merge</span></td><td>Test on a real building in the browser (steps above). The PR stays a draft until this is done.</td><td>Milton</td></tr>
+          <tr><td class="kind"><span class="k block">Blocks merge</span></td><td>Multi-slab stair with custom turns: no automated or manual test covers this path.</td><td>Milton</td></tr>
+          <tr><td class="kind"><span class="k decide">Decision</span></td><td>Should explicit void lists stay final, with keeping a slab's own stair voids limited to the old copy dialog (<code>keepOwnStairVoids</code>)?</td><td>Piotr</td></tr>
+          <tr><td class="kind"><span class="k decide">Decision</span></td><td>Drop “Two straight runs” from the placement presets? It is now a straight stair plus one landing, and old stairs still load either way.</td><td>Team</td></tr>
+          <tr><td class="kind"><span class="k decide">Decision</span></td><td>Half landings: the two flight paths are parallel and never meet, so they cross on the landing centre line. Is that right?</td><td>Djunejt</td></tr>
+          <tr><td class="kind"><span class="k later">Follow-up</span></td><td>After a failed server delete, the stair comes back without its void until its next save (ST-6 edge case).</td><td>Milton</td></tr>
+          <tr><td class="kind"><span class="k later">Follow-up</span></td><td>Landing resize handle for custom chains.</td><td>Milton</td></tr>
+          <tr><td class="kind"><span class="k later">Follow-up</span></td><td>P2: construction type and waist thickness (ST-12). Needs an ifc4-types → types → api → platform release.</td><td>Milton</td></tr>
+          <tr><td class="kind"><span class="k later">Follow-up</span></td><td>P3–P6: curved and spiral stairs (ST-3), ramps (ST-4), editable voids (ST-7), rotation (ST-8), 3D selection (ST-9), per-step width (ST-13), landings trimmed by walls (ST-14).</td><td>Backlog</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>Plan and status: <code>manuals/lumocad-plans/stairs/PLAN_STAIR_SPRINT_2_2_FEEDBACK.md</code> · <a href="https://github.com/Lumoview-Building-Analytics-GmbH/platform/pull/77">PR #77 on GitHub</a></footer>
+</main>
+</body>
+</html>
