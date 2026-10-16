@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Timeline Improvements Day One</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column, 720px, like a planning note pinned to the board. Section
+   eyebrows carry the plan's track letters (S, M, P) because those are real ids in the doc. */
+:root {
+  --bg: #f5f7f9;
+  --surface: #ffffff;
+  --fg: #1b232c;
+  --muted: #5a6673;
+  --rule: #d9dee4;
+  --accent: #b3261e;        /* the board's DUE red */
+  --accent-soft: #fbe9e7;
+  --open: #2a6fa8;          /* open milestone pill */
+  --open-soft: #e3eef8;
+  --done: #1f7a4d;          /* done milestone pill */
+  --done-soft: #e2f3ea;
+  --warn: #8a5a00;
+  --warn-soft: #fff3d6;
+  --code-bg: #eef1f4;
+  --display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141a20; --surface: #1c242c; --fg: #e6ebf0; --muted: #9aa7b4; --rule: #2d3842;
+    --accent: #ef6e66; --accent-soft: #3a1f1d; --open: #7fb3e0; --open-soft: #1d2f40;
+    --done: #6fcf97; --done-soft: #1b3326; --warn: #f0c060; --warn-soft: #3a2f12; --code-bg: #232d36;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141a20; --surface: #1c242c; --fg: #e6ebf0; --muted: #9aa7b4; --rule: #2d3842;
+  --accent: #ef6e66; --accent-soft: #3a1f1d; --open: #7fb3e0; --open-soft: #1d2f40;
+  --done: #6fcf97; --done-soft: #1b3326; --warn: #f0c060; --warn-soft: #3a2f12; --code-bg: #232d36;
+  color-scheme: dark;
+}
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+main { max-width: 720px; margin: 0 auto; }
+header.top { padding-block: 40px 20px; border-bottom: 1px solid var(--rule); }
+.eyebrow {
+  font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--muted);
+}
+h1 {
+  font-family: var(--display); font-weight: 600; font-size: clamp(30px, 5vw, 40px);
+  line-height: 1.1; margin: 8px 0 10px; text-wrap: balance;
+}
+.lede { font-size: 17px; color: var(--muted); margin: 0; max-width: 60ch; }
+h2 {
+  font-family: var(--display); font-weight: 600; font-size: 24px; line-height: 1.2;
+  margin: 44px 0 6px; text-wrap: balance;
+}
+h2 .track {
+  display: inline-block; font-family: var(--mono); font-size: 12px; font-weight: 500;
+  letter-spacing: .06em; color: var(--muted); margin-right: 10px; vertical-align: middle;
+  border: 1px solid var(--rule); border-radius: 4px; padding: 1px 6px;
+}
+h3 { font-family: var(--display); font-weight: 600; font-size: 17px; margin: 22px 0 4px; }
+p { margin: 10px 0; max-width: 68ch; }
+ul { padding-left: 20px; margin: 8px 0; max-width: 68ch; }
+li { margin: 4px 0; }
+code, .mono { font-family: var(--mono); font-size: .92em; }
+code { background: var(--code-bg); border-radius: 3px; padding: 1px 5px; }
+.facts {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;
+  margin: 24px 0 8px;
+}
+.fact { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; }
+.fact .n { font-family: var(--display); font-size: 28px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
+.fact .l { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.fact.warn { border-color: var(--warn); background: var(--warn-soft); }
+.fact.warn .n { color: var(--warn); }
+.tablewrap { overflow-x: auto; margin: 12px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--mono); font-weight: 500; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+td.num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.status { display: inline-block; font-family: var(--mono); font-size: 12px; border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+.status.done { background: var(--done-soft); color: var(--done); }
+.status.part { background: var(--open-soft); color: var(--open); }
+.status.open { background: var(--code-bg); color: var(--muted); }
+.status.warn { background: var(--warn-soft); color: var(--warn); }
+.callout { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 18px 0; }
+.callout.red { border-color: var(--accent); background: var(--accent-soft); }
+.callout p { margin: 4px 0; }
+/* The board row mock: a building row with the DUE pill at the top edge and milestone
+   pills at the bottom edge, as the real TimelineRow draws them. */
+.rowmock {
+  position: relative; height: 92px; margin: 16px 0 6px; border: 1px solid var(--rule);
+  border-radius: 6px; background: var(--surface); overflow: hidden;
+  background-image: repeating-linear-gradient(90deg, transparent 0 59px, var(--rule) 59px 60px);
+}
+.rowmock .bar { position: absolute; top: 34px; height: 24px; border-radius: 4px; }
+.rowmock .bar.pre { left: 60px; width: 120px; background: #c9b7e6; }
+.rowmock .bar.post { left: 180px; width: 300px; background: #8fb8d9; }
+.rowmock .line { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px dashed; }
+.rowmock .pill {
+  position: absolute; left: 0; transform: translateX(-50%); font-family: var(--mono);
+  font-size: 10px; font-weight: 600; line-height: 1; padding: 3px 6px; border-radius: 999px;
+  border: 1px solid; white-space: nowrap; background: var(--surface);
+}
+.rowmock .due { left: 450px; border-color: var(--accent); color: var(--accent); }
+.rowmock .due .pill { top: 6px; }
+.rowmock .ms { border-color: var(--open); color: var(--open); }
+.rowmock .ms .pill { bottom: 6px; }
+.rowmock .ms.done { border-color: var(--done); color: var(--done); }
+.rowmock .ms.late { border-color: var(--accent); color: var(--accent); }
+.rowmock .ms.late .pill { background: var(--accent); color: #fff; }
+.rowmock .ms.done .pill { background: var(--done); color: #fff; }
+.rowmock .name { position: absolute; left: 8px; top: 8px; font-size: 12px; color: var(--muted); }
+.legend { font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 12px 0; }
+.two > div { min-width: 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; }
+.two h3 { margin-top: 0; }
+footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 13px; }
+a { color: var(--open); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+  <div class="eyebrow">LumoPlan · development branch · 2026-10-16</div>
+  <h1>Post-processing timeline improvements, day one</h1>
+  <p class="lede">Nine commits for the Notion step <em>2. Post-processing timeline improvements</em>: building milestones, Packing Sports as an assignee, and the first cut of the board file split. The LumoCad QC hand-in is parked. Nothing is pushed yet.</p>
+</header>
+
+<div class="facts">
+  <div class="fact"><div class="n">9</div><div class="l">commits on <span class="mono">development</span></div></div>
+  <div class="fact"><div class="n">2,087</div><div class="l">unit tests green, 18 new</div></div>
+  <div class="fact"><div class="n">−1,641</div><div class="l">lines out of the two board files</div></div>
+  <div class="fact warn"><div class="n">0</div><div class="l">end-to-end runs (auth expired)</div></div>
+</div>
+
+<div class="callout">
+  <p><strong>Not verified in a browser.</strong> The saved Playwright session is eight days old and the headed refresh dies while Brave is open. Type check and unit tests passed after every slice, but nobody has clicked a milestone or booked Packing Sports yet. Do that on dev before anything ships.</p>
+</div>
+
+<h2><span class="track">plan</span>How the day was run</h2>
+<p>The work follows <code>docs/postprocessing-timeline-improvements-2026-10-16.md</code>, a checklist with one slice per commit. Each slice ends with <code>tsc</code> and <code>vitest</code>, and the doc records the commit hash next to the tick. Rio's order from 29 Sept stands: milestones first, then Packing Sports, then the hour-planning trial, then notifications.</p>
+<p>One rule shaped the sequence. Both board files were over the 7,000-line ceiling, so every feature slice that touches a board file is paired with an extraction from that file first. That is why the day opens with two refactors.</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Track</th><th>What</th><th>State</th></tr></thead>
+<tbody>
+<tr><td class="mono">S</td><td>Board file split</td><td><span class="status part">S8, S1, S2 done · S3–S7, S9–S15 open</span></td></tr>
+<tr><td class="mono">M</td><td>Building milestones</td><td><span class="status done">M1–M3 built</span> <span class="status open">M5 Notion/Rio: Milton</span></td></tr>
+<tr><td class="mono">P</td><td>Packing Sports as assignee</td><td><span class="status done">P1, P3 built</span> <span class="status part">P2 partly</span> <span class="status open">P0, P4: Milton</span></td></tr>
+<tr><td class="mono">H</td><td>Hour-planning trial</td><td><span class="status warn">blocked on Rio (H0)</span></td></tr>
+<tr><td class="mono">N</td><td>Notification strategy</td><td><span class="status warn">blocked on Rio (N1)</span></td></tr>
+<tr><td class="mono">QC</td><td>LumoCad hand-in go-live</td><td><span class="status open">parked by Milton</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<h2><span class="track">M</span>Building milestones</h2>
+<p>A milestone is one named date on a building's timeline with an assignee and a done tick. It is not a stage: no start and end, no hours, no place in the chain. The building's due date stays its own field. First use is Alexandra's early QC pre-check on large buildings; a later candidate is "AirThings model expected".</p>
+
+<div class="rowmock" aria-label="Mock of a building row with a DUE pill at the top and three milestone pills at the bottom">
+  <span class="name">Rathaus Mitte</span>
+  <div class="bar pre"></div>
+  <div class="bar post"></div>
+  <div class="line due"><span class="pill">DUE 14 Nov</span></div>
+  <div class="line ms done" style="left:150px"><span class="pill">✓ Scans checked</span></div>
+  <div class="line ms late" style="left:240px"><span class="pill">⚑ QC pre-check</span></div>
+  <div class="line ms" style="left:390px"><span class="pill">⚑ AirThings model</span></div>
+</div>
+<p class="legend">DUE keeps the top edge, milestones take the bottom. Green is done, blue is open, red is past its date and still open. Clicking a pill toggles done for any user, the same rule as marking a stage done.</p>
+
+<h3>Data (commit 467812b)</h3>
+<ul>
+  <li>Type <code>BuildingMilestone</code>: id, buildingId, label, date, assigneeId, done, doneAt, doneBy, note.</li>
+  <li>Route <code>/server/building-milestones</code> on collection <code>buildingMilestones</code>, the generic CRUD handler. Optional fields clear through PUT with <code>null</code>, because the POST upsert is a <code>$set</code> and could never remove a field.</li>
+  <li>Hook <code>useBuildingMilestones</code> with add, update, setDone, delete and a stable per-building getter.</li>
+  <li>Pure helpers: sort, group by building, state (done / open / overdue), per-assignee select. Seven tests.</li>
+</ul>
+
+<h3>Board (commit d1f889c)</h3>
+<ul>
+  <li><code>MilestoneMarkers</code> draws the pills on building rows. Same-day milestones stack upwards. Read-only while painting.</li>
+  <li><code>BuildingMilestoneList</code> sits inside the timeline editor modal (planning mode, the calendar button on a row): add, rename, move, reassign, delete. Every change saves at once, not on the modal's Save.</li>
+  <li>Package and project rows get no milestones in this version. That is open question Q-M1 for Rio.</li>
+</ul>
+
+<h3>My Work (commit c0432e9)</h3>
+<p>A <code>MyMilestonesCard</code> under <em>Upcoming events</em> lists the focused person's milestones as overdue, upcoming and done, with a checkbox, plus an "N milestones overdue" chip in the header. They were kept out of the assignment table on purpose: those rows carry hours and open the hours dialog, which a milestone must never do.</p>
+
+<h2><span class="track">P</span>Packing Sports as an assignee</h2>
+<p>Rio and Carlos asked for the external annotation team to be assignable on the timeline even though it is not a person: a building or a preprocessing stage goes to "Packing Sports". Version one is assignment only. No mail to them, no tracking of their time.</p>
+
+<div class="two">
+  <div>
+    <h3>Why it needed code</h3>
+    <ul>
+      <li>The board's people list is <code>employees</code> filtered by <code>isTaskTeamMember</code>: active, Customers department, lumoview mailbox.</li>
+      <li>The server rejects assignments for ids that are not in the employees collection.</li>
+      <li>Zero capacity toasts "no available hours" and the fully-booked prompt would fire on every second building.</li>
+    </ul>
+  </div>
+  <div>
+    <h3>Chosen shape (commit dc1379a)</h3>
+    <ul>
+      <li>One real <code>employees</code> record with a new <code>isGroup</code> flag. The Personio sync upserts by Personio id, so a hand-made id survives.</li>
+      <li>Kept out of the Customers department: ten pickers across the app filter on that department alone and would list the team.</li>
+      <li>Only the board admits groups, through <code>isAssignableTeamMember</code>. <code>isTaskTeamMember</code> and <code>pickableEmployees</code> exclude them.</li>
+    </ul>
+  </div>
+</div>
+
+<h3>Behaviour of a group assignee</h3>
+<ul>
+  <li>24 hours a day of capacity, 0 hours allocated, so it is never "fully booked".</li>
+  <li>Booked by range fill only: every day of the stage, no hour schedule, no fully-booked prompt.</li>
+  <li>No assignment mail (<code>reason: 'group-assignee'</code>). Not on the team swimlane, coverage or capacity views.</li>
+  <li>The assignment picker shows it as "Packing Sports (team)".</li>
+</ul>
+
+<h3>Assigning shares the building (commit cc609b5)</h3>
+<p>Booking the group on a preprocessing stage, or setting it as the building's assignee, shares the building with the preprocessing organisation unless it is shared already. Unassigning never unshares. Named assignment replaces the separate share toggle, which stays as the truth pill on the row. A postprocessing-stage booking of the group does not share.</p>
+
+<div class="callout red">
+  <p><strong>Two steps are Milton's before this works end to end.</strong></p>
+  <p><strong>P0:</strong> a platform Auth0 user for <code>preprocessing@lumoview.com</code> inside the Packing Sports organisation. Without it, stage assignment works but the building-level assignee refuses the group.</p>
+  <p><strong>P4:</strong> <code>node scripts/packing-sports-group.mjs add --auth0-id &lt;sub&gt;</code> on dev, then prod after a go. The script is a dry run without <code>--apply</code> and also has <code>status</code> and <code>remove</code>. It has not been run anywhere.</p>
+</div>
+
+<h2><span class="track">S</span>Board file split</h2>
+<p>The two board files were over the hard 7,000-line ceiling. Every block below moved verbatim into its own file with explicit typed props. No Context, dependency arrays unchanged, read-only menu left where it was.</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>File</th><th class="num">Start of day</th><th class="num">End of day</th><th>What left it</th></tr></thead>
+<tbody>
+<tr><td class="mono">routes/postprocessing.tsx</td><td class="num">10,766</td><td class="num">9,479</td><td><code>useStageChainResolvers</code> (capacity + stage chain resolvers), <code>StageLengthPrompts</code>, <code>StageScopePrompts</code>, <code>StageInsertMenu</code>, <code>StagePlanningContextMenu</code></td></tr>
+<tr><td class="mono">components/postprocessing/TimelineRow.tsx</td><td class="num">7,267</td><td class="num">6,913</td><td><code>ProjectHeaderRow</code> (the collapsed project header with coordinator picker and summary lanes)</td></tr>
+</tbody>
+</table>
+</div>
+<p>Both files are under the ceiling now. The long-term target is about 1,000 lines each; the next candidates are the paint-mode hook, the package status resize effect and the stage resize drags. The read-only stage menu and the outside-click effects stay in the route for now.</p>
+
+<h2><span class="track">H · N</span>Waiting on Rio</h2>
+<div class="two">
+  <div>
+    <h3>H0 · hour-planning trial</h3>
+    <p>Proposal from 6 Oct: the board keeps who is assigned and drops the per-day hour distribution; people log their own hours with no pre-fill. The code path is mapped, including the trap that an empty <code>hours</code> reads as a full day on the board but as zero in team views. Needs the team's yes and a list of what goes blank during the trial.</p>
+  </div>
+  <div>
+    <h3>N1 · notification matrix</h3>
+    <p>The plan proposes one <code>notifications</code> collection that is both the in-app feed and the sent log, a bell in the top bar, and a scan route for "ends tomorrow" and overdue alerts with the 24-hour grace Rio asked for. The event × recipient × channel table in the doc needs sign-off, and someone has to own the cron.</p>
+  </div>
+</div>
+
+<h2><span class="track">git</span>The nine commits</h2>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Hash</th><th>Slice</th><th>Commit</th></tr></thead>
+<tbody>
+<tr><td class="mono">a5f7985</td><td>S8</td><td>refactor(postprocessing): extract ProjectHeaderRow</td></tr>
+<tr><td class="mono">40fc006</td><td>S1</td><td>refactor(postprocessing): extract useStageChainResolvers</td></tr>
+<tr><td class="mono">467812b</td><td>M1</td><td>feat(milestones): building milestone data layer</td></tr>
+<tr><td class="mono">d1f889c</td><td>M2</td><td>feat(milestones): markers on the board and a list in the timeline editor</td></tr>
+<tr><td class="mono">c0432e9</td><td>M3</td><td>feat(milestones): show a person's milestones in My Work</td></tr>
+<tr><td class="mono">dc1379a</td><td>P1</td><td>feat(assignments): group assignees for the board (Packing Sports)</td></tr>
+<tr><td class="mono">cc609b5</td><td>P2 · P3</td><td>feat(assignments): assigning Packing Sports shares the building</td></tr>
+<tr><td class="mono">3ba65ed</td><td>S2 part 1</td><td>refactor(postprocessing): extract board prompts and the insert menu</td></tr>
+<tr><td class="mono">68a1f95</td><td>S2 part 2</td><td>refactor(postprocessing): extract StagePlanningContextMenu</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2><span class="track">next</span>What happens next</h2>
+<ul>
+  <li><strong>Milton:</strong> quit Brave, refresh the Playwright session, run the <code>app</code>, <code>postprocessing-layout</code> and <code>stage-completion</code> specs. Click through milestones on dev. P0, then P4 on dev and prod. Update Notion, tell Rio and Alexandra.</li>
+  <li><strong>Rio:</strong> H0 and N1 above. Defaults the plan assumes unless he objects: milestones on buildings only, shown in My Work and red when past date; one Packing Sports group record rather than individual annotators; assigning the group shares the building; group-assigned buildings count in the preprocessing dashboard queue.</li>
+  <li><strong>Code:</strong> more extractions toward the 1,000-line target, then H1–H4 and N2–N5 once unblocked.</li>
+</ul>
+
+<footer>Source of truth: <code>docs/postprocessing-timeline-improvements-2026-10-16.md</code> in the lumoplan repo. Written 16 Oct 2026.</footer>
+</main>
+</body>
+</html>
