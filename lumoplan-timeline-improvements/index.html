@@ -312,7 +312,7 @@ node scripts/packing-sports-group.mjs add --apply   # writes to the dev database
   <li>Assign it to a second stage that overlaps the first. <span class="expect">Still no fully-booked prompt.</span></li>
   <li>Open the assignment modal from a stage. <span class="expect">The picker lists "Packing Sports (team)".</span></li>
   <li>Check where it must <strong>not</strong> show up: the team view in My Work, the coverage view, the capacity strip, the measurement planning people pickers, the coordinator picker in the project editor.</li>
-  <li>Set it as a building's assignee from the row label. <span class="expect">Toast: "This employee is not linked to an Auth0 platform account".</span> That is expected until step P0 is done.</li>
+  <li>Open the assignee picker on a building row label. <span class="expect">Packing Sports is not listed.</span> That picker offers people only; making the group a building's assignee is still missing (see below).</li>
   <li>Check the building is <strong>not</strong> shared with Packing Sports because of the assignment (the access pill on the row stays as it was).</li>
   <li>Clean up when done: <code>node scripts/packing-sports-group.mjs remove --apply</code>. Bookings stay; delete them from the board.</li>
 </ol>
@@ -372,6 +372,7 @@ npx playwright test e2e/app.spec.ts e2e/postprocessing-layout.spec.ts \
 <ul>
   <li><strong>Verification:</strong> no e2e run and no manual click-through yet. Use the checklists above.</li>
   <li><strong>Milton:</strong> P0, an Auth0 platform user for <code>preprocessing@lumoview.com</code> in the Packing Sports organisation, so the group can be a building's assignee. P4 on prod, after dev looks right. Update Notion, tell Rio and Alexandra.</li>
+  <li><strong>Packing Sports as a building's assignee:</strong> the row label's assignee picker lists people only, so the group can be booked on stages but not set as the building's assignee. It also needs P0, because that field stores a platform user.</li>
   <li><strong>Packing Sports display (P2):</strong> the package bulk-assignment modal, the building page and My Work rows still show the raw id <code>packing-sports</code> for group bookings, because they look names up among people only.</li>
   <li><strong>On hold:</strong> sharing the building when Packing Sports is assigned (P3).</li>
   <li><strong>Rio:</strong> H0 and N1 above. Defaults the plan assumes unless he objects: milestones on buildings only, shown in My Work and red when past date; one Packing Sports group record rather than individual annotators; group-assigned buildings count in the preprocessing dashboard queue.</li>
