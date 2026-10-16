@@ -172,7 +172,7 @@ a { color: var(--open); }
   </ul></div>
   <div class="s-miss"><h3>Missing</h3><ul>
     <li>Any browser check (e2e or manual)</li>
-    <li>Packing Sports record not created; Auth0 user missing</li>
+    <li>Packing Sports record on dev only (borrows the team lead's account for now); prod not created</li>
     <li>Hour trial and notifications wait on Rio</li>
   </ul></div>
 </div>
@@ -191,7 +191,7 @@ a { color: var(--open); }
 <tbody>
 <tr><td class="mono">S</td><td>Board file split</td><td><span class="status part">S8, S1, S2 done · S3–S7, S9–S15 open</span></td></tr>
 <tr><td class="mono">M</td><td>Building milestones</td><td><span class="status done">M1–M3 built</span> <span class="status open">M5 Notion/Rio: Milton</span></td></tr>
-<tr><td class="mono">P</td><td>Packing Sports as assignee</td><td><span class="status done">P1 built</span> <span class="status part">P2 partly</span> <span class="status open">P3 on hold</span> <span class="status open">P0, P4: Milton</span></td></tr>
+<tr><td class="mono">P</td><td>Packing Sports as assignee</td><td><span class="status done">P1 built</span> <span class="status part">P2 partly</span> <span class="status open">P3 on hold</span> <span class="status done">P0 interim</span> <span class="status part">P4 dev done, prod open</span></td></tr>
 <tr><td class="mono">H</td><td>Hour-planning trial</td><td><span class="status warn">blocked on Rio (H0)</span></td></tr>
 <tr><td class="mono">N</td><td>Notification strategy</td><td><span class="status warn">blocked on Rio (N1)</span></td></tr>
 <tr><td class="mono">QC</td><td>LumoCad hand-in go-live</td><td><span class="status open">parked by Milton</span></td></tr>
@@ -267,8 +267,8 @@ a { color: var(--open); }
 
 <div class="callout red">
   <p><strong>Two steps are Milton's before this works end to end.</strong></p>
-  <p><strong>P0:</strong> a platform Auth0 user for <code>preprocessing@lumoview.com</code> inside the Packing Sports organisation. Without it, stage assignment works but the building-level assignee refuses the group.</p>
-  <p><strong>P4:</strong> <code>node scripts/packing-sports-group.mjs add --auth0-id &lt;sub&gt;</code> on dev, then prod after a go. The script is a dry run without <code>--apply</code> and also has <code>status</code> and <code>remove</code>. It has not been run anywhere.</p>
+  <p><strong>P0, for now:</strong> the group borrows the platform account of the preprocessing team's lead. That account is the script default. When a shared <code>preprocessing@lumoview.com</code> user exists, rerun <code>add --auth0-id &lt;sub&gt;</code>. Until then, if the lead signs in to LumoPlan she is recognised as "Packing Sports". The record has no coordinator rights.</p>
+  <p><strong>P4:</strong> <code>node scripts/packing-sports-group.mjs add --auth0-id &lt;sub&gt;</code> on dev, then prod after a go. The script is a dry run without <code>--apply</code> and also has <code>status</code> and <code>remove</code>. Created on dev on 2026-10-16. Prod is not done yet and needs a go.</p>
 </div>
 
 <h2><span class="track">S</span>Board file split</h2>
@@ -305,9 +305,8 @@ pnpm dev            # http://localhost:3000, dev database</pre>
 
 <h3>2 · Packing Sports group</h3>
 <ol class="steps">
-  <li>Create the record on dev (stage assignment only, no Auth0 link yet):
-<pre>node scripts/packing-sports-group.mjs add           # dry run, shows what it would write
-node scripts/packing-sports-group.mjs add --apply   # writes to the dev database</pre></li>
+  <li>The record already exists on dev. Check it with:
+<pre>node scripts/packing-sports-group.mjs status        # record + its bookings, read-only</pre></li>
   <li>Reload <code>/postprocessing</code>, planning mode. Right-click a preprocessing stage. <span class="expect">"Packing Sports" is in the Assign list.</span></li>
   <li>Assign it. <span class="expect">It is booked on every day of the stage, with no "fully booked" prompt and no "no available hours" toast.</span></li>
   <li>Assign it to a second preprocessing stage that overlaps the first. <span class="expect">Still no fully-booked prompt.</span></li>
@@ -316,7 +315,7 @@ node scripts/packing-sports-group.mjs add --apply   # writes to the dev database
   <li>Check where it must <strong>not</strong> show up: the team view in My Work, the coverage view, the capacity strip, the measurement planning people pickers, the coordinator picker in the project editor.</li>
   <li>Open the assignee picker on a building row label. <span class="expect">Packing Sports is not listed.</span> That picker offers people only; making the group a building's assignee is still missing (see below).</li>
   <li>Check the building is <strong>not</strong> shared with Packing Sports because of the assignment (the access pill on the row stays as it was).</li>
-  <li>Clean up when done: <code>node scripts/packing-sports-group.mjs remove --apply</code>. Bookings stay; delete them from the board.</li>
+  <li>Delete your test bookings from the board when you are done. Keep the record on dev.</li>
 </ol>
 
 <h3>3 · Board split (regressions)</h3>
@@ -365,6 +364,7 @@ npx playwright test e2e/app.spec.ts e2e/postprocessing-layout.spec.ts \
 <tr><td class="mono">cc609b5</td><td>P2 · P3</td><td>feat(assignments): assigning Packing Sports shares the building</td></tr>
 <tr><td class="mono">4fc2966</td><td>P3 off</td><td>revert(assignments): assigning Packing Sports no longer shares the building</td></tr>
 <tr><td class="mono">77e1f45</td><td>docs</td><td>docs(timeline-plan): note Packing Sports is not offered as building assignee</td></tr>
+<tr><td class="mono">b99fd29</td><td>P0, P4</td><td>chore(packing-sports): group record uses the team lead's account for now</td></tr>
 <tr><td class="mono">df321cd</td><td>P1</td><td>feat(assignments): Packing Sports takes preprocessing stages only</td></tr>
 <tr><td class="mono">3ba65ed</td><td>S2 part 1</td><td>refactor(postprocessing): extract board prompts and the insert menu</td></tr>
 <tr><td class="mono">68a1f95</td><td>S2 part 2</td><td>refactor(postprocessing): extract StagePlanningContextMenu</td></tr>
@@ -375,8 +375,8 @@ npx playwright test e2e/app.spec.ts e2e/postprocessing-layout.spec.ts \
 <h2><span class="track">missing</span>What's missing</h2>
 <ul>
   <li><strong>Verification:</strong> no e2e run and no manual click-through yet. Use the checklists above.</li>
-  <li><strong>Milton:</strong> P0, an Auth0 platform user for <code>preprocessing@lumoview.com</code> in the Packing Sports organisation, so the group can be a building's assignee. P4 on prod, after dev looks right. Update Notion, tell Rio and Alexandra.</li>
-  <li><strong>Packing Sports as a building's assignee:</strong> the row label's assignee picker lists people only, so the group can be booked on stages but not set as the building's assignee. It also needs P0, because that field stores a platform user.</li>
+  <li><strong>Milton:</strong> P4 on prod, once dev looks right. Later, a shared <code>preprocessing@lumoview.com</code> platform user to replace the borrowed account. Update Notion, tell Rio and Alexandra.</li>
+  <li><strong>Packing Sports as a building's assignee:</strong> the row label's assignee picker lists people only, so the group can be booked on stages but not set as the building's assignee. The account side is covered for now, so only the picker change is left.</li>
   <li><strong>Packing Sports display (P2):</strong> the package bulk-assignment modal, the building page and My Work rows still show the raw id <code>packing-sports</code> for group bookings, because they look names up among people only.</li>
   <li><strong>On hold:</strong> sharing the building when Packing Sports is assigned (P3).</li>
   <li><strong>Rio:</strong> H0 and N1 above. Defaults the plan assumes unless he objects: milestones on buildings only, shown in My Work and red when past date; one Packing Sports group record rather than individual annotators; group-assigned buildings count in the preprocessing dashboard queue.</li>
