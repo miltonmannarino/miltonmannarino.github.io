@@ -110,6 +110,7 @@ footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--li
       <span class="pill">46 files · +14,508 / −794 before merge</span>
       <span class="pill">development merged in · 24ae08fdb</span>
       <span class="pill">riser fix · dc3bb9074</span>
+      <span class="pill">follow-ups · 1700122e7</span>
     </div>
     <p class="lede">This PR turns the sprint 2.2 stair feedback from René and Djunejt into code. Any stair is now one ordered list of landings and winders, so shapes that matched no IFC type can be built and saved. It also fixes four bugs from the sprint review. On 16 Oct it was merged with Piotr's multi-slab work.</p>
     <div class="chain-wrap" aria-label="Example turn chain">
@@ -136,8 +137,10 @@ footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--li
         <li>The <b>Turns</b> section in the stair panel has an <b>Add</b> menu, a remove button on each turn, and a <b>Turn angle</b> select. A straight stair shows the section too, so landings can be added to it.</li>
         <li><code>stairMachine</code> gains <code>turn.add</code> and <code>turn.remove</code>. Changing a turn's kind or angle re-derives the type.</li>
         <li>On load, the chain is rebuilt from the saved children (winder flights, flights meeting at a landing, headings), not from the stored type. If the stored preset disagrees with the children, it is corrected and flagged.</li>
-        <li>At placement, the side click mirrors the whole chain instead of forcing every turn to one side. This applies to presets only: a <b>Custom turns</b> stair places after 2 clicks, with the sides set in the panel (see What’s missing).</li>
+        <li>At placement, the side click mirrors the whole chain instead of forcing every turn to one side, so a Z-shape keeps its shape. A <b>Custom turns</b> stair with at least one real turn asks for the side click too.</li>
         <li>The landing field is labelled “Landing width” for a U-turn landing and “Landing depth” for a straight-on one.</li>
+        <li>Panel numbers show at most one decimal (674.9 mm, 627.1 mm) instead of up to six.</li>
+        <li>When a stair opening does not fit a slab, the message names the floor and slab and says what is wrong, for example “The stair opening reaches past the edge of OG01 · elevationSlab”. It used to show raw ids and a validator message.</li>
         <li>Changing <b>Number of risers</b> now keeps every turn at the same relative height: a landing after riser 8 of 16 moves to riser 28 of 56. Before, it stayed at riser 8, so a half turn put 48 risers on the return flight and its opening ran 10.8 m behind the start, off the slab. Found while testing on 16 Oct.</li>
       </ul>
     </div>
@@ -180,8 +183,10 @@ footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--li
           <span class="expect">the preview shows three flights, and the type select reads “Custom turns” (disabled, not offered as a preset).</span></li>
         <li>Click <b>Add stair</b>, pick <b>Quarter turn</b>, and click the start point and then the direction. Move the mouse to the other side of the line and click there.
           <span class="expect">the preview flips as the mouse crosses the line, and the placed stair turns toward the side you clicked. Once selected, <b>Turns → Turn direction</b> matches.</span></li>
-        <li>Click <b>Add stair</b> → <b>Quarter turn</b> → <b>Add → Landing, 90° turn</b>. Set <b>Landing 1</b> to <b>Left</b> and <b>Landing 2</b> to <b>Right</b>, then click the start point and the direction.
-          <span class="expect">the type changes to “Custom turns”, and the stair places after the 2nd click as a Z-shape, left then right. It is still a Z after a reload.</span></li>
+        <li>Click <b>Add stair</b> → <b>Quarter turn</b> → <b>Add → Landing, 90° turn</b>. Set <b>Landing 1</b> to <b>Left</b> and <b>Landing 2</b> to <b>Right</b>, then click the start point and the direction. Move the mouse to the other side of the line and click.
+          <span class="expect">the type reads “Custom turns”, and the whole Z mirrors to the side you clicked, so it turns right then left. It is still the same Z after a reload.</span></li>
+        <li>Drag a stair so it runs past a slab edge on the floor above.
+          <span class="expect">the error names the floor and slab (for example “OG01 · elevationSlab”), with no ids.</span></li>
         <li>Select the placed stair and reload the page.
           <span class="expect">the same chain comes back, and the Turns section lists the same landings and winder.</span></li>
         <li>Pick a preset again in <b>Stair type</b>, for example Quarter turn.
@@ -213,11 +218,8 @@ footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--li
           <tr><td class="kind"><span class="k decide">Decision</span></td><td>Should explicit void lists stay final, with keeping a slab's own stair voids limited to the old copy dialog (<code>keepOwnStairVoids</code>)?</td><td>Piotr</td></tr>
           <tr><td class="kind"><span class="k decide">Decision</span></td><td>Drop “Two straight runs” from the placement presets? It is now a straight stair plus one landing, and old stairs still load either way.</td><td>Team</td></tr>
           <tr><td class="kind"><span class="k decide">Decision</span></td><td>Half landings: the two flight paths are parallel and never meet, so they cross on the landing centre line. Is that right?</td><td>Djunejt</td></tr>
-          <tr><td class="kind"><span class="k later">Follow-up</span></td><td>A <b>Custom turns</b> stair gets no side click at placement, so its chain cannot be mirrored by clicking. Fix: ask for the 3rd click whenever the stair has at least one real turn.</td><td>Milton</td></tr>
-          <tr><td class="kind"><span class="k later">Follow-up</span></td><td>The slab opening is always one rectangle around the whole stair, so L-, Z- and other custom chains also cut floor where there are no stairs.</td><td>Milton</td></tr>
-          <tr><td class="kind"><span class="k later">Follow-up</span></td><td>The slab-opening error shows raw slab and stair ids and no floor name. It should name the floor (for example “OG01”).</td><td>Piotr</td></tr>
-          <tr><td class="kind"><span class="k later">Follow-up</span></td><td>Unrounded values in the panel: a dragged width shows 674.89 mm, and the compliance value shows 627.142857.</td><td>Milton</td></tr>
-          <tr><td class="kind"><span class="k later">Follow-up</span></td><td>After a failed server delete, the stair comes back without its void until its next save (ST-6 edge case).</td><td>Milton</td></tr>
+                    <tr><td class="kind"><span class="k later">Follow-up</span></td><td>The slab opening is always one rectangle around the whole stair, so L-, Z- and other custom chains also cut floor where there are no stairs.</td><td>Milton</td></tr>
+                              <tr><td class="kind"><span class="k later">Follow-up</span></td><td>After a failed server delete, the stair comes back without its void until its next save (ST-6 edge case).</td><td>Milton</td></tr>
           <tr><td class="kind"><span class="k later">Follow-up</span></td><td>Landing resize handle for custom chains.</td><td>Milton</td></tr>
           <tr><td class="kind"><span class="k later">Follow-up</span></td><td>P2: construction type and waist thickness (ST-12). Needs an ifc4-types → types → api → platform release.</td><td>Milton</td></tr>
           <tr><td class="kind"><span class="k later">Follow-up</span></td><td>P3–P6: curved and spiral stairs (ST-3), ramps (ST-4), editable voids (ST-7), rotation (ST-8), 3D selection (ST-9), per-step width (ST-13), landings trimmed by walls (ST-14).</td><td>Backlog</td></tr>
