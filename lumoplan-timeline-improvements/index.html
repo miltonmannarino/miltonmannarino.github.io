@@ -128,6 +128,17 @@ td.num { font-variant-numeric: tabular-nums; text-align: right; white-space: now
 .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 12px 0; }
 .two > div { min-width: 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; }
 .two h3 { margin-top: 0; }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 20px 0 8px; }
+.summary > div { min-width: 0; background: var(--surface); border: 1px solid var(--rule); border-top: 3px solid var(--muted); border-radius: 6px; padding: 10px 14px; }
+.summary > .s-done { border-top-color: var(--done); }
+.summary > .s-test { border-top-color: var(--open); }
+.summary > .s-miss { border-top-color: var(--warn); }
+.summary h3 { margin: 0 0 4px; }
+.summary ul { margin: 4px 0; padding-left: 18px; font-size: 14.5px; }
+ol.steps { padding-left: 22px; margin: 8px 0; max-width: 68ch; }
+ol.steps li { margin: 6px 0; }
+.expect { color: var(--done); font-weight: 500; }
+pre { background: var(--code-bg); border-radius: 6px; padding: 10px 12px; overflow-x: auto; font-family: var(--mono); font-size: 13px; margin: 8px 0; }
 footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 13px; }
 a { color: var(--open); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
@@ -146,6 +157,24 @@ a { color: var(--open); }
   <div class="fact"><div class="n">2,087</div><div class="l">unit tests green, 18 new</div></div>
   <div class="fact"><div class="n">−1,641</div><div class="l">lines out of the two board files</div></div>
   <div class="fact warn"><div class="n">0</div><div class="l">end-to-end runs (auth expired)</div></div>
+</div>
+
+<div class="summary">
+  <div class="s-done"><h3>Done</h3><ul>
+    <li>Building milestones: data, board pills, editor list, My Work card</li>
+    <li>Packing Sports as a group assignee on the board</li>
+    <li>Both board files under 7,000 lines</li>
+  </ul></div>
+  <div class="s-test"><h3>How to test</h3><ul>
+    <li>Run the dev server against the dev database</li>
+    <li>Click through the three checklists in <a href="#test">How to test</a></li>
+    <li>Refresh Playwright auth and run the e2e specs</li>
+  </ul></div>
+  <div class="s-miss"><h3>Missing</h3><ul>
+    <li>Any browser check (e2e or manual)</li>
+    <li>Packing Sports record not created; Auth0 user missing</li>
+    <li>Hour trial and notifications wait on Rio</li>
+  </ul></div>
 </div>
 
 <div class="callout">
@@ -255,6 +284,59 @@ a { color: var(--open); }
 </div>
 <p>Both files are under the ceiling now. The long-term target is about 1,000 lines each; the next candidates are the paint-mode hook, the package status resize effect and the stage resize drags. The read-only stage menu and the outside-click effects stay in the route for now.</p>
 
+<h2 id="test"><span class="track">test</span>How to test</h2>
+<p>All of this runs locally against the <strong>development</strong> database. Never use <code>pnpm dev:prod</code> for these checks.</p>
+<pre>cd ~/Documents/lumoview/lumoplan/lumoplan
+pnpm dev            # http://localhost:3000, dev database</pre>
+
+<h3>1 · Milestones</h3>
+<ol class="steps">
+  <li>Open <code>/postprocessing</code> and switch to planning mode.</li>
+  <li>On a building row, click the calendar button to open <em>Edit Timeline</em>. Scroll to <em>Milestones</em>.</li>
+  <li>Type "QC pre-check", pick a date two days ahead and yourself as assignee, click Add. <span class="expect">The row appears in the list straight away.</span></li>
+  <li>Close the modal. <span class="expect">A blue flag pill "QC pre-check" sits at the bottom edge of the row on that day; the DUE pill stays at the top.</span></li>
+  <li>Click the pill. <span class="expect">It turns green with a tick.</span> Click again to reopen it.</li>
+  <li>Back in the modal, move the date to last week. <span class="expect">The pill turns red (overdue).</span></li>
+  <li>Open <code>/my-work</code> with the Person filter on yourself. <span class="expect">A Milestones card under Upcoming events lists it under Overdue, and the header shows "1 milestone overdue".</span> Tick it there; with "Open only" on it disappears.</li>
+  <li>Rename it, change the assignee to Unassigned, then delete it. <span class="expect">Each change sticks after a page reload.</span></li>
+  <li>Turn on paint mode. <span class="expect">Pills are still visible but no longer clickable.</span></li>
+</ol>
+
+<h3>2 · Packing Sports group</h3>
+<ol class="steps">
+  <li>Create the record on dev (stage assignment only, no Auth0 link yet):
+<pre>node scripts/packing-sports-group.mjs add           # dry run, shows what it would write
+node scripts/packing-sports-group.mjs add --apply   # writes to the dev database</pre></li>
+  <li>Reload <code>/postprocessing</code>, planning mode. Right-click a preprocessing stage. <span class="expect">"Packing Sports" is in the Assign list.</span></li>
+  <li>Assign it. <span class="expect">It is booked on every day of the stage, with no "fully booked" prompt and no "no available hours" toast.</span></li>
+  <li>Assign it to a second stage that overlaps the first. <span class="expect">Still no fully-booked prompt.</span></li>
+  <li>Open the assignment modal from a stage. <span class="expect">The picker lists "Packing Sports (team)".</span></li>
+  <li>Check where it must <strong>not</strong> show up: the team view in My Work, the coverage view, the capacity strip, the measurement planning people pickers, the coordinator picker in the project editor.</li>
+  <li>Set it as a building's assignee from the row label. <span class="expect">Toast: "This employee is not linked to an Auth0 platform account".</span> That is expected until step P0 is done.</li>
+  <li>Check the building is <strong>not</strong> shared with Packing Sports because of the assignment (the access pill on the row stays as it was).</li>
+  <li>Clean up when done: <code>node scripts/packing-sports-group.mjs remove --apply</code>. Bookings stay; delete them from the board.</li>
+</ol>
+
+<h3>3 · Board split (regressions)</h3>
+<p>Nothing should look or behave differently. In planning mode on <code>/postprocessing</code>:</p>
+<ol class="steps">
+  <li>Collapse and expand a project header, change its coordinator, archive and reopen it.</li>
+  <li>Right-click a stage: mark done, insert stage after, branch parallel stage, delete stage, assign and unassign a person.</li>
+  <li>Select two buildings, then assign a person on one of them. <span class="expect">The "This building only / Distribute across" prompt appears.</span> Same for unassign.</li>
+  <li>With two buildings selected, resize a stage on one. <span class="expect">The "Apply stage length change?" prompt appears.</span></li>
+  <li>Assign someone who is already full that week. <span class="expect">The "fully booked already" prompt appears with both options.</span></li>
+  <li>Hover a stage boundary and open the insert menu: measurement, preprocessing and a stage.</li>
+</ol>
+
+<h3>4 · Automated checks</h3>
+<pre>npx tsc --noEmit
+npx vitest run --dir src                       # 2,087 tests, all green today
+# quit Brave first, then refresh the session (log in when asked)
+BRAVE_PATH="/Applications/Brave Browser.app/Contents/MacOS/Brave Browser" \
+  npx playwright test e2e/save-auth.spec.ts --project=chromium --headed --timeout=360000
+npx playwright test e2e/app.spec.ts e2e/postprocessing-layout.spec.ts \
+  e2e/postprocessing-drag.spec.ts e2e/stage-completion.spec.ts --project=chromium</pre>
+
 <h2><span class="track">H · N</span>Waiting on Rio</h2>
 <div class="two">
   <div>
@@ -286,9 +368,12 @@ a { color: var(--open); }
 </table>
 </div>
 
-<h2><span class="track">next</span>What happens next</h2>
+<h2><span class="track">missing</span>What's missing</h2>
 <ul>
-  <li><strong>Milton:</strong> quit Brave, refresh the Playwright session, run the <code>app</code>, <code>postprocessing-layout</code> and <code>stage-completion</code> specs. Click through milestones on dev. P0, then P4 on dev and prod. Update Notion, tell Rio and Alexandra.</li>
+  <li><strong>Verification:</strong> no e2e run and no manual click-through yet. Use the checklists above.</li>
+  <li><strong>Milton:</strong> P0, an Auth0 platform user for <code>preprocessing@lumoview.com</code> in the Packing Sports organisation, so the group can be a building's assignee. P4 on prod, after dev looks right. Update Notion, tell Rio and Alexandra.</li>
+  <li><strong>Packing Sports display (P2):</strong> the package bulk-assignment modal, the building page and My Work rows still show the raw id <code>packing-sports</code> for group bookings, because they look names up among people only.</li>
+  <li><strong>On hold:</strong> sharing the building when Packing Sports is assigned (P3).</li>
   <li><strong>Rio:</strong> H0 and N1 above. Defaults the plan assumes unless he objects: milestones on buildings only, shown in My Work and red when past date; one Packing Sports group record rather than individual annotators; group-assigned buildings count in the preprocessing dashboard queue.</li>
   <li><strong>Code:</strong> more extractions toward the 1,000-line target, then H1–H4 and N2–N5 once unblocked.</li>
 </ul>
