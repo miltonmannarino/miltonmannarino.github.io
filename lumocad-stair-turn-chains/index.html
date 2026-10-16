@@ -109,6 +109,7 @@ footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--li
       <span class="pill ok">Mergeable</span>
       <span class="pill">46 files · +14,508 / −794 before merge</span>
       <span class="pill">development merged in · 24ae08fdb</span>
+      <span class="pill">riser fix · dc3bb9074</span>
     </div>
     <p class="lede">This PR turns the sprint 2.2 stair feedback from René and Djunejt into code. Any stair is now one ordered list of landings and winders, so shapes that matched no IFC type can be built and saved. It also fixes four bugs from the sprint review. On 16 Oct it was merged with Piotr's multi-slab work.</p>
     <div class="chain-wrap" aria-label="Example turn chain">
@@ -137,6 +138,7 @@ footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--li
         <li>On load, the chain is rebuilt from the saved children (winder flights, flights meeting at a landing, headings), not from the stored type. If the stored preset disagrees with the children, it is corrected and flagged.</li>
         <li>At placement, the side click mirrors the whole chain instead of forcing every turn to one side, so a Z-shape keeps its shape.</li>
         <li>The landing field is labelled “Landing width” for a U-turn landing and “Landing depth” for a straight-on one.</li>
+        <li>Changing <b>Number of risers</b> now keeps every turn at the same relative height: a landing after riser 8 of 16 moves to riser 28 of 56. Before, it stayed at riser 8, so a half turn put 48 risers on the return flight and its opening ran 10.8 m behind the start, off the slab. Found while testing on 16 Oct.</li>
       </ul>
     </div>
 
@@ -182,6 +184,8 @@ footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--li
           <span class="expect">the same chain comes back, and the Turns section lists the same landings and winder.</span></li>
         <li>Pick a preset again in <b>Stair type</b>, for example Quarter turn.
           <span class="expect">the custom chain is replaced by the preset's turns.</span></li>
+        <li>On a half turn with 16 risers, set <b>Number of risers</b> to 56.
+          <span class="expect">the landing stays in the middle (Turns shows it after riser 28) and both flights are equal.</span></li>
         <li>Place a half-winding stair and set <b>Stairwell well width</b> to 200 mm.
           <span class="expect">the winders fan around an open eye with no gap or overlap.</span></li>
         <li>In the orbit view, turn off <b>Toggle walls</b>, then <b>Toggle stairs</b>.
@@ -207,6 +211,9 @@ footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--li
           <tr><td class="kind"><span class="k decide">Decision</span></td><td>Should explicit void lists stay final, with keeping a slab's own stair voids limited to the old copy dialog (<code>keepOwnStairVoids</code>)?</td><td>Piotr</td></tr>
           <tr><td class="kind"><span class="k decide">Decision</span></td><td>Drop “Two straight runs” from the placement presets? It is now a straight stair plus one landing, and old stairs still load either way.</td><td>Team</td></tr>
           <tr><td class="kind"><span class="k decide">Decision</span></td><td>Half landings: the two flight paths are parallel and never meet, so they cross on the landing centre line. Is that right?</td><td>Djunejt</td></tr>
+          <tr><td class="kind"><span class="k later">Follow-up</span></td><td>The slab opening is always one rectangle around the whole stair, so L-, Z- and other custom chains also cut floor where there are no stairs.</td><td>Milton</td></tr>
+          <tr><td class="kind"><span class="k later">Follow-up</span></td><td>The slab-opening error shows raw slab and stair ids and no floor name. It should name the floor (for example “OG01”).</td><td>Piotr</td></tr>
+          <tr><td class="kind"><span class="k later">Follow-up</span></td><td>Unrounded values in the panel: a dragged width shows 674.89 mm, and the compliance value shows 627.142857.</td><td>Milton</td></tr>
           <tr><td class="kind"><span class="k later">Follow-up</span></td><td>After a failed server delete, the stair comes back without its void until its next save (ST-6 edge case).</td><td>Milton</td></tr>
           <tr><td class="kind"><span class="k later">Follow-up</span></td><td>Landing resize handle for custom chains.</td><td>Milton</td></tr>
           <tr><td class="kind"><span class="k later">Follow-up</span></td><td>P2: construction type and waist thickness (ST-12). Needs an ifc4-types → types → api → platform release.</td><td>Milton</td></tr>
