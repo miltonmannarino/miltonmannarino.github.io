@@ -138,11 +138,11 @@ a { color: var(--open); }
 <header class="top">
   <div class="eyebrow">LumoPlan · development branch · 2026-10-16</div>
   <h1>Post-processing timeline improvements, day one</h1>
-  <p class="lede">Nine commits for the Notion step <em>2. Post-processing timeline improvements</em>: building milestones, Packing Sports as an assignee, and the first cut of the board file split. The LumoCad QC hand-in is parked. Nothing is pushed yet.</p>
+  <p class="lede">Ten commits for the Notion step <em>2. Post-processing timeline improvements</em>: building milestones, Packing Sports as an assignee, and the first cut of the board file split. The LumoCad QC hand-in is parked. Nothing is pushed yet.</p>
 </header>
 
 <div class="facts">
-  <div class="fact"><div class="n">9</div><div class="l">commits on <span class="mono">development</span></div></div>
+  <div class="fact"><div class="n">10</div><div class="l">commits on <span class="mono">development</span></div></div>
   <div class="fact"><div class="n">2,087</div><div class="l">unit tests green, 18 new</div></div>
   <div class="fact"><div class="n">−1,641</div><div class="l">lines out of the two board files</div></div>
   <div class="fact warn"><div class="n">0</div><div class="l">end-to-end runs (auth expired)</div></div>
@@ -162,7 +162,7 @@ a { color: var(--open); }
 <tbody>
 <tr><td class="mono">S</td><td>Board file split</td><td><span class="status part">S8, S1, S2 done · S3–S7, S9–S15 open</span></td></tr>
 <tr><td class="mono">M</td><td>Building milestones</td><td><span class="status done">M1–M3 built</span> <span class="status open">M5 Notion/Rio: Milton</span></td></tr>
-<tr><td class="mono">P</td><td>Packing Sports as assignee</td><td><span class="status done">P1, P3 built</span> <span class="status part">P2 partly</span> <span class="status open">P0, P4: Milton</span></td></tr>
+<tr><td class="mono">P</td><td>Packing Sports as assignee</td><td><span class="status done">P1 built</span> <span class="status part">P2 partly</span> <span class="status open">P3 on hold</span> <span class="status open">P0, P4: Milton</span></td></tr>
 <tr><td class="mono">H</td><td>Hour-planning trial</td><td><span class="status warn">blocked on Rio (H0)</span></td></tr>
 <tr><td class="mono">N</td><td>Notification strategy</td><td><span class="status warn">blocked on Rio (N1)</span></td></tr>
 <tr><td class="mono">QC</td><td>LumoCad hand-in go-live</td><td><span class="status open">parked by Milton</span></td></tr>
@@ -232,8 +232,8 @@ a { color: var(--open); }
   <li>The assignment picker shows it as "Packing Sports (team)".</li>
 </ul>
 
-<h3>Assigning shares the building (commit cc609b5)</h3>
-<p>Booking the group on a preprocessing stage, or setting it as the building's assignee, shares the building with the preprocessing organisation unless it is shared already. Unassigning never unshares. Named assignment replaces the separate share toggle, which stays as the truth pill on the row. A postprocessing-stage booking of the group does not share.</p>
+<h3>Sharing stays separate (on hold)</h3>
+<p>Commit cc609b5 made assigning the group also share the building with the preprocessing organisation. Milton put that on hold the same day and commit 4fc2966 removes it. Assigning Packing Sports changes no access; sharing stays the toggle on the preprocessing overview. The "(team)" label in the picker and the setup script from cc609b5 stay.</p>
 
 <div class="callout red">
   <p><strong>Two steps are Milton's before this works end to end.</strong></p>
@@ -267,7 +267,7 @@ a { color: var(--open); }
   </div>
 </div>
 
-<h2><span class="track">git</span>The nine commits</h2>
+<h2><span class="track">git</span>The ten commits</h2>
 <div class="tablewrap">
 <table>
 <thead><tr><th>Hash</th><th>Slice</th><th>Commit</th></tr></thead>
@@ -279,6 +279,7 @@ a { color: var(--open); }
 <tr><td class="mono">c0432e9</td><td>M3</td><td>feat(milestones): show a person's milestones in My Work</td></tr>
 <tr><td class="mono">dc1379a</td><td>P1</td><td>feat(assignments): group assignees for the board (Packing Sports)</td></tr>
 <tr><td class="mono">cc609b5</td><td>P2 · P3</td><td>feat(assignments): assigning Packing Sports shares the building</td></tr>
+<tr><td class="mono">4fc2966</td><td>P3 off</td><td>revert(assignments): assigning Packing Sports no longer shares the building</td></tr>
 <tr><td class="mono">3ba65ed</td><td>S2 part 1</td><td>refactor(postprocessing): extract board prompts and the insert menu</td></tr>
 <tr><td class="mono">68a1f95</td><td>S2 part 2</td><td>refactor(postprocessing): extract StagePlanningContextMenu</td></tr>
 </tbody>
@@ -288,7 +289,7 @@ a { color: var(--open); }
 <h2><span class="track">next</span>What happens next</h2>
 <ul>
   <li><strong>Milton:</strong> quit Brave, refresh the Playwright session, run the <code>app</code>, <code>postprocessing-layout</code> and <code>stage-completion</code> specs. Click through milestones on dev. P0, then P4 on dev and prod. Update Notion, tell Rio and Alexandra.</li>
-  <li><strong>Rio:</strong> H0 and N1 above. Defaults the plan assumes unless he objects: milestones on buildings only, shown in My Work and red when past date; one Packing Sports group record rather than individual annotators; assigning the group shares the building; group-assigned buildings count in the preprocessing dashboard queue.</li>
+  <li><strong>Rio:</strong> H0 and N1 above. Defaults the plan assumes unless he objects: milestones on buildings only, shown in My Work and red when past date; one Packing Sports group record rather than individual annotators; group-assigned buildings count in the preprocessing dashboard queue.</li>
   <li><strong>Code:</strong> more extractions toward the 1,000-line target, then H1–H4 and N2–N5 once unblocked.</li>
 </ul>
 
