@@ -149,12 +149,12 @@ a { color: var(--open); }
 <header class="top">
   <div class="eyebrow">LumoPlan · development branch · 2026-10-16</div>
   <h1>Post-processing timeline improvements, day one</h1>
-  <p class="lede">Ten commits for the Notion step <em>2. Post-processing timeline improvements</em>: building milestones, Packing Sports as an assignee, and the first cut of the board file split. The LumoCad QC hand-in is parked. Nothing is pushed yet.</p>
+  <p class="lede">Twelve commits for the Notion step <em>2. Post-processing timeline improvements</em>: building milestones, Packing Sports as an assignee, and the first cut of the board file split. The LumoCad QC hand-in is parked. Nothing is pushed yet.</p>
 </header>
 
 <div class="facts">
-  <div class="fact"><div class="n">10</div><div class="l">commits on <span class="mono">development</span></div></div>
-  <div class="fact"><div class="n">2,087</div><div class="l">unit tests green, 18 new</div></div>
+  <div class="fact"><div class="n">12</div><div class="l">commits on <span class="mono">development</span></div></div>
+  <div class="fact"><div class="n">2,089</div><div class="l">unit tests green, 20 new</div></div>
   <div class="fact"><div class="n">−1,641</div><div class="l">lines out of the two board files</div></div>
   <div class="fact warn"><div class="n">0</div><div class="l">end-to-end runs (auth expired)</div></div>
 </div>
@@ -162,7 +162,7 @@ a { color: var(--open); }
 <div class="summary">
   <div class="s-done"><h3>Done</h3><ul>
     <li>Building milestones: data, board pills, editor list, My Work card</li>
-    <li>Packing Sports as a group assignee on the board</li>
+    <li>Packing Sports as a group assignee, preprocessing stages only</li>
     <li>Both board files under 7,000 lines</li>
   </ul></div>
   <div class="s-test"><h3>How to test</h3><ul>
@@ -255,6 +255,7 @@ a { color: var(--open); }
 
 <h3>Behaviour of a group assignee</h3>
 <ul>
+  <li><strong>Preprocessing stages only.</strong> It is not offered on postprocessing stages in the stage menu, the assignment modal, the package bulk modal or the follow-up cycle pickers. If anything still tries, the board refuses with "Packing Sports can only be assigned to preprocessing stages".</li>
   <li>24 hours a day of capacity, 0 hours allocated, so it is never "fully booked".</li>
   <li>Booked by range fill only: every day of the stage, no hour schedule, no fully-booked prompt.</li>
   <li>No assignment mail (<code>reason: 'group-assignee'</code>). Not on the team swimlane, coverage or capacity views.</li>
@@ -309,8 +310,9 @@ pnpm dev            # http://localhost:3000, dev database</pre>
 node scripts/packing-sports-group.mjs add --apply   # writes to the dev database</pre></li>
   <li>Reload <code>/postprocessing</code>, planning mode. Right-click a preprocessing stage. <span class="expect">"Packing Sports" is in the Assign list.</span></li>
   <li>Assign it. <span class="expect">It is booked on every day of the stage, with no "fully booked" prompt and no "no available hours" toast.</span></li>
-  <li>Assign it to a second stage that overlaps the first. <span class="expect">Still no fully-booked prompt.</span></li>
-  <li>Open the assignment modal from a stage. <span class="expect">The picker lists "Packing Sports (team)".</span></li>
+  <li>Assign it to a second preprocessing stage that overlaps the first. <span class="expect">Still no fully-booked prompt.</span></li>
+  <li>Right-click a postprocessing stage (3D postprocessing, QC, delivery). <span class="expect">Packing Sports is not in the Assign list.</span> Same in the assignment modal, the package bulk modal and a follow-up cycle's stage pickers; its preprocessing picker does list it.</li>
+  <li>Open the assignment modal from a preprocessing stage. <span class="expect">The picker lists "Packing Sports (team)".</span></li>
   <li>Check where it must <strong>not</strong> show up: the team view in My Work, the coverage view, the capacity strip, the measurement planning people pickers, the coordinator picker in the project editor.</li>
   <li>Open the assignee picker on a building row label. <span class="expect">Packing Sports is not listed.</span> That picker offers people only; making the group a building's assignee is still missing (see below).</li>
   <li>Check the building is <strong>not</strong> shared with Packing Sports because of the assignment (the access pill on the row stays as it was).</li>
@@ -330,7 +332,7 @@ node scripts/packing-sports-group.mjs add --apply   # writes to the dev database
 
 <h3>4 · Automated checks</h3>
 <pre>npx tsc --noEmit
-npx vitest run --dir src                       # 2,087 tests, all green today
+npx vitest run --dir src                       # 2,089 tests, all green today
 # quit Brave first, then refresh the session (log in when asked)
 BRAVE_PATH="/Applications/Brave Browser.app/Contents/MacOS/Brave Browser" \
   npx playwright test e2e/save-auth.spec.ts --project=chromium --headed --timeout=360000
@@ -349,7 +351,7 @@ npx playwright test e2e/app.spec.ts e2e/postprocessing-layout.spec.ts \
   </div>
 </div>
 
-<h2><span class="track">git</span>The ten commits</h2>
+<h2><span class="track">git</span>The twelve commits</h2>
 <div class="tablewrap">
 <table>
 <thead><tr><th>Hash</th><th>Slice</th><th>Commit</th></tr></thead>
@@ -362,6 +364,8 @@ npx playwright test e2e/app.spec.ts e2e/postprocessing-layout.spec.ts \
 <tr><td class="mono">dc1379a</td><td>P1</td><td>feat(assignments): group assignees for the board (Packing Sports)</td></tr>
 <tr><td class="mono">cc609b5</td><td>P2 · P3</td><td>feat(assignments): assigning Packing Sports shares the building</td></tr>
 <tr><td class="mono">4fc2966</td><td>P3 off</td><td>revert(assignments): assigning Packing Sports no longer shares the building</td></tr>
+<tr><td class="mono">77e1f45</td><td>docs</td><td>docs(timeline-plan): note Packing Sports is not offered as building assignee</td></tr>
+<tr><td class="mono">df321cd</td><td>P1</td><td>feat(assignments): Packing Sports takes preprocessing stages only</td></tr>
 <tr><td class="mono">3ba65ed</td><td>S2 part 1</td><td>refactor(postprocessing): extract board prompts and the insert menu</td></tr>
 <tr><td class="mono">68a1f95</td><td>S2 part 2</td><td>refactor(postprocessing): extract StagePlanningContextMenu</td></tr>
 </tbody>
