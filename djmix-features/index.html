@@ -163,6 +163,27 @@ const CHECKS = {
 
 const FEATURES = [
   {
+    id: 'layout-compact', area: 'ui', title: 'Shorter decks row, more room for the playlist', date: '2026-10-18', session: 'a131b68b',
+    commits: [{ hash: '63467a9', subject: 'style(layout): a shorter decks row, more room for the playlist' }],
+    changed: [
+      'The mixer lays out in two columns: knob rows (GAIN, HI, MID, LOW, FLT) on the left, FX / faders / crossfader / AUTO / MASTER on the right; faders are 88 px instead of 118; the mixer column is 340 px wide instead of 252.',
+      'The decks row is about 335 px tall at any window size (it was about 600 px); on a 900 px window the browser grows from 239 to 518 px.',
+      'The main waveform no longer holds the row at its own aspect ratio once a track is loaded (a flex-basis fix on the canvas).',
+    ],
+    test: {
+      steps: [
+        'Open the app at the default 1400 × 900 window with no track loaded. → The decks row ends around a third of the way down; the collection list below shows about 15 rows.',
+        'Load tracks on both decks. → The row keeps its height; the waveforms are about 144 px tall and still show the beat grid, phrase labels and zoom buttons.',
+        'Shrink the window to 1200 px wide. → Nothing overflows in the decks or the mixer; long titles truncate with an ellipsis; the MASTER value stays visible.',
+      ],
+      automated: ['CSS only: measured in a headless-Chromium page through window.__djmix at 1471 and 1200 px width (decks row 335 px, no horizontal overflow)'],
+    },
+    missing: [
+      { text: 'The knob rows could shrink further (32 px knobs) if the row should drop below 300 px.', owner: 'unowned' },
+      { text: 'Not checked on the Electron window itself, only in Chromium at the same sizes.', owner: 'unowned' },
+    ],
+  },
+  {
     id: 'loops', area: 'pro', title: 'Manual loops on the decks', date: '2026-10-18', session: 'cae530b9',
     commits: [{ hash: 'b4493cd', subject: 'feat(mixer): loops, gain knob, beat FX, crossfader curve, sync modes, audio settings in the UI' }, { hash: 'f7e1e70', subject: 'feat(engine): loops, beat FX, crossfader curves, phase sync, audio settings' }],
     changed: [
