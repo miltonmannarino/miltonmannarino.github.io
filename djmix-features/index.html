@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>DJ Mix Feature Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* One reading column. The page is a running log: every feature commit to djmix adds one
+   object to FEATURES below (the repo's CLAUDE.md makes that obligatory), and the three
+   sections — what changed, how to test, what's missing — are rendered from it. */
+:root {
+  --bg: #f5f7f9; --surface: #ffffff; --fg: #1b232c; --muted: #5a6673; --rule: #d9dee4;
+  --accent: #c2410c; --accent-soft: #fdebe3;
+  --a: #2a6fa8; --a-soft: #e3eef8;          /* deck A blue */
+  --b: #b45309; --b-soft: #fff1dd;          /* deck B orange */
+  --done: #1f7a4d; --done-soft: #e2f3ea;
+  --warn: #8a5a00; --warn-soft: #fff3d6;
+  --code-bg: #eef1f4;
+  --display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141a20; --surface: #1c242c; --fg: #e6ebf0; --muted: #9aa7b4; --rule: #2d3842;
+    --accent: #f08a5a; --accent-soft: #3a241a; --a: #7fb3e0; --a-soft: #1d2f40; --b: #f0b060; --b-soft: #3a2a12;
+    --done: #6fcf97; --done-soft: #1b3326; --warn: #f0c060; --warn-soft: #3a2f12; --code-bg: #232d36;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141a20; --surface: #1c242c; --fg: #e6ebf0; --muted: #9aa7b4; --rule: #2d3842;
+  --accent: #f08a5a; --accent-soft: #3a241a; --a: #7fb3e0; --a-soft: #1d2f40; --b: #f0b060; --b-soft: #3a2a12;
+  --done: #6fcf97; --done-soft: #1b3326; --warn: #f0c060; --warn-soft: #3a2f12; --code-bg: #232d36;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 72px;
+}
+main { max-width: 760px; margin: 0 auto; }
+header.top { padding-block: 40px 18px; border-bottom: 1px solid var(--rule); }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--display); font-weight: 600; font-size: 34px; line-height: 1.1; margin: 8px 0 10px; letter-spacing: -.01em; }
+.lede { margin: 0; color: var(--muted); max-width: 62ch; }
+.meta { margin-top: 12px; font-family: var(--mono); font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 16px; }
+nav.sections { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 10px 0; border-bottom: 1px solid var(--rule); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+nav.sections a { font-family: var(--display); font-weight: 600; font-size: 15px; color: var(--fg); text-decoration: none; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--rule); background: var(--surface); }
+nav.sections a:hover { border-color: var(--accent); }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; padding: 14px 0 0; }
+.chip { font-family: var(--mono); font-size: 12px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--rule); background: var(--surface); color: var(--muted); cursor: pointer; }
+.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+h2 { font-family: var(--display); font-weight: 600; font-size: 26px; margin: 44px 0 6px; letter-spacing: -.01em; }
+h2 small { font-family: var(--mono); font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 10px; letter-spacing: .04em; }
+.section-note { margin: 0 0 18px; color: var(--muted); max-width: 66ch; }
+h3.area { font-family: var(--display); font-weight: 600; font-size: 18px; margin: 28px 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+article.entry { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px 14px; margin: 0 0 12px; scroll-margin-top: 64px; }
+article.entry[hidden] { display: none; }
+.entry-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.entry-head h4 { font-family: var(--display); font-weight: 600; font-size: 19px; margin: 0; }
+.entry-meta { font-family: var(--mono); font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 4px; }
+.entry-meta .date { color: var(--fg); }
+.entry-meta code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+.tag { font-family: var(--mono); font-size: 11px; padding: 1px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+.tag.today { background: var(--done-soft); color: var(--done); }
+ul { margin: 10px 0 0; padding-left: 20px; }
+li { margin: 4px 0; }
+li::marker { color: var(--muted); }
+ol.steps { margin: 10px 0 0; padding-left: 22px; }
+ol.steps li { margin: 6px 0; }
+.expect { color: var(--done); }
+b.ui { font-weight: 600; font-family: var(--mono); font-size: 14px; background: var(--code-bg); padding: 0 5px; border-radius: 4px; }
+.auto { margin-top: 10px; padding: 8px 12px; background: var(--code-bg); border-radius: 6px; font-family: var(--mono); font-size: 13px; }
+.auto strong { font-weight: 500; }
+.owner { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-left: 6px; }
+.checks { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 18px; margin: 0 0 18px; }
+.checks table { border-collapse: collapse; width: 100%; font-family: var(--mono); font-size: 13px; }
+.checks td { padding: 4px 8px 4px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.checks tr:last-child td { border-bottom: 0; }
+.ok { color: var(--done); } .warn { color: var(--warn); }
+code, pre { font-family: var(--mono); font-size: 13px; }
+pre { background: var(--code-bg); padding: 10px 12px; border-radius: 8px; overflow-x: auto; margin: 10px 0 0; }
+footer.how { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 14px; }
+footer.how h2 { font-size: 20px; margin-top: 0; }
+.jump { font-size: 13px; color: var(--muted); }
+.jump a { color: var(--a); }
+@media (max-width: 560px) { h1 { font-size: 28px; } article.entry { padding: 14px 14px 12px; } }
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+  <div class="eyebrow">djmix · feature log</div>
+  <h1>DJ Mix: what landed</h1>
+  <p class="lede">Every feature and fix committed to the djmix repo since 17 October 2026, across all sessions working on it: what changed, how to try it in the app, and what is still open. Each feature commit adds an entry here.</p>
+  <div class="meta" id="meta"></div>
+</header>
+
+<nav class="sections">
+  <a href="#changed">1 · What changed</a>
+  <a href="#test">2 · How to test</a>
+  <a href="#missing">3 · What's missing</a>
+</nav>
+<div class="filters" id="filters"></div>
+
+<h2 id="changed">What changed <small id="count-changed"></small></h2>
+<p class="section-note">Grouped by the part of the app you notice it in, newest first inside each group. Commit hashes are on the djmix <code>main</code> branch.</p>
+<div id="changed-body"></div>
+
+<h2 id="test">How to test</h2>
+<p class="section-note">First the automated checks and when they last ran, then concrete steps in the real app for each entry, in the same order as above.</p>
+<div class="checks" id="checks"></div>
+<div id="test-body"></div>
+
+<h2 id="missing">What's missing</h2>
+<p class="section-note">Open decisions, untested paths and follow-ups, with who owns each. Session ids are the Claude sessions on the repo's <code>.claude/active-work.md</code> board; "unowned" means nobody has picked it up.</p>
+<div id="missing-body"></div>
+
+<footer class="how">
+  <h2>How this page is kept</h2>
+  <p>The djmix repo's <code>CLAUDE.md</code> makes it obligatory: a commit that adds or changes a feature also adds one object to the <code>FEATURES</code> array in this file (newest first), with what changed, the steps to test it and what is missing, then pushes this page. The <code>CHECKS</code> block records the last run of the automated checks.</p>
+<pre>{ id: 'short-slug', area: AREAS.x, title: '…', date: '2026-10-18', session: 'xxxxxxxx',
+  commits: [{ hash: 'abcdef0', subject: 'feat(...): …' }],
+  changed: ['what a user sees, one bullet each'],
+  test: { steps: ['Click …', '→ expected …'], automated: ['file.test.ts (n tests) pass'] },
+  missing: [{ text: 'open item', owner: 'session id or unowned' }] }</pre>
+</footer>
+</main>
+
+<script>
+// ---------------------------------------------------------------------------------------------
+// Data. Newest first. Keep entries factual: the commit says what changed, the steps say how to
+// see it, "missing" says what is still open and who owns it.
+// ---------------------------------------------------------------------------------------------
+const AREAS = {
+  pro: 'Loops, FX, sync & audio settings',
+  ui: 'Decks, mixer & browser',
+  automix: 'Automix: planning & blend',
+  analysis: 'Analysis: beat grid & phrases',
+  library: 'Library & startup',
+  engine: 'Engine reliability',
+  tooling: 'Testing & tooling',
+};
+const AREA_ORDER = ['pro', 'ui', 'automix', 'analysis', 'library', 'engine', 'tooling'];
+
+const CHECKS = {
+  ranAt: '2026-10-18 00:35',
+  rows: [
+    ['npm run typecheck', 'ok', '0 errors'],
+    ['npm test (vitest)', 'ok', '201 / 201 tests pass, 25 files'],
+    ['npm run test:live (Playwright, ~2.5 min)', 'ok', '1 passed in 2 min 26 s: Auto\'s end-of-track blend, then a 16-bar Mix now; silent stop, monotone fades, no master gap'],
+    ['Headless-Chromium smoke through window.__djmix', 'ok', 'loop wraps sample-exact; beat / bar / phrase sync within 0.003 beats; echo delay follows tempo; sharp curve holds the far deck at full; +3.0 dB trim (throwaway script, not in the repo)'],
+  ],
+};
+
+const FEATURES = [
+  {
+    id: 'loops', area: 'pro', title: 'Manual loops on the decks', date: '2026-10-18', session: 'cae530b9',
+    commits: [{ hash: 'b4493cd', subject: 'feat(mixer): loops, gain knob, beat FX, crossfader curve, sync modes, audio settings in the UI' }, { hash: 'f7e1e70', subject: 'feat(engine): loops, beat FX, crossfader curves, phase sync, audio settings' }],
+    changed: [
+      'Loop row under each deck\'s transport: IN, OUT, LOOP (shows the length in bars), ½, ×2 and quick 1 / 2 / 4 / 8 / 16-bar loops.',
+      'Loops snap to the nearest beat of the track\'s grid; each wrap is scheduled exactly on the audio clock (no drift, no click).',
+      'The loop is a region, like a CDJ: seeking out of it stops the wrapping, coming back in resumes it. LOOP exits and keeps the region; pressing it again re-enters (jumping back in if the playhead is outside).',
+      'Drawn on both waveforms in yellow: solid edges while it wraps, dashed while it is kept.',
+      'A loop move by hand takes over from a running automix, like any other control.',
+    ],
+    test: {
+      steps: [
+        'Load an analysed track on deck A and press PLAY.',
+        'In the loop row press 4. → LOOP turns yellow and reads LOOP 4, the 4 chip lights, a yellow band appears on both waveforms and the playhead jumps back every 4 bars, on the beat.',
+        'Press ½ → LOOP 2; press ×2 twice → LOOP 8.',
+        'Press LOOP → the band goes dashed and the track plays on past the loop end. Press LOOP again → it jumps back into the region and wraps again.',
+        'Press IN, wait a few beats, press OUT → a loop between those two beats starts; the length shows as bars (1/2, 1/4 for short ones).',
+        'Click on the waveform well past the loop → playback continues outside; the loop stays armed and wraps again once the playhead re-enters.',
+      ],
+      automated: ['src/audio/engine/loop.test.ts (5 tests): auto-loop snap, exact wrap on the clock, region semantics, exit redirecting an armed wrap, halve/double, in/out', 'Browser smoke: wrap 24.626 s → 20.876 s read back sample-exact through the engine'],
+    },
+    missing: [
+      { text: 'No keyboard shortcuts for loop in/out/size.', owner: 'unowned' },
+      { text: 'Loops are not saved with the track (no hot cues / saved loops yet).', owner: 'cae530b9' },
+      { text: 'No slip mode (playhead keeps running underneath while looping).', owner: 'unowned' },
+    ],
+  },
+  {
+    id: 'gain', area: 'pro', title: 'GAIN knob on top of automatic loudness trim', date: '2026-10-18', session: 'cae530b9',
+    commits: [{ hash: 'b4493cd', subject: 'feat(mixer): loops, gain knob, beat FX, crossfader curve, sync modes, audio settings in the UI' }],
+    changed: [
+      'A GAIN row at the top of the mixer: ±12 dB per channel on top of the automatic trim that brings every track to −11 LUFS (the trim law from the EQ-balance work, loudnessTrimDb).',
+      'The knob tooltip shows the manual offset, the automatic trim and the total.',
+      'The automatic trim is now re-applied when a track\'s analysis finishes after it was loaded.',
+    ],
+    test: {
+      steps: [
+        'Load a track on A, play it, hover the top-left knob → tooltip reads "Gain +0.0 dB (auto trim −x dB, total …)".',
+        'Drag the knob up → the A channel meter rises; double-click → back to 0 dB.',
+        'Load a quiet track on A and a loud one on B, both faders full → the two channel meters sit at a similar level without touching GAIN.',
+      ],
+      automated: ['Browser smoke: +3 dB on the knob read back as +3.000 dB on the channel input gain'],
+    },
+    missing: [
+      { text: 'The planner\'s EQ-balance forecast reads the automatic trim only; a manual GAIN offset is not in its level forecast.', owner: 'ecc91043' },
+      { text: 'The knob keeps its position across track loads (like a hardware trim); decide whether it should reset per track.', owner: 'unowned' },
+    ],
+  },
+  {
+    id: 'fx', area: 'pro', title: 'Beat-synced channel effects', date: '2026-10-18', session: 'cae530b9',
+    commits: [{ hash: 'b4493cd', subject: 'feat(mixer): …' }, { hash: 'f7e1e70', subject: 'feat(engine): …' }],
+    changed: [
+      'FX block in the mixer per channel: type (OFF, ECHO, FLANGER, PHASER, REVERB), BEAT division (1/4 … 16) and an AMT knob.',
+      'Echo time and flanger / phaser sweep follow the deck\'s playing tempo, pitch fader included; the echo\'s feedback grows with the amount.',
+      'Post-fader: pull the channel fader down and the echo tail rings out (the echo-out move).',
+      'Effects are built on first use, so an idle channel costs nothing.',
+    ],
+    test: {
+      steps: [
+        'Play a track on A. Set A\'s FX select to ECHO, BEAT to 1/2, turn AMT up → repeats on every half beat.',
+        'Pull fader A down → the repeats keep ringing and decay.',
+        'Move A\'s pitch fader → the echo time follows the new tempo (no re-selection needed).',
+        'FLANGER or PHASER with BEAT 4 → one sweep per bar. REVERB → room on the channel.',
+        'Set OFF → the running tail decays, nothing new is added.',
+      ],
+      automated: ['src/audio/engine/fx.test.ts (6 tests): off adds nothing, echo repeats on the beat and decays, echo follows tempo, amount sets tail length, flanger / phaser / reverb change the signal, beat→seconds mapping', 'Browser smoke: echo delay 0.234 s at 128 BPM, 0.223 s after +5 % pitch'],
+    },
+    missing: [
+      { text: 'Automix templates do not use the effects (no automatic echo-out at the end of a blend).', owner: 'unowned' },
+      { text: 'No master-bus effects, no roll / gate.', owner: 'unowned' },
+      { text: 'The phaser has no feedback: a Web Audio graph cycle without a DelayNode renders silence.', owner: 'unowned' },
+    ],
+  },
+  {
+    id: 'xf-curve', area: 'pro', title: 'Crossfader curve: smooth, sharp, linear, reverse', date: '2026-10-18', session: 'cae530b9',
+    commits: [{ hash: 'b4493cd', subject: 'feat(mixer): …' }, { hash: 'f7e1e70', subject: 'feat(engine): …' }],
+    changed: [
+      'Buttons under the crossfader: SMOOTH (the existing blend law, both decks full in the centre), SHARP (a cut curve: the far deck stays full until the last 8 % of travel), LINEAR, and REV (hamster: left is deck B).',
+      'The mix graph keeps the curve, so automix crossfader sweeps follow it too.',
+      'The choice is saved and restored on the next start.',
+    ],
+    test: {
+      steps: [
+        'Play a track on A, move the crossfader 90 % towards B. With SMOOTH, A is clearly quieter.',
+        'Press SHARP → A comes back to full level; only the last bit of travel cuts it.',
+        'Press REV → the sides swap (full left is now deck B). Press it again to undo.',
+        'Reload the app → the same buttons are still selected.',
+      ],
+      automated: ['src/audio/engine/crossfaderCurve.test.ts (5 tests)', 'Browser smoke: deck A gain at position 0.9 reads 0.156 (smooth) vs 1.000 (sharp)'],
+    },
+    missing: [
+      { text: 'No adjustable contour (cut-in distance) for the sharp curve.', owner: 'unowned' },
+    ],
+  },
+  {
+    id: 'sync-modes', area: 'pro', title: 'SYNC modes: tempo, beat, bar, phrase', date: '2026-10-18', session: 'cae530b9',
+    commits: [{ hash: 'b4493cd', subject: 'feat(mixer): …' }, { hash: 'f7e1e70', subject: 'feat(engine): …' }],
+    changed: [
+      'A SYNC select in the top bar: Tempo (rate only, the old behaviour), Beat, Bar, Phrase. Default Beat; saved across starts.',
+      'SYNC now matches the other deck\'s playing tempo (its pitch fader included), not just its analysed BPM.',
+      'In Beat / Bar / Phrase mode a playing deck jumps into phase by the shortest move; a stopped deck starts in phase on the master\'s next beat (Beat) or bar line (Bar, Phrase).',
+      'Phrase mode lines up the next phrase change on both tracks, so a drop lands with a drop; a 16-bar grid stands in where a track has no analysed phrases.',
+    ],
+    test: {
+      steps: [
+        'Load analysed tracks on A and B. Play A. Leave B stopped. Set the top-bar SYNC select to Bar.',
+        'Press SYNC on deck B → B starts on A\'s next bar line; the "bar" readouts under both waveforms step together and the grid lines line up.',
+        'Click somewhere on B\'s waveform a little off the beat → press SYNC on B → it snaps back into phase without stopping.',
+        'Move A\'s pitch fader to +3 %, press SYNC on B → B\'s BPM readout matches A\'s.',
+        'Set the select to Phrase, stop B, press SYNC on B → B comes in so that its next phrase line (coloured label on the waveform) arrives together with A\'s.',
+      ],
+      automated: ['src/audio/engine/sync.test.ts (10 tests): shortest phase move, bar and phrase alignment, phrase fallback, never before the track start, next unit on the clock', 'Browser smoke: beat / bar / phrase start within 0.003 beats, re-sync after a manual knock within 0.003 beats, pitched master → follower rate 1.03'],
+    },
+    missing: [
+      { text: 'Phrase mode falls back to "same distance into the phrase" when no follower phrase is long enough; worth a listen on tracks with very short phrases.', owner: 'cae530b9' },
+      { text: 'No continuous sync lock (SYNC is a one-shot move; drift after a manual nudge is not corrected).', owner: 'unowned' },
+      { text: 'A stopped deck starts on SYNC in the phase modes (by design, said in the tooltip); confirm this is wanted versus "align the cue only".', owner: 'Milton' },
+    ],
+  },
+  {
+    id: 'audio-settings', area: 'pro', title: 'Audio settings: output device, sample rate, buffer', date: '2026-10-18', session: 'cae530b9',
+    commits: [{ hash: 'b4493cd', subject: 'feat(mixer): …' }, { hash: 'f7e1e70', subject: 'feat(engine): …' }],
+    changed: [
+      'AUDIO button in the top bar opens a panel: Output (switches live through setSinkId), Sample rate (device default / 44.1 / 48 / 88.2 / 96 kHz) and Buffer (Low / Balanced / Safe).',
+      'A readout of what is running: sample rate, browser buffer in ms, output latency when the browser reports it.',
+      'Settings persist in localStorage; the AudioContext is opened with them at start.',
+    ],
+    test: {
+      steps: [
+        'Press AUDIO (top right) → the panel opens; the last line reads "Running at 48000 Hz · buffer x ms · y ms to the output" (numbers depend on the machine).',
+        'Pick another Output while a track plays → audio moves to that device at once.',
+        'Change Sample rate → the note turns yellow: "take effect when the app restarts". Restart → the readout shows the new rate.',
+        'Press Esc or Close → the panel closes.',
+      ],
+      automated: ['Browser smoke: panel lists "System default" and the readout in headless Chromium'],
+    },
+    missing: [
+      { text: 'Sample rate and buffer need a manual restart; a Relaunch button needs an Electron IPC (electron/main.js is in another session\'s hands right now).', owner: 'cae530b9' },
+      { text: 'Device labels can come back empty without a media permission (then they show as "Output 1, 2…").', owner: 'unowned' },
+      { text: 'No headphone cue / second output for pre-listening yet; the next pro feature to build.', owner: 'cae530b9' },
+    ],
+  },
+
+  {
+    id: 'nextmix', area: 'ui', title: 'The next mix drawn on both decks, with earlier / later / skip', date: '2026-10-17', session: 'a131b68b',
+    commits: [{ hash: '576c11c', subject: 'feat(ui): the next mix drawn on both decks, with earlier/later/skip' }, { hash: '0b101a9', subject: 'feat(mix): the planner takes a chosen start bar' }, { hash: 'c579602', subject: 'feat(automix): status counts down to the moment the next track is heard' }],
+    changed: [
+      'The upcoming transition (Auto\'s own, or what MIX NOW would do) is kept in the store and drawn on both waveforms in each track\'s own bars: the overlap as a band with a strip along the top, the entry line (MIX / IN / CUT), the bass swap (dashed), the looped phrase hatched in yellow. While the mix plays the marks stay as the live plan.',
+      'The top-bar status became the NextMix strip: the plan in words, and buttons to bring the next track in 8 bars earlier or later, back to the planner\'s choice, and to skip the cued track so Auto picks another.',
+      'The status counts down to the moment the next track is heard ("Mixing in m:ss → track · plan"), then "Mixing → …", then "Mixed into …".',
+      'A track loaded onto a deck is taken off the played list, so it can be mixed into again.',
+    ],
+    test: {
+      steps: [
+        'Load two analysed tracks, play A. → The top bar shows "Mixing in m:ss → <B title> · <plan>"; A\'s waveform shows an orange band ending at the track\'s end with MIX and SWAP lines; B\'s shows a green band from its cue with IN and SWAP.',
+        'Press the earlier button (tooltip "Bring the next track in 8 bars earlier") → the bands move one phrase; the reset button lights; press it → back to the planner\'s entry.',
+        'Press the skip button (tooltip "Skip the cued track; Auto picks another") with Auto on → deck B empties and another queued track is cued.',
+        'Press MIX NOW → the strip reads "Mixing → …" and the marks stay while the blend plays; afterwards "Mixed into …".',
+      ],
+      automated: ['e2e/automix.spec.ts (npm run test:live) drives Auto and MIX NOW through the same store'],
+    },
+    missing: [
+      { text: 'The entry bar can only be nudged by phrases, not picked by clicking on the waveform.', owner: 'unowned' },
+    ],
+  },
+  {
+    id: 'grid-row', area: 'ui', title: 'GRID row: half-beat shift and Phrase ±1 corrections', date: '2026-10-17', session: 'earlier session',
+    commits: [{ hash: '635868f', subject: 'feat(grid): half-beat grid shift' }, { hash: '16bd71c', subject: 'feat(mix): phrase-grid cues, a playable pickup bar, and a Phrase ±1 correction' }],
+    changed: [
+      'GRID on a deck folds out the correction row: tempo ×2 / ÷2, grid nudge, a new ½ button (moves the grid half a beat, for tracks where the analyser locked onto an off-beat bassline), Bar ±1, the new Phrase −1 / +1 (moves the phrase lines where mixes cue and enter), key select and reset.',
+      'Corrections are stored with the track, survive re-analysis and show as a dot next to the BPM readout.',
+    ],
+    test: {
+      steps: [
+        'Load a track, press GRID → the correction row appears under the transport.',
+        'Zoom the waveform to 2 bars. If the thin beat lines sit between the kicks, press ½ → they move onto the kicks.',
+        'Press Phrase −1 → the coloured phrase labels on the waveform move one bar earlier; +1 moves them back.',
+        'Restart the app → the corrections are still applied (the dot next to BPM stays).',
+      ],
+      automated: ['src/audio/analysis/overrides.test.ts'],
+    },
+    missing: [
+      { text: 'No tap tempo and no dragging of beat markers; corrections are button steps only.', owner: 'unowned' },
+    ],
+  },
+  {
+    id: 'ui', area: 'ui', title: 'Traktor-style decks, mixer and browser', date: '2026-10-17', session: 'earlier session',
+    commits: [{ hash: 'e110263', subject: 'feat(ui): Traktor-style decks, mixer and browser' }, { hash: '8cfc517', subject: 'fix(ui): fader and target styles no longer lose to base rules' }, { hash: '21f0a97', subject: 'fix(ui): master meter survives the limiter being attached' }],
+    changed: [
+      'Decks: title / artist header with live BPM, tempo offset and key badge; a stripe overview with the phrase map and a zoomed beat-grid waveform (2–32 bars) that follows the measured beat clock; CUE (sets the cue when stopped, jumps back and stops when playing), PLAY, SYNC, KEY lock, GRID; ±16 % tempo fader with nudge; drag a library row onto a deck to load it. Spectrum colours: lows red, mids green, highs blue.',
+      'Mixer: rotary HI / MID / LOW / filter knobs (drag, scroll wheel, arrow keys, double-click resets), channel faders with LED meters, a master meter, crossfader, AUTO and MIX NOW, master level.',
+      'Browser: Collection / Queue / History views, search, sortable Title, Artist, BPM, Key, Time, cover art, A / B tags on loaded rows, double-click loads the idle deck, hover buttons load / queue / set the reference track; the queue view keeps reorder, direction and Smart order.',
+      'Fixes: channel and pitch faders no longer collapse to 18 px; the master meter keeps working after the limiter is attached.',
+    ],
+    test: {
+      steps: [
+        'Import a few tracks (+ Import tracks). Double-click a row → it loads on the idle deck; drag another row onto the other deck.',
+        'Press PLAY on A; press CUE while stopped at a spot, play, press CUE → it jumps back to that spot and stops.',
+        'Drag the HI knob down to the bottom → the arc turns red (kill) and the highs disappear; double-click → unity.',
+        'Move the master level → the master meter follows; both channel meters sit after their faders.',
+        'In the browser, click the BPM column header → sorted; type in Search → filtered; hover a row → "Load on deck A/B" buttons.',
+      ],
+      automated: ['src/audio/engine/isolator.test.ts (EQ flat at unity, band kills)', 'src/audio/engine/curves.test.ts'],
+    },
+    missing: [
+      { text: 'No keyboard shortcuts for transport or mixer.', owner: 'unowned' },
+      { text: 'No scrub by dragging the zoomed waveform (click seeks).', owner: 'unowned' },
+    ],
+  },
+
+  {
+    id: 'bass-handover', area: 'automix', title: 'Bass handover without a hole, no filter thump, grid-free mix metrics', date: '2026-10-18', session: 'ecc91043',
+    commits: [{ hash: 'ed8001b', subject: 'feat(mix): grid-free mix metrics, bass handover without a hole, no filter thump' }],
+    changed: [
+      'The blend template lifts the incoming low band by what its fader still lacks (≤ 6 dB) from the bass swap until the fader is up; the balance may lift the incoming low up to 4 dB above the template after the swap, released by the end.',
+      'Mix-point scoring penalises a swap onto a bass hole (incoming low ≥ 3 dB below the outgoing one at the swap).',
+      'The one-beat 20 dB low burst at the start of a filter sweep is gone: the high-pass only jumps between exact 0 Hz (pass-through) and 20 Hz instead of ramping through sub-hertz values where a biquad is ill-conditioned. The filter knob returning to centre had the same latent bug.',
+      'Metrics that do not inherit the beat grid: kickPhaseOffset (lag between the two decks\' low-band envelopes by cross-correlation), lowOnsets, bandLevels + checkForecast (rendered per-bar band levels against the plan\'s forecast, with stacking and hole checks; 0.9–1.9 dB RMS on four real pairs).',
+    ],
+    test: {
+      steps: [
+        'Load two tracks that both carry bass, play A, press MIX NOW. Listen at the bass swap (the dashed SWAP line reaching the playhead): the low end hands over without a dip.',
+        'While a track plays, turn its FLT knob from the centre towards low-pass and back to centre → no low thump at the start of the sweep or on return.',
+        'Offline: <code>npm run mixlab -- out.mp3 in.mp3 --json r.json</code> → the report prints phase offset, correlation, forecast error, stacking and hole; <code>MIXLAB_DEBUG=1</code> prints the forecast and measured band rows.',
+      ],
+      automated: ['src/audio/mix/metrics.test.ts, balance.test.ts, mixPoints.test.ts, templates / curves tests (all in the 201 passing)'],
+    },
+    missing: [
+      { text: 'Tuning from real-pair A/B renders lands in balance.ts; a batch renderer over a folder (scripts/mixset.ts) and a "bad mix" recorder button are in progress.', owner: 'ecc91043' },
+      { text: 'Structure accuracy (section boundaries from self-similarity, tag-BPM octave hint, analyze --check against the library\'s corrections).', owner: 'ecc91043' },
+    ],
+  },
+  {
+    id: 'balance', area: 'automix', title: 'Energy-aware EQ balance', date: '2026-10-17', session: 'ecc91043',
+    commits: [{ hash: '5a28ef6', subject: 'feat(mix): energy-aware EQ balance' }],
+    changed: [
+      'The planner forecasts both decks\' per-band level through the overlap (analysed bar energies + loudness trim + template gains) and corrects the EQ lanes bar by bar: each band\'s sum is held to a reference walk from the outgoing track\'s level to the incoming one\'s, never cutting a track for the other being quiet.',
+      'Cuts only above unity, up to 3 dB under the template, released at 2 dB per bar; the incoming deck is back at unity by the end of the overlap.',
+      'loudnessTrimDb in curves.ts is the one trim law for the app, the forecast and offline renders.',
+    ],
+    test: {
+      steps: [
+        'Play a mix (MIX NOW) between two full-energy tracks → the on-screen EQ knobs of both channels move during the overlap; the master meter does not jump up when both tracks play full.',
+        'Offline: <code>npm run mixlab -- a.mp3 b.mp3</code> then with <code>--no-balance</code> → the report\'s forecast excess is smaller with balance on.',
+      ],
+      automated: ['src/audio/mix/balance.test.ts'],
+    },
+    missing: [
+      { text: 'Forecast ignores the manual GAIN offset (see the GAIN entry).', owner: 'ecc91043' },
+    ],
+  },
+  {
+    id: 'outro-loop', area: 'automix', title: 'Outro loop: the outgoing track repeats its last kick phrase when the blend needs more bars', date: '2026-10-17', session: 'a131b68b',
+    commits: [{ hash: 'ec3e768', subject: 'feat(mix): loop the outgoing track\'s last kick phrase when the blend needs more bars' }],
+    changed: [
+      'When fewer than 16 bars are left for a blend, the planner considers looping one 8-bar phrase of the outgoing track (on its phrase grid, kick throughout) instead of shrinking the blend or cutting: the phrase repeats under the blend, at most twice, until the deck is stopped.',
+      'DeckPlayer.scheduleJump does the jump exactly at the scheduled time on both the key-lock and the plain path (the same primitive the manual loops use).',
+    ],
+    test: {
+      steps: [
+        'Load two tracks; seek A to about 12 bars before the end of its last kick section (watch the phrase labels), play A and press MIX NOW.',
+        '→ A\'s waveform shows a hatched yellow LOOP region over its last 8-bar phrase; A repeats that phrase under the incoming track instead of running out.',
+      ],
+      automated: ['src/audio/mix/mixPoints.test.ts, runner.test.ts (looped timeline, jump commands), deckPlayer.test.ts (scheduleJump)'],
+    },
+    missing: [
+      { text: 'At most two repeats and always 8 bars; no manual choice of the looped phrase.', owner: 'unowned' },
+    ],
+  },
+  {
+    id: 'mixpoints', area: 'automix', title: 'Cue the next track on its beat, scored mix points, longer blends', date: '2026-10-17', session: 'earlier session',
+    commits: [{ hash: '75164d9', subject: 'feat(mix): cue the next track on its beat, longer blends with a slower exit' }, { hash: '8f02ac6', subject: 'feat(mix): keys no longer shape the blend' }, { hash: '20cae85', subject: 'fix(mix): bass swap crosses equal-power' }, { hash: 'f4dbd20', subject: 'feat(mix): longer fade-in' }, { hash: '16bd71c', subject: 'feat(mix): phrase-grid cues, a playable pickup bar' }],
+    changed: [
+      'Mix points are scored over every overlap length, outgoing start, incoming cue and swap bar: both tracks must have their kick before the swap, beatless bars cost quadratically, the swap prefers the bar where the incoming drop arrives, longer overlaps score higher. Auto prefers mixing late, MIX NOW the next entry.',
+      'Cues sit on the incoming track\'s phrase grid; a one- or two-bar pickup before the first phrase line is played, not skipped.',
+      'Keys are detected, shown and warned about but no longer shorten or muffle the blend; the automatic semitone shift is off by default.',
+      'The bass swap crosses equal-power (no 2 LU hole on the swap downbeat); the incoming fader rises over up to 24 bars and the outgoing one falls later for a longer fade-out.',
+      'The status line names the incoming track\'s cue bar.',
+    ],
+    test: {
+      steps: [
+        'Load two analysed tracks, play A, press MIX NOW → the status names the cue bar; B enters on a phrase line with its kick already there before the SWAP line.',
+        'Pick two tracks in clashing keys → the key badges warn, but the blend length and sound are the same as for a compatible pair.',
+        'Watch the on-screen faders during a long blend: B rises slowly over most of the overlap; A falls only after the swap.',
+      ],
+      automated: ['src/audio/mix/mixPoints.test.ts, templates.ts shapes in curves.test.ts, harmonic.test.ts', 'npm run mixlab for a rendered pair'],
+    },
+    missing: [
+      { text: 'No per-track "mix in / mix out" points set by hand; the planner always chooses.', owner: 'unowned' },
+    ],
+  },
+  {
+    id: 'auto-behaviour', area: 'automix', title: 'A deck stopped by hand stays stopped; smoother automated knobs', date: '2026-10-17', session: 'earlier session',
+    commits: [{ hash: '890fe59', subject: 'fix(automix): a deck stopped by hand stays stopped' }],
+    changed: [
+      'Auto starts the set only at the moment it is switched on; pausing or cueing a playing deck by hand turns Auto off and the status says so.',
+      'Live automation moves the on-screen faders and knobs in 0.2 % steps instead of 1 %, so a long fade no longer staircases.',
+    ],
+    test: {
+      steps: [
+        'Switch AUTO on with a track playing, then press PLAY to pause it → it stays paused; the status reads "Auto off: deck A paused".',
+        'During a blend, watch the channel fader of the incoming deck → it glides instead of stepping.',
+      ],
+      automated: ['e2e/automix.spec.ts asserts a stopped deck is silent at once and fades never rise'],
+    },
+    missing: [],
+  },
+
+  {
+    id: 'kick-grid', area: 'analysis', title: 'Beat grid lands on the kick, not on an off-beat bassline (analyser v7)', date: '2026-10-17', session: 'earlier session',
+    commits: [{ hash: '3521fe7', subject: 'fix(analysis): beat grid lands on the kick, not on an off-beat bassline' }],
+    changed: [
+      'After the tempo search the half-beat positions are compared with the beat positions on low-band punch: when they carry ≥ 80 % of the level and decay 3 dB more over 150 ms (a kick decays, a held bass note does not), the grid moves onto them. On the library only two tracks move ("So Weit Wie Noch Nie", "My Boo").',
+      'Mix points may cue at any phrase line up to the incoming track\'s last drop, so a track with a short first kick section is entered at a later drop with a full blend.',
+      'Analyser version 7: the library re-analyses on the next launch.',
+    ],
+    test: {
+      steps: [
+        'Launch → the top bar reads "Analysing n of m" until the re-analysis is done.',
+        'Load a track whose bassline hits as hard as the kick, zoom to 2 bars → the thin beat lines sit on the kicks, the GRID ½ button is not needed.',
+        'CLI: <code>npm run analyze -- "path/to/folder"</code> prints BPM, first beat and phrases per file.',
+      ],
+      automated: ['src/audio/analysis/analysis.test.ts, dsp.test.ts on synthetic tracks with ground truth'],
+    },
+    missing: [
+      { text: 'Section boundaries from self-similarity and a tag-BPM octave hint are planned (structure accuracy).', owner: 'ecc91043' },
+    ],
+  },
+  {
+    id: 'phrase-grid', area: 'analysis', title: 'Phrase grid follows the music\'s boundaries (analyser v6)', date: '2026-10-17', session: 'earlier session',
+    commits: [{ hash: '86360fc', subject: 'fix(analysis): phrase grid follows the music\'s boundaries, not the file\'s end' }],
+    changed: [
+      'The 8-bar phrase lattice is voted by bars where the bar-to-bar change peaks (squared), bars whose look-ahead runs past the end are left out and the ending gets one capped vote. On the library this moves the grid on about half the tracks; on those with clear structure every boundary agrees with it.',
+    ],
+    test: {
+      steps: [
+        'Load a track with clear sections → the coloured phrase labels (INTRO, BUILD, DROP, BREAKDOWN, OUTRO) sit on the audible section starts, not a bar late.',
+      ],
+      automated: ['src/audio/analysis/analysis.test.ts'],
+    },
+    missing: [],
+  },
+  {
+    id: 'beat-clocks', area: 'analysis', title: 'Beat clocks no longer miscount beats on steady tracks (analyser v5)', date: '2026-10-17', session: 'earlier session',
+    commits: [{ hash: '262af66', subject: 'fix(analysis): beat clocks no longer miscount beats on steady tracks' }],
+    changed: [
+      'Steady tracks with local shifts get anchors from each window\'s kick attack against the straight grid, median-filtered; the drift tracker is capped at 4 %; anchors replace the straight grid only when they line the kicks up clearly better.',
+      'Runner: if beat-lock rates stray more than 3 % from the planned rate, the incoming deck holds the planned rate and the plan carries a warning.',
+    ],
+    test: {
+      steps: [
+        'Load "At A. Gallop" (or any steady track that used to read a wrong BPM) → the BPM readout is the real tempo; a mix into it plays at the right speed.',
+      ],
+      automated: ['src/audio/analysis/analysis.test.ts, src/audio/mix/runner.test.ts'],
+    },
+    missing: [],
+  },
+
+  {
+    id: 'library-startup', area: 'library', title: 'Library opens without decoding every track; no duplicates; analysis reaches loaded decks', date: '2026-10-17', session: 'a131b68b / earlier session',
+    commits: [{ hash: '9e3aa19', subject: 'perf(library): open without decoding every track' }, { hash: '5a61e1f', subject: 'fix(library): a file can no longer end up in the library twice' }, { hash: 'f44de85', subject: 'fix(decks): a track loaded while still analysing gets its analysis' }],
+    changed: [
+      'Waveform overviews live in a per-track binary cache (userData/waveforms/<sha1>.bin); the library opens at once and tracks are playable before any decoding.',
+      'ADD_TRACKS merges by file path and squashes duplicates; the saved library is deduped on load; Import is disabled ("Loading library…") until the saved library has loaded.',
+      'UPDATE_TRACK is a patch merged into the track, so an analysis finishing later no longer wipes a waveform or a correction, and it reaches the deck copies.',
+    ],
+    test: {
+      steps: [
+        'Restart with a large library → the list is there immediately, the Import button reads "Loading library…" for a moment, then enables.',
+        'Load a track → its waveform appears without a wait (from the cache); the first load of a freshly imported file builds it.',
+        'Import the same file twice → one row.',
+        'Import a file and load it on a deck while "Analysing" still spins → BPM, key and grid appear on the deck when the analysis finishes, no reload needed.',
+      ],
+      automated: ['src/audio/waveformCache.test.ts, src/store/library.test.ts'],
+    },
+    missing: [
+      { text: 'The waveform cache has no eviction; it grows with the library.', owner: 'unowned' },
+    ],
+  },
+
+  {
+    id: 'engine-silence', area: 'engine', title: 'Key-locked decks: no silent deck after loading, instant silence on stop', date: '2026-10-17', session: 'earlier session',
+    commits: [{ hash: 'bf9daf4', subject: 'fix(engine): key-locked decks no longer go silent after loading while audio runs' }, { hash: '0b5ee3f', subject: 'fix(engine): a stopped key-locked deck goes silent at once' }],
+    changed: [
+      'The Signalsmith stretch node is built by hand and parked before its processor is ready, so a deck loaded while audio runs no longer comes up dead (the incoming track of every automix was silent with KEY on).',
+      'The stretcher sits behind a gate that closes with a 5 ms fade on immediate stops, so a paused key-locked deck is silent at once instead of 120 ms later (which automix made audible as a burst at full level).',
+    ],
+    test: {
+      steps: [
+        'Play A with KEY on, then load a track on B and press PLAY with KEY on → B is audible.',
+        'Pause a key-locked deck → silence immediately, no tail.',
+      ],
+      automated: ['src/audio/engine/keyLock.test.ts, deckPlayer.test.ts', 'e2e/automix.spec.ts: a stopped deck reads below −40 dB at once'],
+    },
+    missing: [],
+  },
+
+  {
+    id: 'live-test', area: 'tooling', title: 'Automix played for real in a headless Chromium (npm run test:live)', date: '2026-10-17', session: 'a131b68b',
+    commits: [{ hash: 'f2f0fe4', subject: 'test(live): automix played for real in a headless Chromium' }, { hash: '60952d0', subject: 'docs: active-work board for concurrent sessions' }],
+    changed: [
+      'e2e/automix.spec.ts (Playwright): synthetic tracks are injected through window.__djmix (a bridge the AppProvider installs in development builds), Auto mixes the first track into the second, then a 16-bar MIX NOW stops the second in the middle; a 50 ms sampler reads faders and post-fader meters and asserts a silent stop, monotone fades, no master gap.',
+      'Its own Vite on :5174 with HMR off. setPlanPolicy() caps the blend length for tests.',
+      '.claude/active-work.md: the board several Claude sessions use to claim files before touching them.',
+    ],
+    test: {
+      steps: [
+        '<code>npm run test:live</code> (about 2.5 minutes, plays audio in real time) → 1 passed; the probe JSON lands in test-results/*/probe.json.',
+      ],
+      automated: ['See the checks table above for the last run'],
+    },
+    missing: [
+      { text: 'The live test covers automix only; the loop / FX / sync smoke was a throwaway script and should become a second spec.', owner: 'cae530b9' },
+    ],
+  },
+];
+
+// ---------------------------------------------------------------------------------------------
+// Rendering.
+// ---------------------------------------------------------------------------------------------
+const TODAY = '2026-10-18';
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// Bullets may carry <code> for commands; everything else is escaped.
+const rich = (s) => esc(s).replace(/&lt;code&gt;/g, '<code>').replace(/&lt;\/code&gt;/g, '</code>');
+const byArea = () => AREA_ORDER.map((key) => ({ key, name: AREAS[key], items: FEATURES.filter((f) => f.area === key) })).filter((g) => g.items.length);
+const dateTag = (f) => `<span class="tag ${f.date === TODAY ? 'today' : ''}">${f.date === TODAY ? 'today' : 'yesterday'}</span>`;
+const metaLine = (f) => `<div class="entry-meta"><span class="date">${esc(f.date)}</span>${f.commits.map((c) => `<span title="${esc(c.subject)}"><code>${esc(c.hash)}</code></span>`).join('')}<span>session ${esc(f.session)}</span></div>`;
+
+function renderChanged() {
+  const el = document.getElementById('changed-body');
+  el.innerHTML = byArea().map((g) => `<h3 class="area">${esc(g.name)}</h3>` + g.items.map((f) => `
+    <article class="entry" id="${esc(f.id)}" data-area="${esc(f.area)}" data-date="${esc(f.date)}">
+      <div class="entry-head"><h4>${esc(f.title)}</h4>${dateTag(f)}</div>
+      ${metaLine(f)}
+      <ul>${f.changed.map((c) => `<li>${rich(c)}</li>`).join('')}</ul>
+      <p class="jump"><a href="#test-${esc(f.id)}">how to test</a> · <a href="#missing-${esc(f.id)}">what's missing</a></p>
+    </article>`).join('')).join('');
+  document.getElementById('count-changed').textContent = `${FEATURES.length} entries · ${new Set(FEATURES.flatMap((f) => f.commits.map((c) => c.hash))).size} commits`;
+}
+
+function renderChecks() {
+  const el = document.getElementById('checks');
+  el.innerHTML = `<div class="eyebrow">Automated checks · last run ${esc(CHECKS.ranAt)}</div><table>${CHECKS.rows.map(([what, status, detail]) =>
+    `<tr><td>${esc(what)}</td><td class="${status === 'ok' ? 'ok' : 'warn'}">${esc(status)}</td><td>${esc(detail)}</td></tr>`).join('')}</table>`;
+}
+
+function renderTest() {
+  const el = document.getElementById('test-body');
+  el.innerHTML = byArea().map((g) => `<h3 class="area">${esc(g.name)}</h3>` + g.items.map((f) => `
+    <article class="entry" id="test-${esc(f.id)}" data-area="${esc(f.area)}" data-date="${esc(f.date)}">
+      <div class="entry-head"><h4>${esc(f.title)}</h4>${dateTag(f)}</div>
+      <ol class="steps">${f.test.steps.map((s) => `<li>${rich(s).replace(/→/g, '<span class="expect">→</span>')}</li>`).join('')}</ol>
+      ${f.test.automated.length ? `<div class="auto"><strong>Automated:</strong> ${f.test.automated.map(rich).join(' · ')}</div>` : ''}
+    </article>`).join('')).join('');
+}
+
+function renderMissing() {
+  const el = document.getElementById('missing-body');
+  el.innerHTML = byArea().map((g) => `<h3 class="area">${esc(g.name)}</h3>` + g.items.map((f) => `
+    <article class="entry" id="missing-${esc(f.id)}" data-area="${esc(f.area)}" data-date="${esc(f.date)}">
+      <div class="entry-head"><h4>${esc(f.title)}</h4>${dateTag(f)}</div>
+      ${f.missing.length ? `<ul>${f.missing.map((m) => `<li>${rich(m.text)}<span class="owner">— ${esc(m.owner)}</span></li>`).join('')}</ul>` : '<p class="jump">Nothing open.</p>'}
+    </article>`).join('')).join('');
+}
+
+function renderMeta() {
+  const dates = FEATURES.map((f) => f.date).sort();
+  document.getElementById('meta').innerHTML = [
+    `updated ${esc(TODAY)}`,
+    `${esc(dates[0])} → ${esc(dates[dates.length - 1])}`,
+    `repo djmix · branch main`,
+  ].map((s) => `<span>${s}</span>`).join('');
+}
+
+// Filters: by area and by day. Hidden entries hide in all three sections; empty area headings hide too.
+let filter = { area: null, date: null };
+function applyFilter() {
+  for (const a of document.querySelectorAll('article.entry')) {
+    const show = (!filter.area || a.dataset.area === filter.area) && (!filter.date || a.dataset.date === filter.date);
+    a.hidden = !show;
+  }
+  for (const h of document.querySelectorAll('h3.area')) {
+    let next = h.nextElementSibling; let any = false;
+    while (next && next.tagName === 'ARTICLE') { if (!next.hidden) any = true; next = next.nextElementSibling; }
+    h.hidden = !any;
+  }
+  for (const b of document.querySelectorAll('.chip')) b.setAttribute('aria-pressed', String(b.dataset.area ? filter.area === b.dataset.area : b.dataset.date ? filter.date === b.dataset.date : !filter.area && !filter.date));
+}
+function renderFilters() {
+  const el = document.getElementById('filters');
+  const chips = [['all', 'All'], ...[['date', TODAY, 'Today'], ['date', '2026-10-17', 'Yesterday']], ...AREA_ORDER.map((k) => ['area', k, AREAS[k]])];
+  el.innerHTML = chips.map((c) => c[0] === 'all' ? `<button class="chip" data-all="1">All</button>` : `<button class="chip" data-${c[0]}="${esc(c[1])}">${esc(c[2])}</button>`).join('');
+  el.addEventListener('click', (e) => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    if (b.dataset.all) filter = { area: null, date: null };
+    else if (b.dataset.area) filter.area = filter.area === b.dataset.area ? null : b.dataset.area;
+    else if (b.dataset.date) filter.date = filter.date === b.dataset.date ? null : b.dataset.date;
+    applyFilter();
+  });
+}
+
+renderMeta(); renderFilters(); renderChanged(); renderChecks(); renderTest(); renderMissing(); applyFilter();
+</script>
+</body>
+</html>
