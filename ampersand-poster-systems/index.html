@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Ampersand Poster Systems</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,560&display=swap">
+<style>
+/* Layout: one reading column, a pass-order strip under the header (the new
+   passes are highlighted where they really sit), then three numbered sections:
+   what changed → how to test → what is missing. */
+:root {
+  --bg: #f6f7f8;
+  --surface: #ffffff;
+  --fg: #1c2229;
+  --muted: #5b6672;
+  --line: #dde2e7;
+  --accent: #1f5fa8;
+  --accent-soft: #e6eef8;
+  --ok: #1d7a4a;
+  --ok-soft: #e4f3ea;
+  --warn: #9a5b00;
+  --warn-soft: #fbf0dc;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161b; --surface: #1a2027; --fg: #e3e8ee; --muted: #9aa6b2; --line: #2c343d;
+    --accent: #7fb0ea; --accent-soft: #1d2b3c; --ok: #6fcf9b; --ok-soft: #15291f;
+    --warn: #f0b860; --warn-soft: #2e2414; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161b; --surface: #1a2027; --fg: #e3e8ee; --muted: #9aa6b2; --line: #2c343d;
+  --accent: #7fb0ea; --accent-soft: #1d2b3c; --ok: #6fcf9b; --ok-soft: #15291f;
+  --warn: #f0b860; --warn-soft: #2e2414; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.6; padding: 0 16px; }
+main { max-width: 760px; margin: 0 auto; padding-block: 40px 64px; display: flex; flex-direction: column; gap: 40px; }
+h1, h2 { font-family: var(--font-display); font-weight: 560; text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(1.7rem, 4vw, 2.3rem); line-height: 1.15; }
+h2 { font-size: 1.45rem; display: flex; align-items: baseline; gap: 12px; }
+h2 .n { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); font-weight: 500; }
+h3 { font-size: 1rem; font-weight: 600; margin: 0; }
+h4 { font-size: 0.92rem; font-weight: 600; margin: 0; color: var(--fg); }
+p { margin: 0; }
+code { font-family: var(--font-mono); font-size: 0.86em; background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+a { color: var(--accent); }
+.eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+header { display: flex; flex-direction: column; gap: 14px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { font-family: var(--font-mono); font-size: 0.78rem; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font-variant-numeric: tabular-nums; }
+.pill.warn { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+.lede { color: var(--muted); max-width: 65ch; }
+
+/* Pass-order strip: the order a Poster layer is drawn in, new passes lit. */
+.chain-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.chain { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.seg { font-family: var(--font-mono); font-size: 0.78rem; padding: 5px 9px; border-radius: 6px; border: 1px solid var(--line); white-space: nowrap; background: var(--bg); }
+.seg.new { background: var(--accent-soft); border-color: transparent; color: var(--accent); font-weight: 500; }
+.seg.moved { background: var(--warn-soft); border-color: transparent; color: var(--warn); }
+.arrow { color: var(--muted); font-size: 0.8rem; }
+.chain-note { font-size: 0.86rem; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.8rem; color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.legend .l-new::before { background: var(--accent); }
+.legend .l-moved::before { background: var(--warn); }
+.legend .l-old::before { background: var(--line); }
+
+section { display: flex; flex-direction: column; gap: 18px; }
+.group { display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+.group ul, .group ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 5px; }
+.group li { max-width: 68ch; }
+.tag { font-family: var(--font-mono); font-size: 0.74rem; color: var(--accent); margin-right: 6px; }
+.where { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
+
+.steps { counter-reset: step; list-style: none; padding: 0 !important; }
+.steps > li { counter-increment: step; position: relative; padding-left: 34px !important; }
+.steps > li::before { content: counter(step); position: absolute; left: 0; top: 1px; width: 22px; height: 22px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-family: var(--font-mono); font-size: 0.75rem; display: grid; place-items: center; }
+.expect { display: block; color: var(--muted); font-size: 0.9rem; }
+.expect::before { content: "Expect: "; color: var(--ok); font-weight: 500; }
+
+.checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.check { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.check b { font-family: var(--font-mono); font-size: 1.05rem; font-weight: 500; color: var(--ok); font-variant-numeric: tabular-nums; }
+.check span { font-size: 0.84rem; color: var(--muted); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 0.9rem; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 500; }
+tr:last-child td { border-bottom: 0; }
+td.kind, td.who { white-space: nowrap; }
+.k { font-family: var(--font-mono); font-size: 0.74rem; padding: 2px 7px; border-radius: 4px; }
+.k.fix { background: var(--warn-soft); color: var(--warn); }
+.k.verify { background: var(--ok-soft); color: var(--ok); }
+.k.decide { background: var(--accent-soft); color: var(--accent); }
+.k.later { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); padding-top: 16px; display: flex; flex-direction: column; gap: 6px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="eyebrow">Ampersand · Poster mode · commit 4430363 on main · 19 Oct 2026</span>
+    <h1>Poster gets relationships, masks, an effect stack, print ink and a font pack</h1>
+    <div class="meta">
+      <span class="pill warn">Not browser-checked</span>
+      <span class="pill ok">npm run check · green</span>
+      <span class="pill">100 files · +11,287 / −1,180</span>
+      <span class="pill">25 new modules</span>
+      <span class="pill">21 font families · 14 MB</span>
+    </div>
+    <p class="lede">One commit holds six days of Poster work (13 to 19 Oct). It adds eight new layer groups, a command palette, two look libraries, OpenType controls with a font inspector, in-browser object selection for pictures, and a bundled poster font pack. Engraving, sketch pens and picture analysis move into shared modules. The static suite and the production build pass. Nothing has been opened in a browser yet.</p>
+    <div class="chain-wrap" aria-label="Order a Poster layer is drawn in">
+      <div class="chain">
+        <span class="seg new">relationships</span><span class="arrow">→</span>
+        <span class="seg new">letter forms</span><span class="arrow">→</span>
+        <span class="seg">draw</span><span class="arrow">→</span>
+        <span class="seg">gradient</span><span class="arrow">→</span>
+        <span class="seg">distort</span><span class="arrow">→</span>
+        <span class="seg">warp</span><span class="arrow">→</span>
+        <span class="seg">cut</span><span class="arrow">→</span>
+        <span class="seg new">grow</span><span class="arrow">→</span>
+        <span class="seg moved">3D</span><span class="arrow">→</span>
+        <span class="seg">blur</span><span class="arrow">→</span>
+        <span class="seg">style</span><span class="arrow">→</span>
+        <span class="seg moved">screen</span><span class="arrow">→</span>
+        <span class="seg">texture</span><span class="arrow">→</span>
+        <span class="seg new">effect stack</span><span class="arrow">→</span>
+        <span class="seg">erase</span><span class="arrow">→</span>
+        <span class="seg">clip base</span><span class="arrow">→</span>
+        <span class="seg new">source mask</span><span class="arrow">→</span>
+        <span class="seg new">print ink</span><span class="arrow">→</span>
+        <span class="seg moved">page blend</span>
+      </div>
+      <div class="legend"><span class="l-new">new pass</span><span class="l-moved">existing pass, changed</span><span class="l-old">unchanged</span></div>
+      <p class="chain-note">Relationships move the box before anything is drawn. Letter forms reshape the letters inside the text rasteriser. The effect stack runs any number of effects after the single slots. The source mask comes after the clip base, so layers clipped to a masked layer see the masked shape. Print ink is the last pass before the page blend, which now has a Pigment mode.</p>
+    </div>
+  </header>
+
+  <section id="changed">
+    <h2><span class="n">1</span>What changed</h2>
+
+    <div class="group">
+      <h3>Layer tab: relationships between layers</h3>
+      <p class="where">Layer › Relationships · every layer kind</p>
+      <ul>
+        <li><b>Relationship</b> select: No constraint, Avoid layer, Stay inside layer, Touch edge, Follow layer, Orbit layer, Connect to layer. <b>Relative to</b> lists every other layer. <b>Gap</b> and <b>Strength</b> apply to all modes. Follow adds <b>Follow offset X / Y</b>; Orbit adds <b>Orbit radius</b> and <b>Orbit angle</b>.</li>
+        <li>Avoid, Stay inside and Touch edge push the layer's box out of, inside, or against the target's nearest edge. Follow copies the target's position plus an offset in its rotated frame. Orbit circles it. Connect stretches and turns the layer so it spans from its own centre to the target.</li>
+        <li>Everything is display-only. The saved position never changes until <b>Bake displayed position</b>, which writes the shown transform in and sets the relationship back to No constraint. Picking, the selection box and the gizmo all use the displayed positions.</li>
+        <li>A deleted target makes the relationship inert. Chains and cycles of relationships terminate.</li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>Layer tab: source masks</h3>
+      <p class="where">Layer › Mask › Mask from · every kind except adjustment</p>
+      <ul>
+        <li><b>Mask from</b>: No source mask, Gradient, Noise, Another layer, Painted mask. White shows the layer; <b>Invert mask</b> flips it. <b>Mask level</b> moves the edge and <b>Mask softness</b> widens it.</li>
+        <li>Gradient: Linear or Radial, <b>Mask angle</b>, <b>Mask centre X / Y</b>, <b>Mask size</b>. Noise: <b>Mask size</b> and <b>Mask seed</b>.</li>
+        <li>Another layer: <b>Mask layer</b> plus <b>Read</b> as Its shape or Its brightness. A hidden layer still works as a source.</li>
+        <li>Painted mask: <b>Paint mask</b>, <b>Unpaint</b>, <b>Clear mask</b>. The pencil paints it; <code>[</code> and <code>]</code> size the brush, Esc puts it down, B returns to the pencil. A drawing's refit carries the painted mask with it.</li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>Layer tab: effect stack, and engraving on any layer</h3>
+      <p class="where">Layer › Effect stack · every inking kind</p>
+      <ul>
+        <li><b>Add effect…</b> offers Distort, Engrave, Sketch, Tone screen, Ink texture and Blur. Each becomes a numbered card with an on/off box and ↑ ↓ ✕ (Run earlier, Run later, Remove effect). The stack runs in card order after the layer's own single slots.</li>
+        <li>Engrave and Sketch now work on type, shapes and drawings, not only pictures. Their cards add <b>Tone from</b> (Layer colours or Flat level), <b>Level</b>, <b>Line ink</b> and <b>Ground</b>, so solid type can take even rulings. The picture's own Engrave and Sketch use the same shared shader code.</li>
+        <li>Stack settings are not keyframed and are skipped by Variation, like path effect parts.</li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>Layer tab: print ink and the Pigment blend</h3>
+      <p class="where">Layer › Layer › Blend · Layer › Print ink · Finish › Print › Print look</p>
+      <ul>
+        <li><b>Blend</b> gains <b>Pigment · overprint</b>, last in the list. Ink behaves like transparent pigment on paper (single-constant Kubelka–Munk over seven spectral bands): cyan over yellow prints green, light ink on a dark page nearly vanishes, white ink adds nothing. Opacity is the amount of ink, not a cross-fade.</li>
+        <li><b>Print ink</b> group: <b>Ink spread</b> wicks the ink along the paper's fibres, <b>Pooling</b> darkens the rim, <b>Misregister</b> slips and turns the plate, <b>Ink starve</b> thins it in blotches. <b>Print seed</b> appears once spread, misregister or starve is above zero.</li>
+        <li><b>Print look</b> buttons Riso, Screen print, Offset and Clean set Pigment and these fields on the selected layers, or on every layer when nothing is selected. Clean zeroes them and puts the blend back to Normal.</li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>Layer tab: brushes on paths and scribbles</h3>
+      <p class="where">Layer › Brush · drawing, path and scribble layers</p>
+      <ul>
+        <li>The brush controls move out of Drawing into their own <b>Brush</b> group and now apply to paths and scribbles too. <b>Brush</b>: Solid ink, Paint bristles, Dry brush, Ink brush, and new Chalk, Marker and Calligraphy nib. With <b>Bristles</b>, <b>Dryness</b>, <b>Sheen</b>, <b>Fill brush width</b>, and for the nib <b>Nib contrast</b> and <b>Nib angle</b>.</li>
+        <li>Chalk grain sits in page units, so it stays on the paper when the layer moves. The nib is geometry: it scales the stroke width per point before painting. Text has no centreline and takes no brush.</li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>Layer tab: grown type</h3>
+      <p class="where">Layer › Grow · text, glyph and path layers (currently at the bottom of the tab, after Transform)</p>
+      <ul>
+        <li><b>Growth</b>: Off, Coral, Maze, Spots, Worms (reaction–diffusion seeded inside the letters) or Lichen, Roots (growth automata seeded on the outline). <b>Inside the letters</b>, or <b>Reach</b> past them. <b>Pattern size</b>, <b>Steps</b>, <b>Detail</b>, <b>Seed</b>.</li>
+        <li><b>Colour</b>: Layer ink, Growth colour, or Two-tone with <b>Growth colour</b> and <b>Second colour</b>. <b>Original letters</b> keeps the plain type underneath.</li>
+        <li>The simulation runs in a grid attached to the layer's box and is cached per layer. Panning, zooming, moving or recolouring never regrows it. Export waits for growth to settle.</li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>Layer tab: organic paths and letter forms</h3>
+      <p class="where">Layer › Organic path · Layer › Warp › Organic outlines · Layer › Letter forms</p>
+      <ul>
+        <li><b>Organic outlines</b> (next to Letters to paths) turns type into an editable path with a broader refit. The <b>Organic path</b> group, shown for closed pen paths, has <b>Sculpt / flourish amount</b>, <b>Simplify amount</b>, and the buttons Simplify outline, Smooth points, Corner points, Swell, Pinch and Pull flourish. Show nodes with N, Mod-drag to pick points. These are real anchor edits with normal undo and export. The group currently sits at the bottom of the Layer tab, after Transform.</li>
+        <li><b>Letter forms</b> reshape the set letters before anything else sees them. <b>Form</b>: Off, Slits, Slide, Fold, Facet, Modules, Flow, Terminals, Inlines; <b>Style</b> (Seed decides, or a named variant such as Slits · lenses, Flow · nouveau, Terminals · balls); <b>Amount</b>, <b>Size</b>, <b>Scope</b> (Each letter or Whole setting), <b>Seed</b>. A <b>Second form</b> slot repeats them. <b>Random form</b>, <b>New seed</b> and <b>Clear forms</b> drive both slots. Letters to paths and Warp letters see the formed letters. New type preset: Psychedelic flow.</li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>Type: OpenType, a font inspector, text size and the font pack</h3>
+      <p class="where">Layer › OpenType · Layer › Text · every font picker</p>
+      <ul>
+        <li>The <b>OpenType</b> group (Poster and Type mode) drives a face's variable axes and features: <b>Width axis</b>, <b>Slant axis</b>, <b>Optical size</b>, <b>Other axes</b> by tag, <b>Capitals</b> (small, all small, petite, all petite, unicase, titling), <b>Ligatures</b>, <b>Numerals</b> (lining, old-style, tabular, …) and <b>OpenType features</b> by tag. All of it is animatable.</li>
+        <li><b>This font's axes &amp; features…</b> opens an inspector that lists what the face has. For an installed font it reads the real file (Chrome, Local Font Access). For a shelf font it shows what the page asks Google Fonts for. Clicking an axis brings its control forward or writes it into Other axes; feature rows toggle into OpenType features.</li>
+        <li>A setting that uses an axis or a feature is drawn through an SVG rasteriser with the webfont embedded, so it lands a moment after the canvas draft and survives export.</li>
+        <li><b>Text size</b> slider on text layers, in the active artboard's exported pixels. The box now follows the words: new words, another face or more tracking grow the box instead of shrinking the letters, and a corner drag sets the size. A multi-selection set to one value matches exactly.</li>
+        <li><b>Letter fonts</b> (for example <code>3:Pinyon Script</code>) sets single letters in faces of their own; Warp › <b>Font scramble</b> fills it with one contrasting letter per word.</li>
+        <li>Font pack: 21 OFL families bundled under <code>public/fonts/poster</code>, loaded with no Google request. The picker's single Built in section becomes three: Core (Archivo, Inter, Playfair Display, JetBrains Mono), Poster foundations (Anybody, Big Shoulders Display, Fraunces, Instrument Serif, League Gothic, Space Grotesk, Syne, Unbounded) and Mutant display (Climate Crisis, Kablammo, Handjet, Nabla, Bungee Shade, Bungee Outline, Rubik Glitch, Rubik Spray Paint, Rubik Wet Paint, Sixtyfour, Tilt Prism, Foldit, Wavefont). Their axes (YEAR, MORF, opsz, SOFT, WONK, …) are known to the inspector.</li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>Pictures: select an object, the Effect library, analysis off the main thread</h3>
+      <p class="where">Layer › Mask › Select object · Layer › Image › Effect library</p>
+      <ul>
+        <li><b>Select object</b> runs Segment Anything in the browser. Click adds the part under the pointer, Alt-click or right-click takes it away, Backspace drops the last point, Enter cuts the picture to the object as an ordinary editable cut (Edit cut reshapes it), Shift+Enter or <b>Selection to new layer</b> lifts it onto a copy. The model is fetched on first use (transformers.js from jsDelivr, SlimSAM from the Hugging Face hub, about 14 MB on WASM or 20 to 40 MB on WebGPU) and cached by the browser.</li>
+        <li><b>Effect library</b> heads the Image group: 28 whole-picture treatments on five shelves (Photographic, Print, Engraved &amp; drawn, Cut &amp; collage, Type &amp; pixels), for example Faded film, Riso two-tone, Newsprint halftone, Copperplate engraving, Matisse cut-out, ASCII art, VHS tear. Every tile is the selected picture wearing that look. Shift-click compares without closing; Enter applies; the asset, fit, crop, transform, opacity and blend are never touched.</li>
+        <li>Silhouette, Snap to picture, Paper cut-out and Paper edges, Smooth shapes, Line art, Pixel sort and Dither are now built in a worker. Dragging them no longer freezes the page; the previous result shows until the new one lands. Exports, merges and the options grid build in place. Paper cut-out goes up to 8 colours with a new OKLab clustering.</li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>3D: a library, studio light, surface textures and shared scenes</h3>
+      <p class="where">Layer › 3D · text, glyph and path layers</p>
+      <ul>
+        <li><b>3D library</b> heads the group: 19 looks on the shelves Glass &amp; gel, Metal, Soft solids, Stone clay &amp; wood (Gummy gel, Brushed aluminium, Knurled steel, Inflated vinyl, Woven pillow, Pebbled leather, Ribbed rubber, Celadon crackle, Speckled enamel, Terrazzo slab, Raw concrete, Oak block, and the quick ones). The quick row is now Amber glass, Clear glass, Liquid chrome, Black metal, Studio chrome, Foam, Soft matte, Off.</li>
+        <li><b>Lighting</b>: Classic · sky or Studio · soft light. Studio adds <b>Self shadow</b>, <b>Shadow softness</b>, <b>Occlusion</b> and <b>Shadow on page</b>: a soft key, real self-shadows, crevice occlusion, a contact shadow on a plane behind the solid, and softbox reflections that pick up the page. Materials add Soft matte and Foam / sponge.</li>
+        <li><b>Surface texture</b> with 13 reliefs (Grain, Sponge pores, Pebbled leather, Hammered, Crackle glaze, Concrete, Brushed metal, Ribbed, Knurled, Woven fabric, Wood grain, Terrazzo, Paint speckle), plus <b>Texture amount</b>, <b>Texture size</b>, <b>Texture angle</b> and <b>Chip colour</b>. Worked in object space, so it stays on the surface as the solid turns.</li>
+        <li><b>Shared scene</b>: spatial layers with the same scene name (up to six) are traced as one scene, so they intersect, hide and shadow each other. The scene draws at its top member's place in the stack and takes that member's light, camera and later passes.</li>
+        <li>Spatial 3D now draws a coarse draft while you drag, change a control or play the timeline, and sharpens about 200 ms after you stop. Exports and recordings never use the draft. A finished scene is reused while nothing it reads has changed.</li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>Everywhere: the command palette</h3>
+      <p class="where">Toolbar ⌘K button, before Help · ⌘K / Ctrl+K</p>
+      <ul>
+        <li>One search box over everything the current mode can do: Recent picks, Actions (toolbar and panel buttons, with key chips), Settings as Tab › Group (with each menu's options once two characters are typed), Fonts (each family drawn in its own face), Presets or Designs, Modes and Help topics.</li>
+        <li>Picking a setting switches to its tab, opens its group, scrolls to it, flashes a ring round it and focuses it. ↑ ↓ move, Enter runs, Esc closes. The Help shortcuts sheet gains the ⌘K row and a Select object block.</li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>Under the hood</h3>
+      <ul>
+        <li>Marching squares moves out of the outliner into <code>core/contours.js</code>, shared by Image Trace, Letters to paths and the Facet form. Engrave and sketch GLSL move into one shared module, and the picture's CPU analysis into its own module plus an inline worker. The picture module shrinks by about 420 lines.</li>
+        <li>Three new check scripts join <code>npm run check</code>: letter forms (deterministic per seed, keeps letter ids, grows visible ink), organic path (simplify reduces anchors, the sculpt tools behave) and look presets (every look sets only valid in-range fields, never resets asset, fit, crop, transform, opacity or blend). Drift check declares the Poster-only field prefixes.</li>
+        <li>The commit message says Type Field and feedback repeaters were removed. The diff removes nothing for them: they were added and dropped again between commits, and only the PLAN.md log records it. No user-facing control was deleted.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="test">
+    <h2><span class="n">2</span>How to test</h2>
+    <p class="lede">All of this is a manual pass in Poster mode. Open the app, add an artboard with a text layer and a picture, and keep the Layer tab open on the right.</p>
+
+    <div class="group">
+      <h3>Relationships</h3>
+      <ol class="steps">
+        <li>Make two layers, A and B. Select A, go to Layer › Relationships, set Relationship to <b>Avoid layer</b> and Relative to <b>B</b>. Drag B over A.<span class="expect">A slides away. A's own X and Y in the panel do not change.</span></li>
+        <li>Switch A to <b>Orbit layer</b> and turn Orbit angle.<span class="expect">A circles B at Orbit radius. Clicking A on the canvas picks it where it is shown.</span></li>
+        <li>Press <b>Bake displayed position</b>.<span class="expect">Toast "Baked 1 relationship into position". Relationship returns to No constraint and A stays where it was shown.</span></li>
+        <li>Set A to Avoid layer again, then delete B.<span class="expect">A drops back to its authored spot. No error in the console.</span></li>
+      </ol>
+    </div>
+
+    <div class="group">
+      <h3>Source masks</h3>
+      <ol class="steps">
+        <li>Select the picture, Layer › Mask, set Mask from to <b>Gradient</b>, drag Mask angle and Mask level.<span class="expect">The picture fades across the box in that direction.</span></li>
+        <li>Set Mask from to <b>Painted mask</b>, press <b>Paint mask</b>, drag on the page, resize with <code>[</code> and <code>]</code>, press Esc, then <b>Clear mask</b>.<span class="expect">Only the painted area shows, then the whole picture returns.</span></li>
+        <li>Set Mask from to <b>Another layer</b>, choose the text layer, then hide the text layer.<span class="expect">The picture shows only through the words.</span></li>
+      </ol>
+    </div>
+
+    <div class="group">
+      <h3>Effect stack and print ink</h3>
+      <ol class="steps">
+        <li>Select the text layer, Layer › Effect stack, Add effect… <b>Engrave</b>, set Tone from to <b>Flat level</b>.<span class="expect">Even rulings across the solid type.</span></li>
+        <li>Add <b>Distort</b> and press ↑ on its card so it runs before Engrave. Then untick the Engrave card.<span class="expect">The rulings follow the distorted letters, then disappear when unticked while the card greys out.</span></li>
+        <li>Draw a cyan and a yellow shape that overlap. Set both to Blend <b>Pigment · overprint</b>.<span class="expect">The overlap prints green, not a cross-fade.</span></li>
+        <li>Deselect everything, Finish › Print › Print look <b>Riso</b>, then <b>Clean</b>.<span class="expect">Toast "Riso ink on the page"; every layer gains spread and misregister. Clean zeroes them and blends go back to Normal.</span></li>
+      </ol>
+    </div>
+
+    <div class="group">
+      <h3>Brushes, grown type, organic paths, letter forms</h3>
+      <ol class="steps">
+        <li>Draw a pen path with Stroke width above 0. Layer › Brush, set Brush to <b>Chalk</b>, then <b>Calligraphy nib</b> and turn Nib angle.<span class="expect">Chalk grain stays on the paper when the path moves. The nib gives thick and thin along the angle.</span></li>
+        <li>Select the text layer, scroll to the bottom of the Layer tab, Growth <b>Coral</b>. Move and recolour the layer. Export a PNG.<span class="expect">The pattern fills in over a few frames, does not regrow on move, and the PNG is fully grown.</span></li>
+        <li>On a text layer press Warp › <b>Organic outlines</b>, press N, Mod-drag round one point, press <b>Pull flourish</b>, then <b>Simplify outline</b>.<span class="expect">A pointed flourish at that anchor, undo reverts it, and the simplify toast reads "n → m" points.</span></li>
+        <li>On a text layer press Layer › Letter forms › <b>Random form</b> three times, then <b>New seed</b>, then <b>Clear forms</b>. Try Letters to paths with a form on.<span class="expect">The toast names each form. The seed moves the shapes. Clear brings the font back. The paths carry the formed letters.</span></li>
+      </ol>
+    </div>
+
+    <div class="group">
+      <h3>Type, fonts and the inspector</h3>
+      <ol class="steps">
+        <li>Set the text layer to <b>Fraunces</b>, open Layer › OpenType, press <b>This font's axes &amp; features…</b>, click <b>SOFT</b>.<span class="expect">The menu lists opsz, SOFT and WONK. Other axes fills in and flashes, and the letters soften a moment after the draft.</span></li>
+        <li>Open any font picker, pick <b>Climate Crisis</b>, set Other axes to <code>YEAR 2050</code>. Watch DevTools › Network.<span class="expect">Three "· built in" sections in the picker. The letters erode. Fonts load from <code>/fonts/poster/</code>, not fonts.googleapis.com.</span></li>
+        <li>Drag the new <b>Text size</b> slider, then type more words into the layer and drag a corner handle.<span class="expect">The box grows for the new words at the same size; the corner drag changes the size.</span></li>
+      </ol>
+    </div>
+
+    <div class="group">
+      <h3>Pictures and 3D</h3>
+      <ol class="steps">
+        <li>Select the picture, Layer › Mask › <b>Select object</b>, click the subject, press Enter. Repeat with Shift+Enter.<span class="expect">Toasts "Fetching the object model · …%" then "Select object (WebGPU or WASM) · click the object…". Enter leaves an editable cut; Shift+Enter puts it on a new layer.</span></li>
+        <li>Layer › Image › <b>Effect library</b>. Shift-click two tiles, then click one. Drag Paper cut-out and Paper edges on a large photo.<span class="expect">Tiles render as they scroll into view. Crop and transform are untouched after applying. The sliders stay smooth while the result catches up.</span></li>
+        <li>Select the text layer, Layer › 3D › <b>3D library</b> › Terrazzo slab. Set Lighting to Studio · soft light and raise Occlusion.<span class="expect">A studio-lit solid with chips on every face. Shadow darkens the crevices and the page behind.</span></li>
+        <li>Make two spatial text layers, give both Shared scene <code>a</code>, overlap them, then drag one.<span class="expect">They intersect and shadow each other. A coarse draft shows while dragging and sharpens when you stop.</span></li>
+        <li>Press ⌘K, type <b>blend</b>, pick the Layer › Layer entry. Reopen ⌘K.<span class="expect">The Layer tab opens, the Blend control flashes and takes focus. The pick is listed under Recent.</span></li>
+      </ol>
+    </div>
+
+    <div class="group">
+      <h3>Automated checks that ran</h3>
+      <p><code>npm run check</code> on commit 4430363, 19 Oct 2026, exit 0. Ten scripts then the production build.</p>
+      <div class="checks">
+        <div class="check"><b>ok</b><span>shader check · 4 shader sets, 2,377 GLSL lines</span></div>
+        <div class="check"><b>128</b><span>engine fields, v5 migration, Type import</span></div>
+        <div class="check"><b>75</b><span>type styles in the preset library</span></div>
+        <div class="check"><b>10,986</b><span>pixels changed by the letter form check, 612 newly inked</span></div>
+        <div class="check"><b>48 → 2</b><span>anchors after organic path simplify</span></div>
+        <div class="check"><b>28 + 19</b><span>image and 3D looks, all fields valid</span></div>
+        <div class="check"><b>0</b><span>drift, 0 undeclared, Type and Plotter vs Poster</span></div>
+        <div class="check"><b>72</b><span>deterministic print compositions, 27 drawify looks</span></div>
+        <div class="check"><b>2,160</b><span>seeded variation cases, 1,080 recompositions</span></div>
+        <div class="check"><b>1.64 MB</b><span>single-file build, 114 modules</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="missing">
+    <h2><span class="n">3</span>What's missing</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Kind</th><th>Item</th><th>Owner</th></tr></thead>
+        <tbody>
+          <tr><td class="kind"><span class="k fix">fix</span></td><td>The <b>Grow</b> and <b>Organic path</b> groups are not in the Layer tab's group list, so they land at the very bottom after Transform. Decide where they belong (Grow near 3D, Organic path near Path or Warp) and add them to the list.</td><td class="who">Claude, next session</td></tr>
+          <tr><td class="kind"><span class="k verify">verify</span></td><td>No browser pass on anything in this commit. Section 2 is the list. Relationships in particular have never been dragged by hand; the PLAN handoff asks for every mode to be exercised.</td><td class="who">Milton</td></tr>
+          <tr><td class="kind"><span class="k fix">fix</span></td><td>No Help topics for Relationships, source masks, the effect stack, print ink and Pigment, Grow, the look libraries, the font pack or the palette. Only the Text size tip, the Letter forms steps and the Organic outlines tips were added.</td><td class="who">Claude, next session</td></tr>
+          <tr><td class="kind"><span class="k fix">fix</span></td><td>The Relationship hint still reads "apart from, or inside", which covers two of the six modes.</td><td class="who">Claude, next session</td></tr>
+          <tr><td class="kind"><span class="k decide">decide</span></td><td>Select object needs the network on first use (transformers.js from jsDelivr, the model from Hugging Face). There is no offline fallback, tiled pictures are refused, holes are dropped and the cut is capped at 120 nodes. Accept, or bundle the model.</td><td class="who">Milton</td></tr>
+          <tr><td class="kind"><span class="k decide">decide</span></td><td>Letter forms are Poster-only. Type mode does not take them yet, and drift check declares the gap on purpose.</td><td class="who">Milton</td></tr>
+          <tr><td class="kind"><span class="k decide">decide</span></td><td>Relationships next slice, if the box modes prove useful: multi-object packing and text wrap, still display-only until bake. Boxes are conservative axis-aligned bounds of rotated layers, so a rotated Avoid keeps more distance than it looks.</td><td class="who">Milton, then Codex per PLAN.md</td></tr>
+          <tr><td class="kind"><span class="k later">later</span></td><td>Effect stack settings are not keyframed and Variation skips them.</td><td class="who">unassigned</td></tr>
+          <tr><td class="kind"><span class="k later">later</span></td><td>Performance edges: masking by another layer turns the stack cache off, and print ink turns off scissor bounding for its layer. Watch big stacks that use both.</td><td class="who">unassigned</td></tr>
+          <tr><td class="kind"><span class="k later">later</span></td><td>Grow: the cell wavelength is eyeballed from Sims' tutorial parameters, not measured. Merge and flatten read-backs do not wait for a growth in progress.</td><td class="who">unassigned</td></tr>
+          <tr><td class="kind"><span class="k later">later</span></td><td>The font inspector reads the real feature list only for installed fonts in Chrome. Shelf webfonts show catalogue data.</td><td class="who">unassigned</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <span>Sources: commit 4430363 on <code>grountish/chaosforge</code> main, the PLAN.md progress log (17 to 18 Oct), <code>src/modes/POSTER.md</code>, README, and the control labels read from <code>poster.js</code> and <code>poster_layers.js</code>.</span>
+    <span>Written 19 Oct 2026. Republish by editing this folder.</span>
+  </footer>
+</main>
+</body>
+</html>
