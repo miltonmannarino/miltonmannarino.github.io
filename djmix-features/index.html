@@ -155,13 +155,41 @@ const CHECKS = {
   ranAt: '2026-10-19 (session 91b26f74)',
   rows: [
     ['npx tsc --noEmit', 'ok', '0 errors'],
-    ['npm test (vitest)', 'ok', '213 / 213 tests pass, 27 files'],
-    ['npm run test:live (Playwright, ~2.5 min)', 'not re-run', 'last run 2026-10-18 00:35: 1 passed in 2 min 26 s: Auto\'s end-of-track blend, then a 16-bar Mix now; silent stop, monotone fades, no master gap'],
+    ['npm test (vitest)', 'ok', '217 / 217 tests pass, 27 files'],
+    ['npm run test:live (Playwright, ~2.5 min)', 'ok', '1 passed in 2.4 min: two Auto transitions (32-bar blends, bass swap at bar 8 of the overlap), stopped decks at −120 dBFS, fades monotone (worst rise 1.1 dB), longest master gap 0.00 s over 141 s'],
     ['Headless-Chromium smoke through window.__djmix', 'ok', 'loop wraps sample-exact; beat / bar / phrase sync within 0.003 beats; echo delay follows tempo; sharp curve holds the far deck at full; +3.0 dB trim (throwaway script, not in the repo)'],
   ],
 };
 
 const FEATURES = [
+  {
+    id: 'auto-mix-at-the-end', area: 'automix', title: 'Auto mixes out where the track ends, not at an earlier breakdown', date: '2026-10-19', session: '91b26f74',
+    commits: [{ hash: 'e49d972', subject: 'feat(automix): the blend ends where the outgoing track ends' }],
+    changed: [
+      'With Auto on, the blend out of the playing track now ends within one phrase (8 bars) of the track\'s end. Before, the planner could start the overlap on any phrase line and often chose a mid-track breakdown as the exit (a smoother bass handover there), leaving the last drop unplayed: on the real library 221 of 1193 Auto blends left more than 30 s of the outgoing track unheard, 88 more than a minute, the worst 131 s. Now none leaves more than a phrase (worst 21 s, a slow track).',
+      'Ending one phrase early still happens for a reason (a natural bass exit, the incoming drop on the swap, keeping a beat under the blend); it costs more than before (0.5 a bar instead of 0.15), so a slightly smaller bass hole no longer buys it.',
+      'A long beatless outro is blended over rather than mixed out before: the swap comes as early as the blend allows so the incoming beat returns quickly.',
+      'Auto\'s outro loop is the track\'s last kick phrase only, and the blend must reach the loop; a loop plan could otherwise blend 16 bars anywhere in the track and stop before ever reaching the loop.',
+      'Mix now is unchanged: it still mixes at the next 16-bar entry.',
+    ],
+    test: {
+      steps: [
+        'Load a track with a long breakdown before its final drop on deck A (Silk, True South, My Boo, Flipside are such tracks in the library), an analysed track on B, press PLAY on A and turn AUTO on. → The NextMix strip and the marks on A\'s waveform put the overlap inside the last 32 bars of the track; the countdown runs through the breakdown and the last drop is heard.',
+        'Let it run. → The incoming track enters during A\'s last phrases; A fades out as it reaches its end (within about 15 s of the end of the file), never in the middle of a drop.',
+        'Turn AUTO off and press MIX NOW on a playing track. → As before: the blend starts at the next 16-bar entry.',
+      ],
+      automated: [
+        'src/audio/mix/mixPoints.test.ts: four new tests (a breakdown exit a minute before the end is refused, a bass hole at the end does not buy an early exit, a 40-bar beatless outro is blended over, a natural exit may end one phrase early and no more); vitest 217 / 217 pass; tsc 0 errors',
+        'Planning sweep over every ordered pair of the 52 analysed library tracks (throwaway script, not in the repo): bars left after the blend, before → after: ≤8 bars 811 → 1193 of 1193 blends; >30 s left 221 → 0; >60 s 88 → 0; worst 131 s → 21 s',
+        'npm run test:live (Playwright): see CHECKS',
+      ],
+    },
+    missing: [
+      { text: 'The planning sweep only looked at where the blend ends, not at how it sounds; the pairs that used to exit at a breakdown now blend over the final drop or outro, which is worth a listen (Silk → anything, True South → Nik Com).', owner: 'unowned' },
+      { text: 'A beatless outro longer than 24 bars gets the blend inside it (8 bars with no kick before the swap). Mixing out before such an outro would need a rule for what counts as the track\'s end; left as is on purpose.', owner: 'unowned' },
+      { text: 'The swap scoring itself (natural exit, bass hole) is untouched; only where the blend may start changed.', owner: 'unowned' },
+    ],
+  },
   {
     id: 'deck-loading', area: 'ui', title: 'A deck shows the track on its way while it loads', date: '2026-10-19', session: '91b26f74',
     commits: [{ hash: '2a65f6e', subject: 'feat(ui): a deck shows the track on its way while it loads' }],
