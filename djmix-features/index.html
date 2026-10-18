@@ -152,16 +152,42 @@ const AREAS = {
 const AREA_ORDER = ['pro', 'ui', 'automix', 'analysis', 'library', 'engine', 'tooling'];
 
 const CHECKS = {
-  ranAt: '2026-10-18 00:35',
+  ranAt: '2026-10-19 (session 91b26f74)',
   rows: [
-    ['npm run typecheck', 'ok', '0 errors'],
-    ['npm test (vitest)', 'ok', '201 / 201 tests pass, 25 files'],
-    ['npm run test:live (Playwright, ~2.5 min)', 'ok', '1 passed in 2 min 26 s: Auto\'s end-of-track blend, then a 16-bar Mix now; silent stop, monotone fades, no master gap'],
+    ['npx tsc --noEmit', 'ok', '0 errors'],
+    ['npm test (vitest)', 'ok', '213 / 213 tests pass, 27 files'],
+    ['npm run test:live (Playwright, ~2.5 min)', 'not re-run', 'last run 2026-10-18 00:35: 1 passed in 2 min 26 s: Auto\'s end-of-track blend, then a 16-bar Mix now; silent stop, monotone fades, no master gap'],
     ['Headless-Chromium smoke through window.__djmix', 'ok', 'loop wraps sample-exact; beat / bar / phrase sync within 0.003 beats; echo delay follows tempo; sharp curve holds the far deck at full; +3.0 dB trim (throwaway script, not in the repo)'],
   ],
 };
 
 const FEATURES = [
+  {
+    id: 'deck-loading', area: 'ui', title: 'A deck shows the track on its way while it loads', date: '2026-10-19', session: '91b26f74',
+    commits: [{ hash: '2a65f6e', subject: 'feat(ui): a deck shows the track on its way while it loads' }],
+    changed: [
+      'While a track is decoded and its waveform built, the deck shows it: on an empty deck the head reads the incoming title with "Loading…" under it, and a spinner with "Loading <title>" sits in the waveform area (the drop hint makes way for it).',
+      'On a deck that already has a track, the same spinner overlay sits over the waveforms and the current track keeps playing under it until the new one lands.',
+      'Loading a second track onto the same deck before the first has landed hands the indicator over to the second; the first never lands and does not clear the indicator.',
+      'A failed load clears the indicator (the error is still thrown to the caller, as before).',
+    ],
+    test: {
+      steps: [
+        'With deck B empty, double-click a long track in the collection (or drop one on deck B). → Deck B\'s head shows the track title with "Loading…" and the waveform area shows a spinner with "Loading <title>"; a moment later the waveform appears and the head shows the artist.',
+        'With a track playing on deck A, drop another track on deck A. → The spinner overlay appears over A\'s waveforms while the old track keeps playing; it disappears when the new track lands (stopped at 0:00).',
+        'Drop one track on deck A and, before it lands, drop a second one on the same deck. → The overlay text switches to the second title; only the second track lands.',
+      ],
+      automated: [
+        'npx tsc --noEmit: 0 errors; vitest 213 / 213 pass',
+        'Browser check on :5173 through window.__djmix (2026-10-19): indicator up 57 ms after loadToDeck, cleared with the track landed at 163 ms; with the Electron file read stubbed to 4.5 s the overlay and the "Loading…" head were screenshotted on an empty deck and over a loaded one; two loads 500 ms apart on deck A: the indicator switched to the second title at 527 ms, the first never landed, the second landed at 5.0 s',
+      ],
+    },
+    missing: [
+      { text: 'Not checked in the Electron window itself; the real decode path (IPC file read + decodeAudioData) was only exercised through a stub in Chromium.', owner: 'unowned' },
+      { text: 'No indicator for a load started by Auto beyond the deck itself (the NextMix strip does not mention it).', owner: 'unowned' },
+      { text: 'A failed load shows nothing on the deck: the indicator just goes away.', owner: 'unowned' },
+    ],
+  },
   {
     id: 'layout-compact', area: 'ui', title: 'Decks row a little shorter, more room for the playlist', date: '2026-10-18', session: 'a131b68b',
     commits: [{ hash: 'efce872', subject: 'style(layout): back to the stacked mixer, a little tighter' }, { hash: '63467a9', subject: 'style(layout): a shorter decks row, more room for the playlist' }],
