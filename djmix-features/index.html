@@ -152,16 +152,54 @@ const AREAS = {
 const AREA_ORDER = ['pro', 'ui', 'automix', 'analysis', 'library', 'engine', 'tooling'];
 
 const CHECKS = {
-  ranAt: '2026-10-19 (session 91b26f74)',
+  ranAt: '2026-10-19 22:47 (session 6e8d1284)',
   rows: [
     ['npx tsc --noEmit', 'ok', '0 errors'],
-    ['npm test (vitest)', 'ok', '217 / 217 tests pass, 27 files'],
-    ['npm run test:live (Playwright, ~2.5 min)', 'ok', '1 passed in 2.4 min: two Auto transitions (32-bar blends, bass swap at bar 8 of the overlap), stopped decks at −120 dBFS, fades monotone (worst rise 1.1 dB), longest master gap 0.00 s over 141 s'],
-    ['Headless-Chromium smoke through window.__djmix', 'ok', 'loop wraps sample-exact; beat / bar / phrase sync within 0.003 beats; echo delay follows tempo; sharp curve holds the far deck at full; +3.0 dB trim (throwaway script, not in the repo)'],
+    ['npm test (vitest)', 'ok', '223 / 223 tests pass, 27 files'],
+    ['npm run test:live (Playwright, ~2.5 min)', 'ok', '1 passed in 2.4 min: transition 1 a 32-bar loop mix (incoming intro played 3×, deck jumped back 14.9 s twice), transition 2 a 16-bar Mix now blend (no jump); stopped decks at −120 dBFS, fades monotone (worst rise −2.4 dB), longest master gap 0.00 s over 141 s'],
+    ['Headless-Chromium smoke through window.__djmix', 'ok', 'loop wraps sample-exact; beat / bar / phrase sync within 0.003 beats; echo delay follows tempo; sharp curve holds the far deck at full; +3.0 dB trim (session a131b68b, throwaway script, not in the repo)'],
   ],
 };
 
 const FEATURES = [
+  {
+    id: 'loop-mix-style', area: 'automix', title: 'A second way to mix: Loop (the incoming intro held on a loop while it fades in)', date: '2026-10-19', session: '6e8d1284',
+    commits: [{ hash: '512961c', subject: 'feat(automix): a loop mix style that holds the incoming intro on a loop' }],
+    changed: [
+      'New MIX picker in the top bar, next to SYNC: Blend (as before) or Loop. The choice is remembered between sessions and applies to Auto and to MIX NOW.',
+      'Loop: the incoming track enters on a sparse phrase of its intro (a kick, no bassline), and that 8-bar phrase is repeated (1 to 3 extra times) while its fader comes up. Then the track plays on from the loop into its drop, which lands on the bass swap. A short intro can carry a whole 32-bar blend this way instead of the drop arriving a quarter of the way in.',
+      'Loop also lets the outgoing track repeat its last kick phrase whenever that makes the mix better (for example to reach the point where its bass leaves by itself), not only when it is out of bars. Auto still ends the mix where the outgoing track ends.',
+      'The incoming deck stays beat-locked through each jump back. The bass swap always comes after the loop has finished, so the incoming bass always arrives with the track playing on, never inside a repeat.',
+      'When the next track has no 8-bar intro phrase with a kick and no bass, or the loop doesn\'t fit the blend, Loop falls back to a plain blend and the status line says "⚠ No intro loop fits: a plain blend". On the current library that is most pairs: only 12 of the 73 analysed tracks have such an intro (9 of the 40 house-tempo ones). The others open on their drop, have pad intros with no kick, or have kick intros shorter than a phrase.',
+      'The status line and the NextMix strip read e.g. "32-bar loop mix at bar 17, next track in from its bar 1 (its bars 1–8 played 2×), bass swap at bar 33". The incoming deck\'s waveform shows the looped phrase hatched, labelled "LOOP 2×".',
+      'Blend is unchanged: same plans as before on every library pair.',
+    ],
+    test: {
+      steps: [
+        'Pick MIX → Loop in the top bar. Load a track with a kick-only intro on deck B (Arcadia - Telefon Tel Aviv Rmx, Sfire 6, Leash Called Love, How Can You Tell, Good Cop Bad Cop, Pass This On - Shaken-Up Version) and any analysed track on deck A, and press PLAY on A. → The NextMix strip reads "… loop mix …, next track in from its bar N (its bars N–M played 2×) …". Deck B\'s waveform shows a hatched band labelled "LOOP 2×" at the start of the IN band.',
+        'Press MIX NOW (or turn AUTO on and wait for the end of A). → B comes in on its intro. After 8 bars its playhead jumps back 8 bars and the same phrase plays again, in time with A, while B\'s fader keeps rising. Then B plays on into its drop, and the basslines swap there.',
+        'Load a track that opens on its drop on B (True South, Wrong - Todd Terry Remix) with Loop still selected. → The strip reads "… blend … ⚠ No intro loop fits: a plain blend". The mix plays as a normal blend (A may still repeat its last phrase).',
+        'Switch MIX back to Blend. → Within a second the strip shows the plain blend again. Quit and reopen the app. → The picker still shows the last choice.',
+      ],
+      automated: [
+        'src/audio/mix/mixPoints.test.ts: 5 new tests (a short intro is held so the drop lands mid-blend; a looped phrase has a kick and no bass and ends by the swap, for Auto and Mix now; Blend never loops the incoming track, and neither does Loop without a sparse intro; Loop loops the outgoing outro to reach its natural swap; the looped timeline with repeats maps back onto the track)',
+        'src/audio/mix/runner.test.ts: a new offline render (synthetic 124 → 126 BPM). The intro plays twice (its second pass within 1.5 dB of the first), the drop comes after it (> 3 dB louder), and the incoming kicks stay within 2 ms of the outgoing ones across the jump back and into the drop',
+        'npm test (vitest): 223 / 223 pass, 27 files; npx tsc --noEmit: 0 errors',
+        'Blend unchanged: every Blend plan over all ordered pairs of the 73 library tracks (Auto and Mix now, deck at 0 s and at 120 s: 21,024 plans, lanes and balance included) is byte-identical before and after the change',
+        'Planning sweep, Blend vs Loop, over every ordered pair of the 73 analysed library tracks (throwaway script, not in the repo): of 2912 blends, Loop holds the intro in 381 (319 with 1 repeat, 62 with 2), loops the outgoing in 573 (Blend: 10). Bars of the outgoing track left after the mix: mean 2.7 → 2.2, worst 8 (the one-phrase rule still holds)',
+        'Offline renders of real pairs (npm run mixset -- --style loop, compared with Blend): True South → Arcadia (intro looped and True South\'s last phrase looped): grid p95 2.0 ms (Blend 2.7); My Boo → How Can You Tell: 2.3 ms (Blend 100.8 ms on a different plan); Silk → Sfire 6: 36 ms over 15 beats (incoming tempo drifts; Blend 108 ms, half-beat flag); bass hole unchanged or better (Silk → Sfire 6 5.8 → 2.8 dB). True South → Arcadia reads "stack 5.5 dB" (Blend 3.2). The excess sits on True South\'s own bars 228–240, which render about 5 dB louder in the mid band than their analysis says, in both passes alike, so the outgoing track alone causes it, not the two decks together',
+        'npm run test:live (Playwright, headless Chromium, real time): transition 1 is now a loop mix ("its bars 1–8 played 3×"). The incoming deck jumped back 14.9 s twice, as planned, the stopped deck read −120 dBFS, the fade was monotone, and transition 2 (plain blend) had no jump. 1 passed in 2.4 min, longest master gap 0.00 s over 141 s',
+      ],
+    },
+    missing: [
+      { text: 'Listen to the Loop renders: True South → Arcadia, Silk → Sfire 6, My Boo → How Can You Tell (WAVs in the session scratchpad, mixset-loop/). The metrics say the jumps are on the beat. Only ears can say whether a repeated intro phrase sounds like a DJ loop or like a stutter.', owner: 'Milton' },
+      { text: 'Only 8-bar loops with a kick and no bassline count as "few elements". Kick intros shorter than a phrase (Nik Com\'s 3 bars, So Weit Wie Noch Nie\'s 7) and kickless intros (bass or pads only) are never looped. 4-bar loops repeated an even number of times would keep the phrase grid and cover the short ones.', owner: 'unowned' },
+      { text: 'Which intro phrase gets looped is decided by the swap scoring, not by how sparse the phrase is. On a 16-bar intro Loop often enters on the second phrase (bars 9–16) and loops that one, because it lands the swap where the outgoing bass leaves. The first phrase is usually the sparser one.', owner: 'unowned' },
+      { text: 'In Loop the outgoing loops far more often (573 vs 10 pairs). It mostly replaces the track\'s last few bars with a repeat of its last kick phrase so the blend ends right at the end. Worth a listen on a few pairs before trusting it.', owner: 'unowned' },
+      { text: 'Pre-existing, not from this change: npm run mixset crashes on Sunswell → Pantalón with "InvalidStateError: Error in async function" in OfflineAudioContext.suspend, in Blend too.', owner: 'unowned' },
+      { text: 'The Loop style is not tested in the Electron app itself, only in headless Chromium (npm run test:live) and offline renders.', owner: 'Milton' },
+    ],
+  },
   {
     id: 'auto-mix-at-the-end', area: 'automix', title: 'Auto mixes out where the track ends, not at an earlier breakdown', date: '2026-10-19', session: '91b26f74',
     commits: [{ hash: 'e49d972', subject: 'feat(automix): the blend ends where the outgoing track ends' }],
