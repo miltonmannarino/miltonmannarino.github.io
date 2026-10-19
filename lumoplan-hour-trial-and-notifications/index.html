@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Hour Trial and Notifications</title>
+<meta name="description" content="Two decisions for Rio before LumoPlan builds the hour-planning trial and the notification layer: what the trial changes, and which events notify whom.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Same reading column as the day-one page. Track letters H and N are the real ids in the
+   tracker doc. Question ids A1–A3 / B1–B9 match the markdown docs in the repo. */
+:root {
+  --bg: #f5f7f9;
+  --surface: #ffffff;
+  --fg: #1b232c;
+  --muted: #5a6673;
+  --rule: #d9dee4;
+  --accent: #b3261e;
+  --accent-soft: #fbe9e7;
+  --open: #2a6fa8;
+  --open-soft: #e3eef8;
+  --done: #1f7a4d;
+  --done-soft: #e2f3ea;
+  --warn: #8a5a00;
+  --warn-soft: #fff3d6;
+  --code-bg: #eef1f4;
+  --display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141a20; --surface: #1c242c; --fg: #e6ebf0; --muted: #9aa7b4; --rule: #2d3842;
+    --accent: #ef6e66; --accent-soft: #3a1f1d; --open: #7fb3e0; --open-soft: #1d2f40;
+    --done: #6fcf97; --done-soft: #1b3326; --warn: #f0c060; --warn-soft: #3a2f12; --code-bg: #232d36;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141a20; --surface: #1c242c; --fg: #e6ebf0; --muted: #9aa7b4; --rule: #2d3842;
+  --accent: #ef6e66; --accent-soft: #3a1f1d; --open: #7fb3e0; --open-soft: #1d2f40;
+  --done: #6fcf97; --done-soft: #1b3326; --warn: #f0c060; --warn-soft: #3a2f12; --code-bg: #232d36;
+  color-scheme: dark;
+}
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+main { max-width: 720px; margin: 0 auto; }
+header.top { padding-block: 40px 20px; border-bottom: 1px solid var(--rule); }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--display); font-weight: 600; font-size: clamp(30px, 5vw, 40px); line-height: 1.1; margin: 8px 0 10px; text-wrap: balance; }
+.lede { font-size: 17px; color: var(--muted); margin: 0; max-width: 60ch; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 24px; line-height: 1.2; margin: 44px 0 6px; text-wrap: balance; }
+h2 .track {
+  display: inline-block; font-family: var(--mono); font-size: 12px; font-weight: 500;
+  letter-spacing: .06em; color: var(--muted); margin-right: 10px; vertical-align: middle;
+  border: 1px solid var(--rule); border-radius: 4px; padding: 1px 6px;
+}
+h3 { font-family: var(--display); font-weight: 600; font-size: 17px; margin: 22px 0 4px; }
+p { margin: 10px 0; max-width: 68ch; }
+ul, ol { padding-left: 20px; margin: 8px 0; max-width: 68ch; }
+li { margin: 4px 0; }
+code { font-family: var(--mono); font-size: .92em; background: var(--code-bg); border-radius: 3px; padding: 1px 5px; }
+.tablewrap { overflow-x: auto; margin: 12px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--mono); font-weight: 500; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+td.new { background: var(--open-soft); }
+.status { display: inline-block; font-family: var(--mono); font-size: 12px; border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+.status.done { background: var(--done-soft); color: var(--done); }
+.status.open { background: var(--code-bg); color: var(--muted); }
+.status.warn { background: var(--warn-soft); color: var(--warn); }
+.status.new { background: var(--open-soft); color: var(--open); }
+.callout { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 18px 0; }
+.callout.red { border-color: var(--accent); background: var(--accent-soft); }
+.callout.blue { border-color: var(--open); background: var(--open-soft); }
+.callout p { margin: 4px 0; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 12px 0; }
+.two > div { min-width: 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; }
+.two h3 { margin-top: 0; }
+.two > div.rec { border-color: var(--done); }
+.two > div.rec h3 .status { margin-left: 6px; vertical-align: middle; }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 20px 0 8px; }
+.summary > div { min-width: 0; background: var(--surface); border: 1px solid var(--rule); border-top: 3px solid var(--muted); border-radius: 6px; padding: 10px 14px; }
+.summary > .s-done { border-top-color: var(--done); }
+.summary > .s-test { border-top-color: var(--open); }
+.summary > .s-miss { border-top-color: var(--warn); }
+.summary h3 { margin: 0 0 4px; }
+.summary ul { margin: 4px 0; padding-left: 18px; font-size: 14.5px; }
+/* Question cards: the A list blocks the build, the B list ships by default. */
+.q { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; margin: 10px 0; }
+.q.block { border-left: 4px solid var(--accent); }
+.q.def { border-left: 4px solid var(--done); }
+.q h3 { margin: 0 0 4px; }
+.q p { margin: 4px 0; }
+.q .ans { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+/* Timeline of the grace rule: one cell per business day. */
+.days { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; margin: 12px 0 4px; font-size: 13px; }
+.days > div { min-width: 0; border: 1px solid var(--rule); border-radius: 4px; padding: 6px 6px; background: var(--surface); }
+.days .d { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.days .end { border-color: var(--open); }
+.days .end .d { color: var(--open); }
+.days .ping { border-color: var(--warn); background: var(--warn-soft); }
+.days .mail { border-color: var(--accent); background: var(--accent-soft); }
+@media (max-width: 520px) { .days { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 13px; }
+a { color: var(--open); }
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+  <div class="eyebrow">LumoPlan · for Rio · 2026-10-19</div>
+  <h1>Hour trial and notifications: two decisions before the build</h1>
+  <p class="lede">Tracks H and N of the post-processing timeline plan are blocked on you. This page says what each one changes, what we recommend, and the handful of questions that need an answer. Everything else ships with a stated default.</p>
+</header>
+
+<div class="summary">
+  <div class="s-done"><h3>Done</h3><ul>
+    <li>Both proposals mapped against the code as of 19 Oct: every view that reads planned hours, every e-mail sender, every place a scheduler could hook in.</li>
+    <li>Two sign-off docs in the repo, <code>docs/hour-planning-trial-2026-10.md</code> and <code>docs/notification-strategy-2026-10.md</code>; this page is their short form.</li>
+  </ul></div>
+  <div class="s-test"><h3>How to answer</h3><ul>
+    <li>Read the red <strong>A</strong> cards, three per track. Reply yes / change / drop per card, in the Rio sync or in the Notion ticket.</li>
+    <li>The green <strong>B</strong> cards are defaults. Say something only if one is wrong.</li>
+  </ul></div>
+  <div class="s-miss"><h3>Missing</h3><ul>
+    <li>No code yet. H1–H4 start after H-A1 and H-A2; N2–N5 after N-A1 to N-A3.</li>
+    <li>Preprocessing stages, the Packing Sports group and the shared preprocessing mailbox are out of scope for both tracks until the group has its own platform user.</li>
+  </ul></div>
+</div>
+
+<h2><span class="track">H</span>Hour-planning trial</h2>
+<p><strong>The proposal (6 Oct):</strong> the board keeps who works on which building and stage on which days, and drops the per-day hour distribution. People log their own hours at day end with no pre-filled number. Overlap warnings stay visible but stop blocking.</p>
+<p><strong>Why:</strong> per-day hours are planning work the coordinators do not keep up to date, so the plan drifts from reality and every hour view shows numbers nobody trusts. The hours that count are the logged ones, live since July.</p>
+
+<h3>The trap in the current code</h3>
+<p>An assignment's <code>hours</code> field is already optional, and the code reads a missing value in two opposite ways. The board and Coverage's booking logic treat it as a <strong>full scheduled day</strong>. Every team and capacity view treats it as <strong>zero</strong>. "Just stop typing hours" is therefore not a trial, it is a split brain. The build has to pick one reading and apply it everywhere, which is question A2.</p>
+
+<div class="two">
+  <div>
+    <h3>Reading 1: zero hours</h3>
+    <p>Less code. But the team swimlane drops bookings with zero hours entirely, so it shows absences and nothing else. Coverage shows everyone fully free every day. Capacity strip reads 0 %. The person hours grid, the planned column in My Work, the building page and the effort baseline's planned series all go empty. The measurement planner sees no post-processing load and offers people who are booked on the board.</p>
+  </div>
+  <div class="rec">
+    <h3>Reading 2: full day <span class="status done">recommended</span></h3>
+    <p>Nothing goes blank, everything gets coarse. A booked day is a full scheduled day: 8 h for full-time, the Personio schedule for part-time. Swimlane, capacity strip and person grid show a booked day as 100 %, and two bookings on one day as 200 %, which is the overlap warning the proposal keeps. Coverage counts unbooked days as free, which is what it already books today.</p>
+  </div>
+</div>
+
+<div class="tablewrap"><table>
+<thead><tr><th>view</th><th>today</th><th>zero-hours reading</th><th>full-day reading</th></tr></thead>
+<tbody>
+<tr><td>My Work · Team swimlane</td><td>one block per person per building, sized by hours</td><td>no work blocks, absences only</td><td>full-day blocks, overlaps stack</td></tr>
+<tr><td>My Work · Coverage</td><td>free hours = scheduled − planned</td><td>everyone free, always</td><td>free = unbooked days</td></tr>
+<tr><td>My Work · capacity strip</td><td>load % per day</td><td>0 %</td><td>100 % per booked day, 200 % on overlap</td></tr>
+<tr><td>Person time distribution</td><td>hours per cell, totals</td><td>empty</td><td>full days; hidden during the trial</td></tr>
+<tr><td>My Work table, building page</td><td>planned column</td><td>"—" and 0</td><td>full day; column hidden</td></tr>
+<tr><td>Operations · Effort baseline</td><td>planned series beside estimate and actuals</td><td>series empty</td><td>upper bound; hidden during the trial</td></tr>
+<tr><td>Measurement planner</td><td>counts post-processing load when picking people</td><td>sees no load</td><td>a post-processing day counts as full</td></tr>
+</tbody></table></div>
+
+<h3>What does not change</h3>
+<ul>
+  <li>Stage bars and their lengths: they are sized by m² and the target rate, not by people.</li>
+  <li>Logged hours, Personio attendance, the submitted-allocation flow and cost rates.</li>
+  <li>The operations dashboard forecast and cost: m² estimates plus submitted actuals. Planned hours never fed it.</li>
+  <li>Stage done / overdue tracking, milestones, Packing Sports bookings.</li>
+  <li>The hours-reminder e-mail. It reads attendance, not assignments.</li>
+</ul>
+
+<h3>What the build does once A is answered</h3>
+<ul>
+  <li><strong>H1</strong> a global switch in Settings; assigning writes no hours and skips the fully-booked prompt.</li>
+  <li><strong>H2</strong> hours fields leave the assignment modal, the package bulk modal, the paint palette, time distribution and stage tooltips.</li>
+  <li><strong>H3</strong> shrink, move and paint conflicts become a toast with "keep" as the default.</li>
+  <li><strong>H4</strong> the hour log opens blank; "Use planned" goes, "Use remaining" from Personio stays.</li>
+  <li><strong>Rollback</strong> is the switch. Assignments made during the trial have no hours; a script can backfill them as full days if we revert. If the trial sticks, the distribution code is deleted, not flagged forever.</li>
+</ul>
+
+<h3>Questions</h3>
+<div class="q block"><h3>H-A1 · Does the team accept assignment-only planning for a trial?</h3><p>Coordinators lose the per-day hour plan; everyone who reads My Work sees the coarser picture above. An answer per group is fine.</p><p class="ans">blocks H1</p></div>
+<div class="q block"><h3>H-A2 · Full day or zero?</h3><p>Recommendation: full day. It keeps every view alive and makes overlaps visible as more than 100 %. Zero is less code but empties the swimlane and Coverage.</p><p class="ans">blocks H1–H3</p></div>
+<div class="q block"><h3>H-A3 · Trial window, and who calls keep or revert</h3><p>Default: start the Monday after H1–H4 ship, run three weeks, you decide in the following sync.</p><p class="ans">blocks H5</p></div>
+<div class="q def"><h3>Defaults H-B1 to H-B7</h3>
+<ul>
+  <li><strong>B1</strong> hours fields are hidden, not optional. Optional means people keep filling them to be safe, and the trial measures nothing.</li>
+  <li><strong>B2</strong> overlap and shrink warnings become toasts with "keep" as the default action.</li>
+  <li><strong>B3</strong> the hour-log pre-fill goes; "Use remaining" from Personio stays.</li>
+  <li><strong>B4</strong> the effort baseline's planned series is hidden during the trial.</li>
+  <li><strong>B5</strong> the measurement planner counts a post-processing day as a full day for that person.</li>
+  <li><strong>B6</strong> the switch is global, not per building.</li>
+  <li><strong>B7</strong> Packing Sports bookings stay day-shaped either way.</li>
+</ul></div>
+
+<h2><span class="track">N</span>Notifications</h2>
+<p><strong>Where it comes from:</strong> your request from 27 July for a reminder to the stage's owner one day before its planned end, so the plan stops drifting silently. And the 24 h grace from the 7 Oct sync: an overdue stage escalates by e-mail only after a day.</p>
+
+<h3>Today</h3>
+<ul>
+  <li>Five e-mail senders, all through one SendGrid helper that sends only in production: stage assigned, measurement date moved, stage marked done (behind a setting that is off), offer accepted, invoice handoff.</li>
+  <li>No sent log, no dedupe, nothing stored in-app. The only in-app signal is the extension-requests bell on the board.</li>
+  <li>No scheduler inside LumoPlan: every server route needs a logged-in user. The hours reminder is a separate scheduled function that reads the database directly and never calls LumoPlan.</li>
+</ul>
+
+<h3>Design</h3>
+<ul>
+  <li>One <code>notifications</code> collection that is both the in-app feed and the sent log. A bell in the top bar with an unread count and a panel linking into the board and My Work.</li>
+  <li>In-app first. E-mail only where the person is not expected to open LumoPlan that day. Once everyone is on LumoPlan daily, the e-mail layer goes.</li>
+  <li>Every notification has a dedupe key, so a scan can run twice and nothing doubles. Re-planning a stage's end resets the key.</li>
+  <li>The scan reuses the stage chain and completion state the board uses. There is no second definition of overdue.</li>
+</ul>
+
+<h3>Matrix (question A1)</h3>
+<p>Blue rows are new behaviour. The others exist today and only gain the log and the in-app copy.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>#</th><th>event</th><th>in-app</th><th>e-mail</th><th>to</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>stage assigned to you</td><td>yes</td><td>yes, as today</td><td>assignee</td></tr>
+<tr><td class="new">2</td><td class="new">stage ends tomorrow</td><td class="new">yes</td><td class="new">yes</td><td class="new">stage owner</td></tr>
+<tr><td class="new">3</td><td class="new">stage overdue, day 0</td><td class="new">yes</td><td class="new">no</td><td class="new">owner + coordinator</td></tr>
+<tr><td class="new">4</td><td class="new">stage overdue one business day, still open</td><td class="new">yes</td><td class="new">yes, once</td><td class="new">owner + coordinator</td></tr>
+<tr><td>5</td><td>previous stage marked done</td><td>yes</td><td>setting, off as today</td><td>next stage's people + coordinator</td></tr>
+<tr><td>6</td><td>measurement date moved</td><td>yes</td><td>yes, as today</td><td>coordinator, else package or building assignee</td></tr>
+<tr><td class="new">7</td><td class="new">milestone due tomorrow or overdue</td><td class="new">yes</td><td class="new">no</td><td class="new">milestone assignee</td></tr>
+<tr><td>8</td><td>offer accepted, invoice handoff</td><td>no</td><td>yes, as today</td><td>as today</td></tr>
+</tbody></table></div>
+<p><strong>Stage owner</strong> = the people booked on that stage, falling back to the package's and then the building's post-processing assignee. <strong>Coordinator</strong> = the project's coordinator. Business days are Monday to Friday, no holiday calendar in v1.</p>
+
+<h3>Timing and grace (question A2)</h3>
+<p>The scan runs at 08:00 Berlin on business days. A stage planned to end on Thursday 22 Oct:</p>
+<div class="days">
+  <div class="ping"><div class="d">Wed 21</div>ends tomorrow: owner, in-app + e-mail</div>
+  <div class="end"><div class="d">Thu 22</div>planned end</div>
+  <div class="ping"><div class="d">Fri 23</div>overdue day 0: owner + coordinator, in-app only</div>
+  <div class="mail"><div class="d">Mon 26</div>still open: e-mail, once</div>
+  <div><div class="d">Tue 27</div>silent</div>
+  <div><div class="d">later</div>re-planned to a new end → "ends tomorrow" again</div>
+</div>
+
+<h3>Who calls the scan (question A3)</h3>
+<p>The scan is a route inside LumoPlan, guarded by a service token, with a dry-run flag. Something has to call it every morning:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>option</th><th>owner</th><th>for</th><th>against</th></tr></thead>
+<tbody>
+<tr><td><strong>GitHub Actions schedule</strong> in the lumoplan repo <span class="status done">recommended</span></td><td>Milton</td><td>no new infrastructure, a visible run log, rerun by button</td><td>GitHub's cron can be minutes late</td></tr>
+<tr><td>Scaleway cron trigger on the production container</td><td>whoever holds the Scaleway console</td><td>same infrastructure as the app, exact time</td><td>config outside git; setup to verify</td></tr>
+<tr><td>A scheduled function like the hours reminder</td><td>Burak</td><td>the pattern exists</td><td>a second codebase and a dependency on Burak</td></tr>
+</tbody></table></div>
+
+<h3>Build order</h3>
+<ol>
+  <li><strong>N2</strong> the collection and a <code>notify()</code> helper; the five existing senders go through it. No behaviour change, now logged and deduped.</li>
+  <li><strong>N3</strong> bell and panel in the top bar.</li>
+  <li><strong>N4</strong> the scan route, the token, rules 2–4 and 7.</li>
+  <li><strong>N5</strong> the trigger, one real run on dev against a few test stages, then tell the team.</li>
+</ol>
+
+<h3>Questions</h3>
+<div class="q block"><h3>N-A1 · Sign off the matrix, row by row</h3><p>Yes, change or drop per row. Rows 2, 3, 4 and 7 are new.</p><p class="ans">blocks N4</p></div>
+<div class="q block"><h3>N-A2 · Grace</h3><p>In-app on day 0, e-mail on business day 1, then silence until the stage is re-planned. Alternative: repeat the e-mail weekly while the stage stays open.</p><p class="ans">blocks N4</p></div>
+<div class="q block"><h3>N-A3 · Trigger and owner</h3><p>GitHub Actions schedule, owned by Milton. Yes, or one of the other two.</p><p class="ans">blocks N5</p></div>
+<div class="q def"><h3>Defaults N-B1 to N-B9</h3>
+<ul>
+  <li><strong>B1</strong> scan at 08:00 Berlin, Monday to Friday, the same slot as the hours reminder.</li>
+  <li><strong>B2</strong> business days only: a stage ending Friday warns on Thursday, its overdue day 0 is Monday.</li>
+  <li><strong>B3</strong> the coordinator gets overdue, not "ends tomorrow".</li>
+  <li><strong>B4</strong> post-processing stages only in v1; preprocessing and Packing Sports follow once the group has its own platform user.</li>
+  <li><strong>B5</strong> milestones are in-app only, no e-mail.</li>
+  <li><strong>B6</strong> no digest; one notification per event.</li>
+  <li><strong>B7</strong> the first run is on dev with forced sending to a handful of stages, then production goes live. No dry-run week in production.</li>
+  <li><strong>B8</strong> the panel shows the last 30 days, with mark one and mark all read.</li>
+  <li><strong>B9</strong> the existing senders keep their wording.</li>
+</ul></div>
+
+<footer>Source of truth: <code>docs/hour-planning-trial-2026-10.md</code> and <code>docs/notification-strategy-2026-10.md</code> in the lumoplan repo, tracker <code>docs/postprocessing-timeline-improvements-2026-10-16.md</code>. Written 19 Oct 2026.</footer>
+</main>
+</body>
+</html>
