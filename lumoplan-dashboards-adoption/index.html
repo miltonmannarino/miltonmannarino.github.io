@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Dashboards and Adoption</title>
+<meta name="description" content="LumoPlan building dashboard, pricing categories, productivity and LumoCad adoption tracking: what was built on 19 Oct 2026, how to test it, what is missing.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Same reading column as the day-one page. Track letters H and N are the real ids in the
+   tracker doc. Question ids A1–A3 / B1–B9 match the markdown docs in the repo. */
+:root {
+  --bg: #f5f7f9;
+  --surface: #ffffff;
+  --fg: #1b232c;
+  --muted: #5a6673;
+  --rule: #d9dee4;
+  --accent: #b3261e;
+  --accent-soft: #fbe9e7;
+  --open: #2a6fa8;
+  --open-soft: #e3eef8;
+  --done: #1f7a4d;
+  --done-soft: #e2f3ea;
+  --warn: #8a5a00;
+  --warn-soft: #fff3d6;
+  --code-bg: #eef1f4;
+  --display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141a20; --surface: #1c242c; --fg: #e6ebf0; --muted: #9aa7b4; --rule: #2d3842;
+    --accent: #ef6e66; --accent-soft: #3a1f1d; --open: #7fb3e0; --open-soft: #1d2f40;
+    --done: #6fcf97; --done-soft: #1b3326; --warn: #f0c060; --warn-soft: #3a2f12; --code-bg: #232d36;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141a20; --surface: #1c242c; --fg: #e6ebf0; --muted: #9aa7b4; --rule: #2d3842;
+  --accent: #ef6e66; --accent-soft: #3a1f1d; --open: #7fb3e0; --open-soft: #1d2f40;
+  --done: #6fcf97; --done-soft: #1b3326; --warn: #f0c060; --warn-soft: #3a2f12; --code-bg: #232d36;
+  color-scheme: dark;
+}
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+main { max-width: 720px; margin: 0 auto; }
+header.top { padding-block: 40px 20px; border-bottom: 1px solid var(--rule); }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--display); font-weight: 600; font-size: clamp(30px, 5vw, 40px); line-height: 1.1; margin: 8px 0 10px; text-wrap: balance; }
+.lede { font-size: 17px; color: var(--muted); margin: 0; max-width: 60ch; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 24px; line-height: 1.2; margin: 44px 0 6px; text-wrap: balance; }
+h2 .track {
+  display: inline-block; font-family: var(--mono); font-size: 12px; font-weight: 500;
+  letter-spacing: .06em; color: var(--muted); margin-right: 10px; vertical-align: middle;
+  border: 1px solid var(--rule); border-radius: 4px; padding: 1px 6px;
+}
+h3 { font-family: var(--display); font-weight: 600; font-size: 17px; margin: 22px 0 4px; }
+p { margin: 10px 0; max-width: 68ch; }
+ul, ol { padding-left: 20px; margin: 8px 0; max-width: 68ch; }
+li { margin: 4px 0; }
+code { font-family: var(--mono); font-size: .92em; background: var(--code-bg); border-radius: 3px; padding: 1px 5px; }
+.tablewrap { overflow-x: auto; margin: 12px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--mono); font-weight: 500; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+td.new { background: var(--open-soft); }
+.status { display: inline-block; font-family: var(--mono); font-size: 12px; border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+.status.done { background: var(--done-soft); color: var(--done); }
+.status.open { background: var(--code-bg); color: var(--muted); }
+.status.warn { background: var(--warn-soft); color: var(--warn); }
+.status.new { background: var(--open-soft); color: var(--open); }
+.callout { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 18px 0; }
+.callout.red { border-color: var(--accent); background: var(--accent-soft); }
+.callout.blue { border-color: var(--open); background: var(--open-soft); }
+.callout p { margin: 4px 0; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 12px 0; }
+.two > div { min-width: 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; }
+.two h3 { margin-top: 0; }
+.two > div.rec { border-color: var(--done); }
+.two > div.rec h3 .status { margin-left: 6px; vertical-align: middle; }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 20px 0 8px; }
+.summary > div { min-width: 0; background: var(--surface); border: 1px solid var(--rule); border-top: 3px solid var(--muted); border-radius: 6px; padding: 10px 14px; }
+.summary > .s-done { border-top-color: var(--done); }
+.summary > .s-test { border-top-color: var(--open); }
+.summary > .s-miss { border-top-color: var(--warn); }
+.summary h3 { margin: 0 0 4px; }
+.summary ul { margin: 4px 0; padding-left: 18px; font-size: 14.5px; }
+/* Question cards: the A list blocks the build, the B list ships by default. */
+.q { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; margin: 10px 0; }
+.q.block { border-left: 4px solid var(--accent); }
+.q.def { border-left: 4px solid var(--done); }
+.q h3 { margin: 0 0 4px; }
+.q p { margin: 4px 0; }
+.q .ans { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+/* Timeline of the grace rule: one cell per business day. */
+.days { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; margin: 12px 0 4px; font-size: 13px; }
+.days > div { min-width: 0; border: 1px solid var(--rule); border-radius: 4px; padding: 6px 6px; background: var(--surface); }
+.days .d { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.days .end { border-color: var(--open); }
+.days .end .d { color: var(--open); }
+.days .ping { border-color: var(--warn); background: var(--warn-soft); }
+.days .mail { border-color: var(--accent); background: var(--accent-soft); }
+@media (max-width: 520px) { .days { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 13px; }
+a { color: var(--open); }
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+  <div class="eyebrow">LumoPlan · development branch · 2026-10-19</div>
+  <h1>Dashboards and LumoCad adoption, first version</h1>
+  <p class="lede">Rio's two Q4 tickets due 26 Oct: a dashboard per building with real working hours per stage, a pricing view grouped by what the offer sells, and per-building tracking of whether the model was built in LumoCad or Revit.</p>
+</header>
+
+<div class="summary">
+  <div class="s-done"><h3>Done</h3><ul>
+    <li>Building page rebuilt along Rio's annotations.</li>
+    <li>Project page groups buildings by offer category with pricing figures.</li>
+    <li>Two new Operations tabs: Productivity and Adoption.</li>
+    <li>Five commits on <code>development</code>, not pushed. Type check clean, 2,127 unit tests green.</li>
+  </ul></div>
+  <div class="s-test"><h3>How to test</h3><ul>
+    <li>Run <code>pnpm dev</code> and follow the four checklists below.</li>
+    <li>Then <code>pnpm dev:prod</code> to look at real numbers, read only.</li>
+  </ul></div>
+  <div class="s-miss"><h3>Missing</h3><ul>
+    <li>E2E not run: the saved login expired on 8 Oct.</li>
+    <li>Not checked against production data.</li>
+    <li>Questions for Rio and Vilte are listed at the end.</li>
+  </ul></div>
+</div>
+
+<h2><span class="track">changed</span>What changed</h2>
+
+<h3>Building page</h3>
+<p>Every annotation on Rio's screenshot is in:</p>
+<ul>
+  <li><strong>Stage table</strong> shows worked hours per stage from hour tracking, with draft hours as a hint underneath. Planned hours are gone. Dates are split into Start and Due, where Due is the last planned day.</li>
+  <li><strong>Colour dot per stage</strong>, the same colour the postprocessing timeline uses.</li>
+  <li><strong>Rows sorted by date</strong>, so a follow-up measurement sits where it happened instead of at the bottom.</li>
+  <li><strong>New cards:</strong> Worked hours (all phases, split on hover), BGF/h and Invoiced. Invoiced sums sent and paid invoices, splits a shared invoice by area and deducts partial invoices once.</li>
+  <li><strong>Cost cards explain themselves</strong> on hover: hours × the hourly rate per phase from Settings, no overhead.</li>
+  <li><strong>Category</strong> in the header, and a <strong>Modelling tool</strong> card at the bottom.</li>
+</ul>
+
+<h3>Project page</h3>
+<ul>
+  <li>Group buildings by <strong>Category (level + output)</strong> or <strong>Category + size</strong>.</li>
+  <li>Category comes from the offer. Level 1 is positions 02/05, Level 2 is 03/06. Outputs are 3D, 2D, sections 08a, elevations 08b and roombook 09a, so a group reads like "Level 1 · 2D + Roombook".</li>
+  <li>Each group header and the total row show worked hours, BGF/h, internal cost per m² and price per m². These are Rio's Notion columns.</li>
+  <li>New columns Worked h, BGF/h and Category, also in the CSV export.</li>
+</ul>
+
+<h3>Operations › Productivity</h3>
+<ul>
+  <li>The pricing table across every project: one row per category, with hours split by phase, BGF, BGF/h, cost and price per m², and measurement hours.</li>
+  <li>Open a category to see hours per stage and the buildings behind the numbers.</li>
+  <li>A project filter, an optional size split, and an option to list buildings without hours.</li>
+</ul>
+
+<div class="callout">
+  <p><strong>Only complete hours count.</strong> Hour logging went live on 28 Jul, so most buildings have partial hours. On dev data they read 100 to 480 m²/h, against about 20 in Rio's sheet. A building enters the ratios only when three things hold:</p>
+  <ul>
+    <li>It is delivered.</li>
+    <li>Its preprocessing or postprocessing started on or after 28 Jul.</li>
+    <li>Its logged hours cover at least half of the person-days booked on the board, at 8h each.</li>
+  </ul>
+  <p>Partial buildings carry a badge and can be counted on request. On the building page, BGF/h says "partial".</p>
+</div>
+
+<h3>Operations › Adoption</h3>
+<ul>
+  <li><strong>One record per building:</strong> modelled in LumoCad, started in LumoCad and finished in Revit, or Revit.</li>
+  <li><strong>Leaving LumoCad needs two answers:</strong> "should it have been LumoCad?" (yes, no because too complex, or not sure) and a reason.</li>
+  <li><strong>Feedback:</strong> every record asks for LumoCad feedback, and the tab lists it, so nobody has to chase it in Notion.</li>
+  <li><strong>Figures:</strong> recorded against missing, LumoCad share, switched, Revit, avoidable against too complex. There is a breakdown by project and by person, and a chart of switch reasons.</li>
+  <li><strong>Who counts as a person:</strong> whoever booked or logged 3D or 2D postprocessing on the building, so nobody types names.</li>
+  <li><strong>Bulk-set:</strong> tick buildings, or the header box for all shown, and save once. Sixty buildings are one request.</li>
+</ul>
+
+<h3>Under the hood</h3>
+<ul>
+  <li>Stage rows, categories, productivity, invoiced amounts and adoption figures are pure functions with unit tests.</li>
+  <li>New collection <code>buildingModelling</code>, route <code>/server/building-modelling</code>.</li>
+  <li>Categories also read LumoPlan's own offers, by building or through the project an accepted offer created. The platform offer API alone had no building links on dev.</li>
+</ul>
+
+<h2 id="test"><span class="track">test</span>How to test</h2>
+
+<h3>1 · Building page</h3>
+<ol class="steps">
+  <li>Projects, pick a project, click a building with logged hours.</li>
+  <li>Stage table: every row has a colour dot matching the timeline, Start and Due columns, and no Planned hours. <span class="expect">Rows run in date order; hours logged on a stage the plan no longer has show at the end without dates.</span></li>
+  <li>Hover Worked hours: <span class="expect">measurement, preprocessing and postprocessing split, plus drafts.</span></li>
+  <li>Hover Actual cost: <span class="expect">the formula with the rates from Settings.</span></li>
+  <li>For a building with a sent invoice, Invoiced shows the net amount.</li>
+</ol>
+
+<h3>2 · Project page</h3>
+<ol class="steps">
+  <li>Open a project with several buildings and set Group by to Category.</li>
+  <li><span class="expect">Groups read like "Level 2 · 3D + Roombook", Level 1 first; the header shows worked hours, and m²/h, cost and price once a building has complete hours.</span></li>
+  <li>Switch to Category + size: groups split by size band.</li>
+  <li>Export CSV: Worked hours, BGF/h, Category and Size are in the file.</li>
+</ol>
+
+<h3>3 · Operations › Productivity</h3>
+<ol class="steps">
+  <li>Open the tab. <span class="expect">With few complete buildings a yellow note explains why nothing counts.</span></li>
+  <li>Tick Count partial hours: figures appear, partial buildings carry a badge.</li>
+  <li>Open a category: hours per stage and the buildings, each linking to its page.</li>
+</ol>
+
+<h3>4 · Operations › Adoption</h3>
+<ol class="steps">
+  <li>Click a building row, pick Revit. <span class="expect">Save stays disabled until "should it have been LumoCad?" and a reason are set.</span></li>
+  <li>Save: the cards, both breakdowns, the reasons chart and the feedback list update.</li>
+  <li>Tick two or more buildings, Set modelling tool, LumoCad, Save. <span class="expect">"Saved for N buildings", selection cleared.</span></li>
+  <li>Open a building page: the Modelling tool card shows the record and edits it.</li>
+  <li>Remove record from the dialog to clean up test entries.</li>
+</ol>
+
+<h3>5 · Automated checks</h3>
+<pre>npx tsc --noEmit                         # clean
+npx vitest run --dir src                 # 2,127 passed
+npx playwright test e2e/app.spec.ts      # needs a fresh login first</pre>
+
+<h2><span class="track">missing</span>What's missing</h2>
+<ul>
+  <li><strong>E2E (Milton):</strong> the saved login is from 8 Oct, so the signed-in page checks stop at the sign-in screen. Refresh with <code>e2e/save-auth.spec.ts --headed</code> and rerun.</li>
+  <li><strong>Real numbers (Milton):</strong> only checked on the dev cluster, which holds 17 hour entries and 5 offers. Open the three views with <code>pnpm dev:prod</code> and sanity-check a few categories and BGF/h values.</li>
+  <li><strong>Older offers (Milton):</strong> buildings whose offer predates both LumoPlan offers and the platform link show "No offer".</li>
+  <li><strong>Field list (Rio):</strong> his draft sheet is private, so the adoption fields and switch reasons follow the ticket text. He said he would document the fields.</li>
+  <li><strong>Required feedback step (Rio):</strong> proposal is to ask for the record when a 3D or 2D postprocessing stage is marked done. Not built until he agrees.</li>
+  <li><strong>Overhead and rate (Vilte):</strong> cost per m² uses the Settings rates with no overhead. Rio's sheet says "with overhead".</li>
+  <li><strong>External hours (parked):</strong> Packing Sports hours are not in LumoPlan yet.</li>
+  <li><strong>Ship (Milton):</strong> push and open the PR when happy, then show Rio on 26 Oct.</li>
+</ul>
+
+<footer>Source of truth: <code>docs/dashboards-adoption-2026-10.md</code> in the lumoplan repo. Written 19 Oct 2026.</footer>
+</main>
+</body>
+</html>
