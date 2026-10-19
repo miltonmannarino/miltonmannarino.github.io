@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<title>Stair Turn Chains PR</title>
+<title>Stair Sprint 2.2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,560&display=swap">
@@ -40,7 +40,6 @@
   --warn: #f0b860; --warn-soft: #2e2414; color-scheme: dark;
 }
 * { box-sizing: border-box; }
-body { margin: 0; }
 body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.6; padding: 0 16px; }
 main { max-width: 760px; margin: 0 auto; padding-block: 40px 64px; display: flex; flex-direction: column; gap: 40px; }
 h1, h2 { font-family: var(--font-display); font-weight: 560; text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
@@ -48,6 +47,7 @@ h1 { font-size: clamp(1.7rem, 4vw, 2.3rem); line-height: 1.15; }
 h2 { font-size: 1.45rem; display: flex; align-items: baseline; gap: 12px; }
 h2 .n { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); font-weight: 500; }
 h3 { font-size: 1rem; font-weight: 600; margin: 0; }
+h3 .when { font-family: var(--font-mono); font-size: 0.74rem; font-weight: 400; color: var(--muted); margin-left: 8px; }
 p { margin: 0; }
 code { font-family: var(--font-mono); font-size: 0.86em; background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
 a { color: var(--accent); }
@@ -59,7 +59,7 @@ header { display: flex; flex-direction: column; gap: 14px; }
 .pill.ok { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
 .lede { color: var(--muted); max-width: 65ch; }
 
-/* Riser chain strip: the PR's core idea, a stair as an ordered list of turns. */
+/* Riser chain strip: the core idea, a stair as an ordered list of turns. */
 .chain-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
 .chain { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .seg { font-family: var(--font-mono); font-size: 0.8rem; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--line); white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -74,12 +74,25 @@ section { display: flex; flex-direction: column; gap: 18px; }
 .group ul, .group ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 5px; }
 .group li { max-width: 68ch; }
 .tag { font-family: var(--font-mono); font-size: 0.74rem; color: var(--accent); margin-right: 6px; }
+.note { font-size: 0.88rem; color: var(--muted); max-width: 68ch; }
+
+/* Construction type side profiles: one small drawing per type. */
+.profiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 4px; }
+@media (max-width: 560px) { .profiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+figure.profile { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 10px 8px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+figure.profile svg { width: 100%; height: auto; display: block; }
+figure.profile .body { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; stroke-linejoin: round; }
+figure.profile .ground { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+figure.profile figcaption { font-size: 0.82rem; line-height: 1.35; }
+figure.profile figcaption b { display: block; font-weight: 600; }
+figure.profile figcaption span { color: var(--muted); }
 
 .steps { counter-reset: step; list-style: none; padding: 0 !important; }
 .steps > li { counter-increment: step; position: relative; padding-left: 34px !important; }
 .steps > li::before { content: counter(step); position: absolute; left: 0; top: 1px; width: 22px; height: 22px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-family: var(--font-mono); font-size: 0.75rem; display: grid; place-items: center; }
 .expect { display: block; color: var(--muted); font-size: 0.9rem; }
 .expect::before { content: "Expect: "; color: var(--ok); font-weight: 500; }
+.done { display: block; color: var(--ok); font-size: 0.82rem; font-family: var(--font-mono); }
 
 .checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
 .check { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
@@ -92,27 +105,28 @@ th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--lin
 th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 500; }
 tr:last-child td { border-bottom: 0; }
 td.kind { white-space: nowrap; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .k { font-family: var(--font-mono); font-size: 0.74rem; padding: 2px 7px; border-radius: 4px; }
 .k.block { background: var(--warn-soft); color: var(--warn); }
+.k.test { color: var(--accent); border: 1px dashed var(--accent); }
 .k.decide { background: var(--accent-soft); color: var(--accent); }
 .k.later { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
-footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); padding-top: 16px; }
+footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); padding-top: 16px; display: flex; flex-direction: column; gap: 4px; }
 </style>
 </head>
 <body>
 <main>
   <header>
-    <span class="eyebrow">PR #77 · lumocad/stair-sprint-2-2 → development</span>
-    <h1>Stairs as a chain of turns, plus sprint 2.2 fixes</h1>
+    <span class="eyebrow">PR #77 + PR #100 · lumocad/stair-sprint-2-2 → development</span>
+    <h1>Stairs as a chain of turns, shaped slab openings and construction types</h1>
     <div class="meta">
-      <span class="pill warn">Draft · not browser-checked</span>
-      <span class="pill ok">Mergeable</span>
-      <span class="pill">46 files · +14,508 / −794 before merge</span>
-      <span class="pill">development merged in · 24ae08fdb</span>
-      <span class="pill">riser fix · dc3bb9074</span>
-      <span class="pill">follow-ups · 1700122e7</span>
+      <span class="pill ok">On development · 3a9e32c8e</span>
+      <span class="pill">PR #77 merged 16 Oct</span>
+      <span class="pill">PR #100 merged 19 Oct</span>
+      <span class="pill ok">Dev API deployed · types 1.1.73</span>
+      <span class="pill warn">Production API not updated yet</span>
     </div>
-    <p class="lede">This PR turns the sprint 2.2 stair feedback from René and Djunejt into code. Any stair is now one ordered list of landings and winders, so shapes that matched no IFC type can be built and saved. It also fixes four bugs from the sprint review. On 16 Oct it was merged with Piotr's multi-slab work.</p>
+    <p class="lede">This work turns the sprint 2.2 stair feedback from René and Djunejt into code. Any stair is now one ordered list of landings and winders, so shapes that matched no IFC type can be built and saved. Slab openings now follow the stair's shape instead of a box around it. Each stair also says how it is built: solid, stepped underside, smooth underside or floating treads.</p>
     <div class="chain-wrap" aria-label="Example turn chain">
       <div class="chain">
         <span class="seg flight">4 risers</span><span class="arrow">→</span>
@@ -131,7 +145,7 @@ footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--li
     <h2><span class="n">1</span>What changed</h2>
 
     <div class="group">
-      <h3>Turn chain (P1)</h3>
+      <h3>Turn chain (P1)<span class="when">PR #77 · 16 Oct</span></h3>
       <ul>
         <li><span class="tag">ST-1</span>Stairs are an ordered list of landings (straight on, 90°, 180°) and winders (90°, 180°). Each turn has its own side. IFC stair types are now presets that fill in this list.</li>
         <li>The <b>Turns</b> section in the stair panel has an <b>Add</b> menu, a remove button on each turn, and a <b>Turn angle</b> select. A straight stair shows the section too, so landings can be added to it.</li>
@@ -139,31 +153,86 @@ footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--li
         <li>On load, the chain is rebuilt from the saved children (winder flights, flights meeting at a landing, headings), not from the stored type. If the stored preset disagrees with the children, it is corrected and flagged.</li>
         <li>At placement, the side click mirrors the whole chain instead of forcing every turn to one side, so a Z-shape keeps its shape. A <b>Custom turns</b> stair with at least one real turn asks for the side click too.</li>
         <li>The landing field is labelled “Landing width” for a U-turn landing and “Landing depth” for a straight-on one.</li>
-        <li>Panel numbers show at most one decimal (674.9 mm, 627.1 mm) instead of up to six.</li>
-        <li>When a stair opening does not fit a slab, the message names the floor and slab and says what is wrong, for example “The stair opening reaches past the edge of OG01 · elevationSlab”. It used to show raw ids and a validator message.</li>
-        <li>Changing <b>Number of risers</b> now keeps every turn at the same relative height: a landing after riser 8 of 16 moves to riser 28 of 56. Before, it stayed at riser 8, so a half turn put 48 risers on the return flight and its opening ran 10.8 m behind the start, off the slab. Found while testing on 16 Oct.</li>
       </ul>
     </div>
 
     <div class="group">
-      <h3>Sprint fixes (P0)</h3>
+      <h3>Sprint fixes (P0)<span class="when">PR #77 · 16 Oct</span></h3>
       <ul>
         <li><span class="tag">ST-2</span>The stairwell well width (Treppenauge) now works for half-winding stairs too. Half winders with a well fan around a real eye.</li>
         <li><span class="tag">ST-5</span>Stairs have their own layer and a <b>Toggle stairs</b> button in the orbit view. Hiding walls no longer hides stairs.</li>
-        <li><span class="tag">ST-6</span>Deleting a stair now removes its slab void. Copying a slab boundary to other floors used to copy stair voids with fresh ids the stair could not find. On delete, the stair also clears matching copies already in saved buildings.</li>
+        <li><span class="tag">ST-6</span>Deleting a stair removes its slab void. Copying a slab boundary to other floors used to copy stair voids with fresh ids the stair could not find. On delete, the stair also clears matching copies already in saved buildings.</li>
         <li><span class="tag">ST-11</span>In plan, the path arrow tip sits on the lower break line. Landing paths meet at a corner, and the walking line on winders follows the arc.</li>
       </ul>
     </div>
 
     <div class="group">
-      <h3>Merged with multi-slab (16 Oct)</h3>
+      <h3>Merged with multi-slab<span class="when">PR #77 · 16 Oct</span></h3>
       <ul>
-        <li>The turn editor and stair panel now use Piotr's stair sidebar components. <code>StairActionButton</code> now forwards a ref so it can open the Add menu.</li>
+        <li>The turn editor and stair panel use Piotr's stair sidebar components. <code>StairActionButton</code> forwards a ref so it can open the Add menu.</li>
         <li>Stairs that span several slabs mirror their turns the same way single-slab stairs do.</li>
         <li><b>Copy slabs</b> (<code>copyStoreySlabs</code>) no longer copies stair openings. The target slab keeps its own openings as long as they still fit the new outline.</li>
         <li><code>profile.replace.curves</code> follows Piotr's rule: an explicit void list is final. Keeping a slab's own stair voids is opt-in through <code>keepOwnStairVoids</code>, which only the old copy-boundary dialog sets.</li>
-        <li>On delete, the sweep for copied stair voids now checks every slab on each floor.</li>
       </ul>
+    </div>
+
+    <div class="group">
+      <h3>Follow-ups that missed PR #77<span class="when">PR #100 · 19 Oct</span></h3>
+      <p class="note">PR #77 was merged before these three commits were pushed, so they reached development through PR #100.</p>
+      <ul>
+        <li>Changing <b>Number of risers</b> keeps every turn at the same relative height: a landing after riser 8 of 16 moves to riser 28 of 56. Before, it stayed at riser 8, so a half turn put 48 risers on the return flight and its opening ran 10.8 m behind the start.</li>
+        <li>Panel numbers show at most one decimal (674.9 mm) instead of up to six. Stored values stay exact.</li>
+        <li>When a stair opening does not fit a slab, the message names the floor and slab, for example “The stair opening reaches past the edge of OG01 · Slab. Move the stair inside the slab.” It used to show raw ids.</li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>Slab openings follow the stair's shape<span class="when">PR #100 · 19 Oct</span></h3>
+      <ul>
+        <li>The opening is the union of every flight and landing footprint, plus the stairwell eye between two straight flights that pass each other, over the run they share. It used to be one rectangle around the whole stair.</li>
+        <li>An L or a Z keeps the slab in the corners the stair never reaches. A half turn keeps the floor beside the lower flight where the shorter arriving flight has already stepped off; the old box cut two treads of floor away there.</li>
+        <li>A chain that closes a loop around a stairwell opens the stairwell too, like any eye.</li>
+        <li>On a floor plan, the void cross is one X over a rectangular opening, and one X per piece otherwise, so no diagonal crosses slab that stays.</li>
+        <li>Deleting a stair still finds copied voids in the old rectangular shape. Existing stairs rewrite their opening the next time they are saved.</li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>Smaller fixes<span class="when">PR #100 · 19 Oct</span></h3>
+      <ul>
+        <li>Errors from editing a slab under a stair now name the floor as well as the slab.</li>
+        <li><span class="tag">ST-6</span>If the server refuses a stair delete, the stair comes back with its slab openings. Before, it came back without them until its next save.</li>
+        <li>Custom-turn stairs get the landing depth handle in plan. Square 90° landings have none, the handle sits on the edge the depth grows towards, and its arrow points outward. On a mirrored half turn the arrow used to point inward.</li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>Construction type (P2)<span class="when">ST-12 · 19 Oct</span></h3>
+      <ul>
+        <li>Each stair has a <b>Construction</b> select in the stair panel, plus a thickness field for every type except solid. The stair decides how it is built; the view-wide “Stairs: solid / open tread” button in the orbit view is gone.</li>
+        <li>The 3D view and the IFC download build the stair from it. Sections and elevations draw a smooth underside as stepped, because those drawings are built from vertical blocks.</li>
+        <li>Winders have no planar underside: on a smooth stair they are drawn stepped.</li>
+        <li>Saved as <code>stairConstructionType</code> on the stair and <code>Pset_StairCommon.waistThickness</code>. Stairs saved before today have neither and load as smooth underside, 150 mm.</li>
+        <li>Released to dev: ifc4-types 1.0.22, types 1.1.73, and the API on development (<code>02bb548</code>), which accepts the two new property names.</li>
+      </ul>
+      <div class="profiles" role="group" aria-label="Side view of a four-tread flight per construction type">
+        <figure class="profile">
+          <svg viewBox="0 0 132 108" aria-hidden="true"><line class="ground" x1="4" y1="100" x2="128" y2="100"/><polygon class="body" points="10,100 10,80 38,80 38,60 66,60 66,40 94,40 94,20 122,20 122,100"/></svg>
+          <figcaption><b>Solid</b><span>Each step filled to the floor.</span></figcaption>
+        </figure>
+        <figure class="profile">
+          <svg viewBox="0 0 132 108" aria-hidden="true"><line class="ground" x1="4" y1="100" x2="128" y2="100"/><polygon class="body" points="10,100 10,80 38,80 38,60 66,60 66,40 94,40 94,20 122,20 122,55 94,55 94,75 66,75 66,95 38,95 38,100"/></svg>
+          <figcaption><b>Stepped underside</b><span>Slab of constant thickness under each step. 150 mm default.</span></figcaption>
+        </figure>
+        <figure class="profile">
+          <svg viewBox="0 0 132 108" aria-hidden="true"><line class="ground" x1="4" y1="100" x2="128" y2="100"/><polygon class="body" points="10,100 10,80 38,80 38,60 66,60 66,40 94,40 94,20 122,20 122,38 35,100"/></svg>
+          <figcaption><b>Smooth underside</b><span>One sloped waist slab, measured across the slope. 150 mm default.</span></figcaption>
+        </figure>
+        <figure class="profile">
+          <svg viewBox="0 0 132 108" aria-hidden="true"><line class="ground" x1="4" y1="100" x2="128" y2="100"/><rect class="body" x="10" y="80" width="28" height="6"/><rect class="body" x="38" y="60" width="28" height="6"/><rect class="body" x="66" y="40" width="28" height="6"/><rect class="body" x="94" y="20" width="28" height="6"/></svg>
+          <figcaption><b>Floating treads</b><span>Treads only, never thicker than a riser. 60 mm default.</span></figcaption>
+        </figure>
+      </div>
     </div>
   </section>
 
@@ -171,36 +240,57 @@ footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--li
     <h2><span class="n">2</span>How to test</h2>
 
     <div class="checks">
-      <div class="check"><b>tsc -b clean</b><span>Full project typecheck after merge</span></div>
-      <div class="check"><b>9,714 passed</b><span>Full vitest suite, 1 skipped, 0 failed</span></div>
+      <div class="check"><b>9,737 passed</b><span>Full platform test run, 1 skipped, 0 failed</span></div>
+      <div class="check"><b>tsc -b clean</b><span>Full platform typecheck and eslint on changed files</span></div>
+      <div class="check"><b>956 passed</b><span>API tests with types 1.1.73; build green; dev deploy green</span></div>
       <div class="check"><b>20 / 20</b><span>Preset golden snapshots unchanged</span></div>
     </div>
 
     <div class="group">
-      <h3>In the app (CAD mode, stair work mode, a building with two slabbed floors)</h3>
+      <h3>Already checked in the browser</h3>
+      <p class="note">19 Oct, local app against the dev API, on the test building with floors UG01, EG00 and OG01. After each change the saved opening was read back from the API.</p>
+      <ul>
+        <li>Half winding with a 300 mm well: the opening keeps a 270 mm strip of floor beside the lower flight's first tread, visible in the top view.</li>
+        <li>Quarter turn (L): the opening is an L, and the inner corner of 1,890 × 1,890 mm stays slab.</li>
+        <li>Custom chain (L plus a straight landing): the type reads “Custom turns”, the opening follows the longer flight, and dragging the straight landing's handle changed its depth from 1,000 to 1,396.9 mm and saved.</li>
+      </ul>
+    </div>
+
+    <div class="group">
+      <h3>In the app (CAD mode, CAD: Stair, a building with two slabbed floors)</h3>
       <ol class="steps">
+        <li>Select a stair. In the stair panel, switch <b>Construction</b> through Solid, Stepped underside, Smooth underside and Floating treads, with the orbit view in geometry mode.
+          <span class="expect">the 3D stair changes with each choice, and the thickness field appears for every type except Solid. Its label reads “Tread thickness” for floating.</span></li>
+        <li>Set Smooth underside, change the waist thickness to 250 mm, and reload the page.
+          <span class="expect">the stair comes back as Smooth underside with 250 mm.</span></li>
+        <li>Open a stair that was saved before 19 Oct.
+          <span class="expect">it shows Smooth underside with 150 mm and loads without errors.</span></li>
+        <li>Download the IFC model with a smooth stair and a floating stair in it.
+          <span class="expect">the exported stairs look like the 3D view: a sloped underside and loose treads.</span></li>
+        <li>Generate a section through a smooth stair.
+          <span class="expect">the stair is drawn with a stepped underside.</span></li>
+        <li>Place a quarter turn (L) through a slab, then look at the slab on the floor above in the top view and in 3D.
+          <span class="expect">the opening is L-shaped, and the inner corner of the L is still slab.</span>
+          <span class="done">Top view checked 19 Oct · 3D not yet</span></li>
+        <li>Export a floor plan of a floor the stair passes through.
+          <span class="expect">the void cross has one X per rectangle of the L, not one X across the whole box.</span></li>
         <li>Start placing a straight stair. Open <b>Turns</b> and use <b>Add → Landing, straight on</b> twice.
           <span class="expect">the preview shows three flights, and the type select reads “Custom turns” (disabled, not offered as a preset).</span></li>
-        <li>Click <b>Add stair</b>, pick <b>Quarter turn</b>, and click the start point and then the direction. Move the mouse to the other side of the line and click there.
-          <span class="expect">the preview flips as the mouse crosses the line, and the placed stair turns toward the side you clicked. Once selected, <b>Turns → Turn direction</b> matches.</span></li>
+        <li>On a custom stair with a straight-on landing, drag the landing's arrow in the top view.
+          <span class="expect">the arrow points away from the landing, the depth follows the mouse, and the panel's Landing depth updates.</span>
+          <span class="done">Checked 19 Oct</span></li>
         <li>Click <b>Add stair</b> → <b>Quarter turn</b> → <b>Add → Landing, 90° turn</b>. Set <b>Landing 1</b> to <b>Left</b> and <b>Landing 2</b> to <b>Right</b>, then click the start point and the direction. Move the mouse to the other side of the line and click.
-          <span class="expect">the type reads “Custom turns”, and the whole Z mirrors to the side you clicked, so it turns right then left. It is still the same Z after a reload.</span></li>
-        <li>Drag a stair so it runs past a slab edge on the floor above.
-          <span class="expect">the error names the floor and slab (for example “OG01 · elevationSlab”), with no ids.</span></li>
-        <li>Select the placed stair and reload the page.
-          <span class="expect">the same chain comes back, and the Turns section lists the same landings and winder.</span></li>
-        <li>Pick a preset again in <b>Stair type</b>, for example Quarter turn.
-          <span class="expect">the custom chain is replaced by the preset's turns.</span></li>
+          <span class="expect">the type reads “Custom turns”, and the whole Z mirrors to the side you clicked. It is still the same Z after a reload.</span></li>
         <li>On a half turn with 16 risers, set <b>Number of risers</b> to 56.
           <span class="expect">the landing stays in the middle (Turns shows it after riser 28) and both flights are equal.</span></li>
+        <li>Drag a stair so it runs past a slab edge on the floor above, then also try moving that slab's edge under a stair.
+          <span class="expect">both errors name the floor and slab (for example “OG01 · Slab”), with no ids.</span></li>
         <li>Place a half-winding stair and set <b>Stairwell well width</b> to 200 mm.
           <span class="expect">the winders fan around an open eye with no gap or overlap.</span></li>
         <li>In the orbit view, turn off <b>Toggle walls</b>, then <b>Toggle stairs</b>.
           <span class="expect">stairs stay visible with walls off, and disappear only with their own toggle.</span></li>
         <li>Put a stair through a slab. Use <b>Copy boundary to all levels</b> from the floor with the opening, then delete the stair.
           <span class="expect">no stair opening appears on the other floors, and deleting the stair leaves no void anywhere.</span></li>
-        <li>Export a floor plan (DXF/PDF) with a cut stair.
-          <span class="expect">the arrow tip touches the lower break line, and landing paths meet at the landing centre.</span></li>
         <li>Multi-slab: place a stair attached to two slabs with a custom chain, then edit its turns.
           <span class="expect">both runs update and the slab openings follow. Nobody has tried this case yet.</span></li>
       </ol>
@@ -213,22 +303,28 @@ footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--li
       <table>
         <thead><tr><th>Kind</th><th>Item</th><th>Owner</th></tr></thead>
         <tbody>
-          <tr><td class="kind"><span class="k block">Blocks merge</span></td><td>Test on a real building in the browser (steps above). The PR stays a draft until this is done.</td><td>Milton</td></tr>
-          <tr><td class="kind"><span class="k block">Blocks merge</span></td><td>Multi-slab stair with custom turns: no automated or manual test covers this path.</td><td>Milton</td></tr>
+          <tr><td class="kind"><span class="k block">Before prod</span></td><td>The production API still runs types 1.1.72. Its <code>main</code> needs the types 1.1.73 bump and a deploy before the platform goes to production, or every stair save there is rejected.</td><td>Milton</td></tr>
+          <tr><td class="kind"><span class="k test">Untested</span></td><td>Construction types in the browser: the panel, the 3D result, reload, an IFC download and a section (steps 1 to 5).</td><td>Milton</td></tr>
+          <tr><td class="kind"><span class="k test">Untested</span></td><td>A shaped opening as a 3D mesh. The 3D pane stayed blank during the 19 Oct check, so the hole was only verified in the top view and in the saved data.</td><td>Milton / team</td></tr>
+          <tr><td class="kind"><span class="k test">Untested</span></td><td>The per-piece void cross on a floor plan. It needs a stair that passes through a floor; covered by unit tests only.</td><td>Team</td></tr>
+          <tr><td class="kind"><span class="k test">Untested</span></td><td>Multi-slab stair with custom turns: no automated or manual test covers this path.</td><td>Milton</td></tr>
+          <tr><td class="kind"><span class="k decide">Decision</span></td><td>Stairs saved before 19 Oct load as Smooth underside, 150 mm. Is that the right default, or should it be Solid?</td><td>Djunejt</td></tr>
+          <tr><td class="kind"><span class="k decide">Decision</span></td><td>Sections and elevations draw a smooth underside stepped. Good enough, or should drawings show the sloped underside?</td><td>Djunejt</td></tr>
           <tr><td class="kind"><span class="k decide">Decision</span></td><td>Should explicit void lists stay final, with keeping a slab's own stair voids limited to the old copy dialog (<code>keepOwnStairVoids</code>)?</td><td>Piotr</td></tr>
           <tr><td class="kind"><span class="k decide">Decision</span></td><td>Drop “Two straight runs” from the placement presets? It is now a straight stair plus one landing, and old stairs still load either way.</td><td>Team</td></tr>
           <tr><td class="kind"><span class="k decide">Decision</span></td><td>Half landings: the two flight paths are parallel and never meet, so they cross on the landing centre line. Is that right?</td><td>Djunejt</td></tr>
-                    <tr><td class="kind"><span class="k later">Follow-up</span></td><td>The slab opening is always one rectangle around the whole stair, so L-, Z- and other custom chains also cut floor where there are no stairs.</td><td>Milton</td></tr>
-                              <tr><td class="kind"><span class="k later">Follow-up</span></td><td>After a failed server delete, the stair comes back without its void until its next save (ST-6 edge case).</td><td>Milton</td></tr>
-          <tr><td class="kind"><span class="k later">Follow-up</span></td><td>Landing resize handle for custom chains.</td><td>Milton</td></tr>
-          <tr><td class="kind"><span class="k later">Follow-up</span></td><td>P2: construction type and waist thickness (ST-12). Needs an ifc4-types → types → api → platform release.</td><td>Milton</td></tr>
-          <tr><td class="kind"><span class="k later">Follow-up</span></td><td>P3–P6: curved and spiral stairs (ST-3), ramps (ST-4), editable voids (ST-7), rotation (ST-8), 3D selection (ST-9), per-step width (ST-13), landings trimmed by walls (ST-14).</td><td>Backlog</td></tr>
+          <tr><td class="kind"><span class="k later">Follow-up</span></td><td>Tell Piotr that his <code>stairSlabOpenings.ts</code> messages and the matching test now use the floor and slab wording.</td><td>Milton</td></tr>
+          <tr><td class="kind"><span class="k later">Follow-up</span></td><td>Smooth underside on winders: they are drawn stepped today.</td><td>Backlog</td></tr>
+          <tr><td class="kind"><span class="k later">Follow-up</span></td><td>P3 to P6: curved and spiral stairs (ST-3), ramps (ST-4), editable voids (ST-7), rotation (ST-8), 3D selection (ST-9), per-step width (ST-13), landings trimmed by walls (ST-14).</td><td>Backlog</td></tr>
         </tbody>
       </table>
     </div>
   </section>
 
-  <footer>Plan and status: <code>manuals/lumocad-plans/stairs/PLAN_STAIR_SPRINT_2_2_FEEDBACK.md</code> · <a href="https://github.com/Lumoview-Building-Analytics-GmbH/platform/pull/77">PR #77 on GitHub</a></footer>
+  <footer>
+    <span>Plan and status: <code>manuals/lumocad-plans/stairs/PLAN_STAIR_SPRINT_2_2_FEEDBACK.md</code> · stair reference: <code>manuals/lumocad-subsystems/cad/README_CAD_STAIRS.md</code></span>
+    <span><a href="https://github.com/Lumoview-Building-Analytics-GmbH/platform/pull/77">PR #77</a> · <a href="https://github.com/Lumoview-Building-Analytics-GmbH/platform/pull/100">PR #100</a> · updated 19 Oct 2026</span>
+  </footer>
 </main>
 </body>
 </html>
