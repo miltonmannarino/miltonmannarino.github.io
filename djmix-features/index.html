@@ -152,16 +152,50 @@ const AREAS = {
 const AREA_ORDER = ['pro', 'ui', 'automix', 'analysis', 'library', 'engine', 'tooling'];
 
 const CHECKS = {
-  ranAt: '2026-10-20 09:55 (session 6e8d1284)',
+  ranAt: '2026-10-20 12:10 (session 6e8d1284)',
   rows: [
     ['npx tsc --noEmit', 'ok', '0 errors'],
-    ['npm test (vitest)', 'ok', '234 / 234 tests pass, 28 files'],
-    ['npm run test:live (Playwright, ~2.5 min)', 'ok', '1 passed in 2.4 min: transition 1 a 32-bar loop mix (intro played 3×, deck jumped back 14.9 s and 15.0 s), transition 2 a 16-bar Mix now blend (no jump); stopped decks at −120 dBFS, fades monotone (worst rise −1.0 dB), longest master gap 0.00 s over 140 s'],
+    ['npm test (vitest)', 'ok', '238 / 238 tests pass, 28 files'],
+    ['npm run test:live (Playwright, ~2.5 min)', 'ok', '1 passed in 2.4 min: transition 1 a 32-bar loop mix (intro played 3×, deck jumped back 15.0 s and 15.0 s), transition 2 a 16-bar Mix now blend (no jump); stopped decks at −120 dBFS, fades monotone (worst rise −2.4 dB), longest master gap 0.00 s over 141 s'],
     ['npm run analyze (42-track baseline)', 'ok', '28 tracks changed, phrases only (tempo, grid, key unchanged); baseline updated'],
   ],
 };
 
 const FEATURES = [
+  {
+    id: 'loop-mix-enters-early', area: 'automix', title: 'Loop mixes come in early: the first beat phrase is held, never a later break or drop', date: '2026-10-20', session: '6e8d1284',
+    commits: [{ hash: 'ad727ce', subject: 'fix(automix): loop mixes enter on the first beat phrase, never past the first drop' }],
+    changed: [
+      'In Loop, the next track no longer comes in past its first drop. Before, a track without a sparse intro (one that opens on its drop, or after a few beatless bars) was entered further in, on its first breakdown or build, so that its next drop would land on the bass swap. That skipped up to a quarter of the track and put its breakdown, often its vocal, over the outgoing track. On the library 29% of Loop mixes entered more than 8 bars past the incoming track\'s first beat; now 9%. Those are all inside long intros (Sunswell\'s 128 bars, How Can You Tell\'s 32-bar kick intro), entered further in so the drop lands on the swap.',
+      'Such a track now holds its first beat phrase on a loop: the first 8 bars after its beatless intro, or from its first phrase line on a track that opens on its drop. Its bass is cut while its fader comes up, so only its drums and top are heard under the outgoing track. The basslines swap as the loop ends and the track plays on. Calor (3 beatless bars) comes in from its bar 1 with bars 4–11 played 3×; Ride A White Horse from bar 6 with bars 6–13 played 2×.',
+      'A track with a sparse intro is entered on its first phrase with a beat, not a later intro phrase, unless only a later one lands the drop on the swap. Each bar of beat skipped costs; a 32-bar kick intro is still entered on its last phrase for a 32-bar blend. Sunswell now comes in at its bar 25, where its kick starts after 24 bars of pads (was bar 57).',
+      'On the library 69% of Loop mixes now hold the incoming intro or first beat phrase (1,998 of 2,912; was 46%), and 70 of 73 tracks can be held (was 44). A Loop cue is never later than 24% into the track.',
+      'Blend is unchanged: it still enters a drop-first track on its breakdown when that lands the next drop on the swap.',
+    ],
+    test: {
+      steps: [
+        'MIX → Loop. Load Calor on deck B, any analysed track on A, and press PLAY on A. → The NextMix strip reads "… loop mix …, next track in from its bar 4 (its bars 4–11 played 3×), bass swap at …" (bar numbers can differ with the outgoing track). B\'s waveform shows "LOOP 3×" right after its short intro, not a third of the way in.',
+        'Press MIX NOW (or turn AUTO on). → B comes in on its first beat bars without bass, jumping back every 8 bars in time with A. When the loop ends, B\'s bass comes in as A\'s goes out. B\'s first breakdown plays after A has gone, not over it.',
+        'Repeat with Ride A White Horse, Wrong (Todd Terry Remix) or Got 2 Let U on B. → Each comes in within its first 8 bars, its first phrase looped, never at its breakdown.',
+        'Load Sunswell on B. → "next track in from its bar 25 (its bars 25–32 played 2×)": the first kick phrase after the pads.',
+        'Switch MIX to Blend with the same decks. → The plan is the same as before this change (Ride A White Horse may enter at its breakdown, bar 22 or 30).',
+      ],
+      automated: [
+        'src/audio/mix/mixPoints.test.ts: 4 new tests. A track that opens on its drop holds its first phrase, its bass cut until the loop ends (Auto and Mix now). After a 2-bar beatless intro the drop\'s first phrase is looped, with the 2 bars as a pickup. A track with a break after a short drop is never entered past its first drop, where Blend enters on the break. A kick intro is entered on its first phrase unless only a later one lands the drop. The outgoing-loop test now uses a track with no loopable phrase.',
+        'npm test (vitest): 238 / 238 pass, 28 files; npx tsc --noEmit: 0 errors',
+        'Planning sweep over every ordered pair of the 73 library tracks, v9 analyses, Auto (throwaway, not in the repo). Loop: intro held 1,331 → 1,998 of 2,912; cue more than 8 bars past the first beat 834 → 271; cue past the first drop 633 → 286, every one of them the pickup bars before the first phrase line (3–7 bars) of a track that opens on its drop; latest cue 25.2% → 24.1% of the track',
+        'Blend plans identical to before: 21,024 plans on the stored analyses (HEAD worktree vs working tree, every pair × Auto / Mix now × two deck positions) and 2,912 on v9',
+        'Offline renders (npm run mixlab, both styles). True South → Calor in Loop: a 32-bar blend from Calor\'s bar 4, bars 4–11 played 3×, swap on the release; kicks within 4.2 ms (p95, 28 beats) through the jumps (Blend: a 16-bar blend, 2.6 ms). Bass hole 19.8 dB, about the same in Blend (19.5): it comes from this pair, not the loop. Silk → Ride A White Horse: only 16 bars fit, too short to hold a loop, so Loop enters on bar 6 where Blend enters on the breakdown at bar 30; bass hole 3.8 dB vs 15.5 in Blend; kick alignment p95 19.6 ms vs 24.0 (Silk is one of the half-beat suspects)',
+        'npm run test:live: 1 passed in 2.4 min (transition 1 a 32-bar loop mix, intro played 3×, jumps back 15.0 s and 15.0 s; see CHECKS)',
+      ],
+    },
+    missing: [
+      { text: 'Listen to a held first beat phrase. It is drums plus whatever the track has on top (a vocal that starts on the drop is looped too). Only ears can say whether a repeated drop phrase with its bass cut sounds like a DJ\'s loop or like a stutter. Renders: Silk → Ride A White Horse and True South → Calor, both styles, in the session scratchpad (cue/).', owner: 'Milton' },
+      { text: 'There is no vocal detection. The phrase looped is chosen by kick, bass and level only, so a track whose vocal starts on bar 1 is still mixed vocal over vocal.', owner: 'unowned' },
+      { text: 'Blend still skips into a drop-first track (enters on its first breakdown) in about a quarter of pairs. Ask whether Blend should also stop at the first drop: it would then enter on the drop itself with its bass cut.', owner: 'Milton' },
+      { text: 'Tracks whose analysis found no kick at all (Spectral Hearts) are still looped anywhere in the intro; tracks with no 8-bar kick phrase before their outro (Unfinished Sympathy) can\'t be held.', owner: 'unowned' },
+    ],
+  },
   {
     id: 'phrase-lines-follow-music', area: 'analysis', title: 'Phrase lines follow the music: no vote for where the file ends, no fade-ins, the grid moves at a break', date: '2026-10-20', session: '6e8d1284',
     commits: [{ hash: '2abf7f6', subject: 'fix(analysis): phrase lines follow the music; loop mixes hold any sparse intro' }],
