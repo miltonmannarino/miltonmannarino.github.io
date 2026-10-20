@@ -282,7 +282,7 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
     <figcaption>The 3D round. 2D works the same way with the 2D steps; an approved 2D QC goes to Roombook or Ready for delivery. A building can go around the loop as many times as needed.</figcaption>
   </figure>
   <p class="col">In LumoCad the button only lights up when the person's part is complete: for the checker, every checklist is ticked; for the corrector, every flagged issue is resolved. The hand-in window then asks who gets the building next. LumoCad suggests someone sensible, and it never suggests the checker as their own corrector or as the next person after approval.</p>
-  <p class="col muted">Every QC step has a <i>pending</i> and an <i>in progress</i> status, the re-check included. The hand-in sets the pending one. When the checker starts, they set it to in progress in the status dropdown, so time spent checking can be told apart from time waiting.</p>
+  <p class="col muted">Every QC step has a <i>pending</i> and an <i>in progress</i> status, the re-check included. The hand-in sets the pending one. When the checker starts, they set it to in progress in the building's status dropdown in the cloud, so time spent checking can be told apart from time waiting. LumoPlan does not set statuses; it only reads them.</p>
 </section>
 
 <section>
@@ -506,13 +506,13 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
       </tbody>
     </table>
   </div>
-  <p class="col muted">The same applies to 2D. <b>From the switch-over day on, only the hand-in completes a QC step.</b> LumoPlan can't see the checklists, so on the QC and corrections steps it offers <b>Open checklist in LumoCad</b> instead of <b>Mark done</b>. Other steps, like 3D and 2D postprocessing, keep the manual tick. Ticking only says "done"; it never moves the planned dates.</p>
+  <p class="col muted">The same applies to 2D. <b>From the switch-over day on, only the hand-in completes a QC step.</b> A QC or corrections step is finished only by the hand-in in LumoCad, and LumoPlan can't see the checklists. So in LumoPlan's stage menu these steps have no <b>Mark done</b>; the menu has a link, <b>Open checklist in LumoCad</b>, that opens the building in LumoCad. Other steps, like 3D and 2D postprocessing, keep <b>Mark done</b>. Ticking only says "done"; it never moves the planned dates.</p>
 </section>
 
 <section>
   <div class="intro">
     <h2>Fixing a mistake</h2>
-    <p>From the switch-over day on: if someone hands in by mistake, an admin sets the building's status back in the cloud. LumoPlan follows the status log, so the tick disappears by itself and nobody has to undo anything in LumoPlan.</p>
+    <p>From the switch-over day on: if someone hands in by mistake, an admin sets the building's status back in the cloud, in the status dropdown as today. LumoPlan follows the status log, so the tick disappears by itself and nobody has to undo anything in LumoPlan.</p>
   </div>
   <p class="col muted">This needed the new "corrections check" status. Before, handing back and undoing a hand-in were the same status change, and moving the status back added a second tick instead of removing one.</p>
 </section>
@@ -520,7 +520,7 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
 <section>
   <div class="intro">
     <h2>Changing the checker later</h2>
-    <p>Sometimes the checker has to change after QC is set up. LumoCad had this feature, but it was switched off because it broke on real buildings. It works again now.</p>
+    <p>Sometimes the checker has to change after QC is set up. LumoCad had this feature, but it was switched off because it broke on real buildings. It works again now: the server endpoint was rebuilt so one request covers the whole building.</p>
   </div>
   <figure>
     <div class="scroll">
@@ -588,14 +588,17 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
         <tr><td>Ticking QC by hand in LumoPlan</td><td>Allowed</td><td>Only the LumoCad hand-in completes a QC step</td></tr>
         <tr><td>Undoing a hand-in</td><td>Didn't work properly</td><td>Set the status back in the cloud; the tick goes away</td></tr>
         <tr><td>A QC round nobody planned</td><td>Not shown</td><td>Shown by itself, with Add to plan</td></tr>
-        <tr><td>Rounds after a client revision</td><td>Not ticked</td><td>Ticked like the first round</td></tr>
+        <tr><td>Rounds after a client revision</td><td>Not ticked</td><td>Ticked like the first round. They are recorded the same way; LumoPlan now matches each round to the revision it belongs to, where before it only looked at the first cycle</td></tr>
       </tbody>
     </table>
   </div>
   <h3 style="margin-top: 8px">Still open</h3>
   <ul class="small-list">
     <li>Every stage needing both a pending and an in-progress status makes for many statuses. Parked for a better general solution later, such as one status per stage plus a "started" flag.</li>
-    <li>If an admin undoes a corrector's hand-in by setting the status back to corrections, it looks the same as the checker finding problems again, so LumoPlan counts another QC round.</li>
+    <li>Where statuses are set. Today the building's status is set in the cloud (and by the LumoCad hand-in); LumoPlan only reads it. Whether setting statuses moves to LumoPlan is still to decide.</li>
+    <li>Setting a QC step to in progress by itself on the first activity in LumoCad (an issue created, a checklist item ticked), instead of by hand. Proposed in review; the risk is an accidental tick marking a check as started.</li>
+    <li>The mails naming who did it, e.g. "[person] has handed in … and assigned … to you". Proposed in review, not built.</li>
+    <li>Accepted in review: if an admin undoes a corrector's hand-in by setting the status back to corrections, LumoPlan counts another QC round, which it in fact is.</li>
   </ul>
 </section>
 
