@@ -152,16 +152,79 @@ const AREAS = {
 const AREA_ORDER = ['pro', 'ui', 'automix', 'analysis', 'library', 'engine', 'tooling'];
 
 const CHECKS = {
-  ranAt: '2026-10-19 22:47 (session 6e8d1284)',
+  ranAt: '2026-10-20 09:55 (session 6e8d1284)',
   rows: [
     ['npx tsc --noEmit', 'ok', '0 errors'],
-    ['npm test (vitest)', 'ok', '223 / 223 tests pass, 27 files'],
-    ['npm run test:live (Playwright, ~2.5 min)', 'ok', '1 passed in 2.4 min: transition 1 a 32-bar loop mix (incoming intro played 3×, deck jumped back 14.9 s twice), transition 2 a 16-bar Mix now blend (no jump); stopped decks at −120 dBFS, fades monotone (worst rise −2.4 dB), longest master gap 0.00 s over 141 s'],
-    ['Headless-Chromium smoke through window.__djmix', 'ok', 'loop wraps sample-exact; beat / bar / phrase sync within 0.003 beats; echo delay follows tempo; sharp curve holds the far deck at full; +3.0 dB trim (session a131b68b, throwaway script, not in the repo)'],
+    ['npm test (vitest)', 'ok', '234 / 234 tests pass, 28 files'],
+    ['npm run test:live (Playwright, ~2.5 min)', 'ok', '1 passed in 2.4 min: transition 1 a 32-bar loop mix (intro played 3×, deck jumped back 14.9 s and 15.0 s), transition 2 a 16-bar Mix now blend (no jump); stopped decks at −120 dBFS, fades monotone (worst rise −1.0 dB), longest master gap 0.00 s over 140 s'],
+    ['npm run analyze (42-track baseline)', 'ok', '28 tracks changed, phrases only (tempo, grid, key unchanged); baseline updated'],
   ],
 };
 
 const FEATURES = [
+  {
+    id: 'phrase-lines-follow-music', area: 'analysis', title: 'Phrase lines follow the music: no vote for where the file ends, no fade-ins, the grid moves at a break', date: '2026-10-20', session: '6e8d1284',
+    commits: [{ hash: '2abf7f6', subject: 'fix(analysis): phrase lines follow the music; loop mixes hold any sparse intro' }],
+    changed: [
+      'The 8-bar phrase grid, which every cue, entry and mix-out sits on, was one fixed grid per track. The bar the file ended on voted for it. On tracks that fade out, or are edited, or have weak boundaries inside, that vote decided the grid. On the library it decided 12 tracks, and on 10 of them the result contradicted both the intro\'s and the outro\'s own sections. Silk: its last drop is at bar 146 but the grid said 144, so Auto mixed in 2 bars off the phrase. Good Life: first drop at 9, grid said 7. Big Fun: outro crashes at 81 and 89, grid said 85 and 93. The end no longer votes.',
+      'The changes of a fade-in from silence no longer count as boundaries. Arcadia\'s first four bars fade in from −72 dB, and they outvoted every real boundary in the track.',
+      'The grid may now move where the music does: a 4-bar break or a 2-bar fill dropped into a run of 8-bar phrases. Examples: At A. Gallop\'s 4-bar breakdown at bar 72, Vamos a la Playa\'s break at 41. A shift is only taken where the boundaries after it are strong enough to pay for it; 7 tracks of 73 get one.',
+      'Auto and Mix now read these lines directly. A blend whose phrase lines would drift apart inside the overlap (because one track\'s grid moves during it) is avoided. A track whose first drop comes before its first phrase line now enters on that line instead of bar 0, so its phrases meet the outgoing track\'s.',
+      'Phrase labels on the waveform can now show a short separate phrase at the very start (the bars before the first line) or at a break. Some tracks show two drop labels in a row where a break split a section.',
+      'The library re-analyses on the next launch (analyzer version 9). Until a track is re-analysed, its old analysis plans exactly as before, except for the bar-0 cue fix above.',
+    ],
+    test: {
+      steps: [
+        'Launch the app and let it re-analyse (the top bar reads "Analysing n of 73" until it is done).',
+        'Load Silk on deck A and look at the phrase labels at the end of its waveform. → The last drop starts at bar 146 (about 4:34 into the track), where the riser ends and the full groove comes back, not at bar 144.',
+        'Load another analysed track on B, press PLAY on A, seek near the end and turn AUTO on. → The NextMix strip names a blend starting on bar 123 or 139 (1-based). B comes in on a phrase of Silk: listen to the moment it enters.',
+        'Load Good Life on B as the next track. → Its cue sits on bar 10 (1-based), where its kick and bass come in, not on bar 8.',
+        'Load At A. Gallop on A and look at its waveform near bar 73 (1-based). → A short phrase marks the 4-bar break, and the phrase lines after it start on the break\'s end (bar 77).',
+      ],
+      automated: [
+        'src/audio/analysis/structure.test.ts (new, 6 tests): regular grid; grid after a pickup; a 4-bar break moves the grid; a weak off-grid change doesn\'t; the ending doesn\'t vote; a fade-in doesn\'t count',
+        'src/audio/mix/mixPoints.test.ts: lines read off the sections (pickup, a moved grid, an older merged analysis); Auto mixes out on the lines of a grid that moved before the end',
+        'npm test (vitest): 234 / 234 pass, 28 files; npx tsc --noEmit: 0 errors',
+        'npm run analyze against fixtures/analysis-baseline.json: 28 of 42 tracks changed (phrases only; tempo, grid, key untouched). Most are the pickup split out as its own phrase; baseline updated.',
+        'Independent evidence on the 73 library tracks (throwaway scripts, not in the repo): beat-level Foote novelty and per-bar energies. These found the ending-vote and fade-in errors above, and were checked by reading the bar energies of Silk, Arcadia, Big Fun, Good Life, At A. Gallop and Vamos a la Playa',
+        'Blend plans on the stored (old) analyses vs before the change, all 21,024 (every pair × Auto / Mix now × two deck positions): the only differences are the bar-0 cue fix (1,241 plans into 9 tracks)',
+        'npm run test:live: 1 passed in 2.4 min (see CHECKS)',
+      ],
+    },
+    missing: [
+      { text: 'Beat phase, which decides everything else. On 7 tracks our beat grid sits half a beat away from the grid Traktor wrote into the file: Silk, My Boo, Enoough, Big Fun, Fields, Twenty Four Seven, Song 4 Mutya. If ours is wrong, those tracks mix with their kicks between the other track\'s kicks, and their phrases come out wrong too. Measurements can\'t settle it. Ear-check clips are in the session scratchpad (grid-check/): for each track, A = clicks on our beats, B = clicks half a beat later, with the bar\'s 1 clicked higher.', owner: 'Milton' },
+      { text: 'Downbeat (which beat of four is the 1) is uncertain on many tracks (downbeat confidence under 0.2 on 16 of 73), with no ground truth. The Bar ±1 button on the deck fixes it by ear.', owner: 'unowned' },
+      { text: 'Only listening can say whether the phrase lines now land where a DJ would put them. Listen to mixes out of Silk, Big Fun, Good Life, Arcadia and At A. Gallop.', owner: 'Milton' },
+      { text: 'Grid shifts are found only from energy, chord and flux changes per bar; a break with no change in those is missed. The Phrase ±1 button on the deck moves the whole grid, not one section.', owner: 'unowned' },
+    ],
+  },
+  {
+    id: 'loop-mix-more-intros', area: 'automix', title: 'Loop mixes hold far more intros: pads, percussion, short intros', date: '2026-10-20', session: '6e8d1284',
+    commits: [{ hash: '2abf7f6', subject: 'fix(analysis): phrase lines follow the music; loop mixes hold any sparse intro' }],
+    changed: [
+      'Loop held only an 8-bar intro phrase with a kick and no bassline, which 12 of 73 tracks had; you tried 6 mixes and 1 looped. Now any intro phrase short of kick and bassline together can be held: pads, percussion, a kick alone, a bassline alone. Fade-ins and near-silence are excluded.',
+      'Before the bass swap, the incoming track can be beatless at little cost, because the outgoing track carries the beat until then.',
+      'An intro shorter than a phrase (4 to 7 bars) loops half a phrase instead. The cue sits where the incoming phrase lines land after the loop, so the drop still comes in on a phrase line of the blend.',
+      'On the library 46% of loop mixes now hold the intro (1,348 of 2,912, was 13%), and 44 of 73 tracks can be held (was 12). The rest open straight on their drop, and Loop plays those as a plain blend ("⚠ No intro loop fits").',
+    ],
+    test: {
+      steps: [
+        'MIX → Loop. Load a track with a pad or percussion intro on B (Big Deal, Sunswell, My Boo, Silk, Wear Me Down), any analysed track on A, press PLAY on A. → The NextMix strip reads "… loop mix … (its bars N–M played 2×)". B\'s waveform shows "LOOP 2×".',
+        'Press MIX NOW. → B enters on its intro and jumps back once while its fader rises, in time with A. Then it plays on into its drop on the bass swap.',
+        'Load a track whose intro is under a phrase on B (Nik Com, Show Me Love). → If a loop fits, it reads "(its bars 1–4 played …×)", and the drop still lands on a phrase line of A.',
+      ],
+      automated: [
+        'src/audio/mix/mixPoints.test.ts: a pad intro without a kick is held; a 4-bar intro before the grid loops so its drop lands a whole number of phrases in; a fade-in is not held',
+        'npm test: 234 / 234 pass; npm run test:live: loop mix transition jumped back 14.9 s and 15.0 s as planned',
+        'Planning sweep over every ordered pair of the 73 library tracks in Loop style (throwaway): 1,348 of 2,912 blends hold the intro (8 bars ×2: 1,145; 8 bars ×3: 79; 4-bar loops: 124); worst outgoing tail 8 bars',
+      ],
+    },
+    missing: [
+      { text: 'Looped pads with a chord progression may sound repetitive or have an audible seam at the jump back. Only ears can say.', owner: 'Milton' },
+      { text: 'Which intro phrase gets looped is still chosen by the swap scoring, not by which phrase is sparsest.', owner: 'unowned' },
+      { text: 'A 4-bar loop can play up to 6 times (24 extra bars). That might be too many; capping it is a one-line change.', owner: 'unowned' },
+    ],
+  },
   {
     id: 'loop-mix-style', area: 'automix', title: 'A second way to mix: Loop (the incoming intro held on a loop while it fades in)', date: '2026-10-19', session: '6e8d1284',
     commits: [{ hash: '512961c', subject: 'feat(automix): a loop mix style that holds the incoming intro on a loop' }],
