@@ -152,16 +152,42 @@ const AREAS = {
 const AREA_ORDER = ['pro', 'ui', 'automix', 'analysis', 'library', 'engine', 'tooling'];
 
 const CHECKS = {
-  ranAt: '2026-10-20 12:10 (session 6e8d1284)',
+  ranAt: '2026-10-20 12:25 (session 6e8d1284; test:live 12:10)',
   rows: [
     ['npx tsc --noEmit', 'ok', '0 errors'],
-    ['npm test (vitest)', 'ok', '238 / 238 tests pass, 28 files'],
+    ['npm test (vitest)', 'ok', '241 / 241 tests pass, 29 files (one unhandled InvalidStateError from offlineMix.test.ts, flaky, passes alone)'],
     ['npm run test:live (Playwright, ~2.5 min)', 'ok', '1 passed in 2.4 min: transition 1 a 32-bar loop mix (intro played 3×, deck jumped back 15.0 s and 15.0 s), transition 2 a 16-bar Mix now blend (no jump); stopped decks at −120 dBFS, fades monotone (worst rise −2.4 dB), longest master gap 0.00 s over 141 s'],
     ['npm run analyze (42-track baseline)', 'ok', '28 tracks changed, phrases only (tempo, grid, key unchanged); baseline updated'],
   ],
 };
 
 const FEATURES = [
+  {
+    id: 'waveform-no-flicker', area: 'ui', title: 'The zoomed waveform scrolls without flicker', date: '2026-10-20', session: '6e8d1284',
+    commits: [{ hash: '244de2c', subject: 'fix(ui): the zoomed waveform scrolls without flicker' }],
+    changed: [
+      'The zoomed waveform of a playing deck no longer flickers. It used to stand still for a few frames and then jump about 4 pixels, while the beat grid behind it scrolled smoothly. It also stretched a little from one frame to the next, and at the 32-bar zoom its peaks came and went at random. Now it slides along with the beat grid, as one picture.',
+      'At 16 and 32 bars every kick keeps its full height (a peak falling between two pixels used to be flattened). The waveform also sits half a waveform bin later than before (about 30 ms), which is where the audio of each bin actually is, so kicks line up better with the beat lines.',
+      'The beat grid, phrase lines, mix marks and cue now move in whole pixels together with the waveform. The playhead stays fixed in the middle.',
+    ],
+    test: {
+      steps: [
+        'Load a track on a deck and press PLAY. Watch the zoomed waveform at 8 bars. → It scrolls smoothly with the beat lines, with no jumping, shimmering or peaks changing height.',
+        'Click the zoom buttons 2, 16 and 32 while it plays. → Same at every zoom. At 32 the kicks show as an even row of peaks.',
+        'Pause and click into the waveform to seek. → The waveform and lines land on the new position, as before.',
+      ],
+      automated: [
+        'src/components/waveColumns.test.ts (new, 3 tests): a column is the same whatever the scroll; every peak is kept when a column spans half a bin or more; between bins a column is interpolated between bin centres',
+        'Headless Chromium (throwaway Playwright script, not in the repo): a paused deck seeked in steps of 0.3 px, the zoomed canvas read back after each, and each frame compared with the previous one shifted by whole pixels. New: 60 of 60 steps an exact shift at zoom 2, 8 and 32 (residual 0). Old: 37 / 60 at 2 bars (mean residual 4.9), 23 / 60 at 8 bars (22.6), 7 / 60 at 32 bars (85.6)',
+        'npm test (vitest): 241 / 241 pass, 29 files; npx tsc --noEmit: 0 errors',
+      ],
+    },
+    missing: [
+      { text: 'Seen only in headless Chromium and screenshots. Check in the Electron app on your screen that the flicker in your recording is gone, at the zoom you use.', owner: 'Milton' },
+      { text: 'The view moves in whole CSS pixels. At 32 bars that is one step every few frames: steady, but not as smooth as sub-pixel motion would be.', owner: 'unowned' },
+      { text: 'Pre-existing, seen once in this run: an unhandled InvalidStateError from node-web-audio-api in offlineMix.test.ts (OfflineAudioContext.suspend), the same error npm run mixset hits on Sunswell → Pantalón. The file passes on its own (3 of 3 runs).', owner: 'unowned' },
+    ],
+  },
   {
     id: 'loop-mix-enters-early', area: 'automix', title: 'Loop mixes come in early: the first beat phrase is held, never a later break or drop', date: '2026-10-20', session: '6e8d1284',
     commits: [{ hash: 'ad727ce', subject: 'fix(automix): loop mixes enter on the first beat phrase, never past the first drop' }],
