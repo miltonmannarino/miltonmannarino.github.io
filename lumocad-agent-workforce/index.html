@@ -135,7 +135,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
   <h1>Where an "agent workforce" could take over work between scan and floor plan</h1>
   <p class="lede"><b>Who this is for.</b> Anyone at Lumoview. It assumes no knowledge of LumoCad, of software, or of how the production pipeline works. Every technical word is explained the first time it appears and again in the glossary at the end. Short notes in <code>monospace</code> are pointers for developers; everyone else can skip them.</p>
   <p class="lede"><b>The question Milton asked.</b> Our pipeline turns a scanned building into a floor plan and a room book. Which of its steps could an "agent" (a piece of software that uses artificial intelligence to do a task and hands the result to a person for review) do for us, or mostly do for us, so that people only check instead of doing?</p>
-  <p class="lede"><b>How this was checked.</b> I read the LumoCad manuals and code, the code of the server ("the API") and of LumoPlan, the company's existing specification for running agents, and the Notion pages that describe the Revit workflow and the Q3/Q4 goals. Where a claim comes from code, I say so.</p>
+  <p class="lede"><b>How this was checked.</b> I read the LumoCad manuals and code, the code of the server ("the API") and of LumoPlan, the company's existing specification for running agents, the Notion pages that describe the Revit workflow and the Q3/Q4 goals, and the <a href="https://miltonmannarino.github.io/revit-workflow-transcripts/">Revit production workflow guide</a> (a written version of how the architects build the model in Revit today). Where a claim comes from code, I say so.</p>
 </header>
 
 <nav class="toc" aria-label="Contents">
@@ -229,6 +229,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
       <li><b>The biggest wins are not new calculations.</b> They are: (a) running the existing calculations automatically as soon as data arrives, (b) agents that read the diagnostics those calculations already produce and turn them into short to-do lists, (c) language and vision agents on the judgement steps.</li>
       <li><b>Waiting is half the time.</b> For every phase, a building waits about as many days as it is worked on. A building sits a median of 8 workdays just waiting to be picked up for modelling. Agents that prepare, check and route buildings shorten delivery as much as agents that model.</li>
       <li><b>We already have a way to run agents.</b> The company's <code>lumoflow-skills</code> repository contains a specification ("lumoagent job flow") for running an agent as a small cloud job with a fixed set of tools and a required output. Two agents already exist on it (<code>floor-plan-audit</code>, <code>qa-agent</code>). The server also supports a special kind of login for organisations, which lets agent changes be told apart from human changes.</li>
+      <li><b>The Revit guide raises the bar for preprocessing.</b> The architects re-derive floor levels, storey alignment and exterior wall thickness from the point clouds, which preprocessing had already produced. In the all-LumoCad world those outputs must be trusted enough that nobody redoes them. That pushes up the benchmark (T1-5), the alignment and model-versus-cloud checks (T2-10, T2-14) and the floor-level agent (T2-15).</li>
     </ul>
   </div>
 </section>
@@ -285,7 +286,14 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
 
   <div class="callout">
     <b>The Revit workflow, for comparison</b>
-    <p>The Notion page "Revit Workflow From Start To End" (Axel, Timothy, Elyes) has four phases: premodelling (template, load clouds, floor heights from stair clouds, align floors, link models) → 3D (external walls, stairs, stairwell walls, roof, internal walls, curtain walls, windows, doors, room tags, in-place families, slabs) → 2D (view templates, views) → sheets. Every step page is a screen recording. LumoCad already has a tool for every step except "in-place families" (custom one-off shapes) and "curtain walls" (glass façades). So "everything in LumoCad" is a coverage question for those two and a speed question for the rest.</p>
+    <p>Two sources: the Notion page "Revit Workflow From Start To End" (Axel, Timothy, Elyes; a step list whose pages are screen recordings) and the <a href="https://miltonmannarino.github.io/revit-workflow-transcripts/">Revit production workflow guide</a>, a written version of how the architects build the model today: project setup → levels → drone model → walls → doors and windows → roofs → curtain walls → final checks.</p>
+    <ul>
+      <li><b>They re-derive what preprocessing already produced.</b> Floor levels from the slab surfaces and the stair cloud; storey alignment from exterior walls and the stair core; exterior wall thickness from a visible opening or the drone model. In the all-LumoCad world these outputs must be trusted enough that nobody redoes them.</li>
+      <li><b>Their alignment rule is concrete:</b> anchor on exterior walls and the stair core, never on furniture; verify two distant edges on both axes. Used below as the acceptance test for T2-1 and T2-10.</li>
+      <li><b>Doors and windows:</b> width and position from the floor cloud, sill and height from the section cloud, then a check of the configuration (rows, columns, side panel, transom, swing). Used in T1-3, T2-3 and T3-4.</li>
+      <li><b>Their final checklist is mostly "does the model sit on the cloud".</b> None of LumoCad's 52 plan warnings look at the cloud today. That is T2-14.</li>
+      <li><b>Roofs and curtain walls</b> take a large share of Revit time. Curtain walls do not exist in LumoCad; roofs stay manual-first by Milton's decision. These are feature gaps, not agent items. LumoCad has a tool for every other step.</li>
+    </ul>
   </div>
 </section>
 
@@ -312,6 +320,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
       <div class="row"><b>The problem today</b><span>Each door exists twice: as a mark on the photo (knows where the door is, not how big) and as a hand-measured entry from the capture app (knows width, height and the two rooms, not where in the wall). A person links the two one by one in a pop-up.</span></div>
       <div class="row"><b>What the agent does</b><span>Match them automatically using the rooms they share, the width, and door-versus-window; the person only confirms.</span></div>
       <div class="row"><b>Why it is realistic</b><span>Both lists exist in the database; this is a matching problem with few candidates per door.</span></div>
+      <div class="row"><b>From the Revit guide</b><span>Architects read width and position from the floor cloud and sill and height from the section cloud. The agent can cross-check each hand-measured value against the gap in the cloud at the door, which also settles the unit-ambiguity cases.</span></div>
       <div class="row pre"><b>What must happen first</b><span>T1-2.</span></div>
     </div></li>
     <li id="t1-4"><span class="num">T1-4</span><div class="body">
@@ -385,6 +394,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
       <div class="row"><b>The problem today</b><span>Dragging rooms into place is the biggest manual step left.</span></div>
       <div class="row"><b>What the agent does</b><span>Use clues that already exist but that no calculation uses: which door leads to which room (from the capture app), door widths and wall thickness, the compass heading per room, matching wall lines across rooms, and the stair and section scans. Propose a layout; verify it with the existing overlap scoring; the person accepts.</span></div>
       <div class="row pre"><b>What must happen first</b><span>Align with Piotr's floor-sorting prototype (scored 5 of 10 in Q3) so it is not built twice. Rooms joined only by a door have little overlap, which is the hard case.</span></div>
+      <div class="row"><b>Acceptance rule, from the Revit guide</b><span>Anchor on exterior walls and the stair core, never on furniture. Accept a floor only when two distant edges line up on both axes.</span></div>
     </div></li>
     <li><span class="num">T2-2</span><div class="body">
       <div class="title"><h3>Boundaries-to-walls batch runner</h3><span class="pill none">stations 3 + 4</span><span class="pill code">batch</span></div>
@@ -393,7 +403,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
     </div></li>
     <li><span class="num">T2-3</span><div class="body">
       <div class="title"><h3>Auto-place matched doors in walls</h3><span class="pill none">station 5</span><span class="pill code">batch</span></div>
-      <div class="row"><b>What the agent does</b><span>Once a mark and a measured opening are linked (T1-3), compute where along the wall the door sits from the photo geometry and place it there.</span></div>
+      <div class="row"><b>What the agent does</b><span>Once a mark and a measured opening are linked (T1-3), compute where along the wall the door sits from the photo geometry and place it there. Cross-check the result against the cloud: the gap in the floor cloud gives width and position, the section cloud gives sill and height (the Revit guide's own method).</span></div>
       <div class="row pre"><b>What must happen first</b><span>T1-3; the scanner's position for each scan must be readable on the server (not yet traced).</span></div>
     </div></li>
     <li><span class="num">T2-4</span><div class="body">
@@ -428,7 +438,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
     </div></li>
     <li><span class="num">T2-10</span><div class="body">
       <div class="title"><h3>Hand-in checks on the server</h3><span class="pill none">QC</span><span class="pill code">batch</span></div>
-      <div class="row"><b>What the agent does</b><span>Run the four automatic hand-in checks plus heuristics for the five manual checkboxes on the server, and store the result centrally instead of in one person's browser.</span></div>
+      <div class="row"><b>What the agent does</b><span>Run the four automatic hand-in checks plus heuristics for the five manual checkboxes on the server, and store the result centrally instead of in one person's browser. For "all floors are aligned", use the Revit rule: exterior walls and the stair core must overlap across storeys, checked on two distant edges and both axes.</span></div>
     </div></li>
     <li><span class="num">T2-11</span><div class="body">
       <div class="title"><h3>Discard-reason proposer</h3><span class="pill none">station 1</span><span class="pill warn">vision</span></div>
@@ -437,6 +447,25 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
     <li><span class="num">T2-12</span><div class="body">
       <div class="title"><h3>Automatic north</h3><span class="pill none">station 2</span><span class="pill code">batch</span></div>
       <div class="row"><b>What the agent does</b><span>Compute north from the compass data, flag rooms with contradictory readings, and correct for magnetic declination (the difference between magnetic and true north at the building's location, which the software does not apply today).</span></div>
+    </div></li>
+    <li><span class="num">T2-13</span><div class="body">
+      <div class="title"><h3>Exterior wall thickness from the drone model</h3><span class="pill none">station 4</span><span class="pill code">batch</span><span class="pill warn">new, from the Revit guide</span></div>
+      <div class="row"><b>The problem today</b><span>Wall generation needs to know how thick the exterior walls are; today a person types one global offset (default 40 cm) and the slab outline follows it. The Revit guide reads exterior thickness from the Airteam drone model (a 3D survey of the outside of the building, made from drone photos).</span></div>
+      <div class="row"><b>What the agent does</b><span>LumoCad already shows the drone model in the Section and Staircase views. Measure, per exterior wall, the distance between the room boundary and the façade in the drone model; propose the thickness and the slab outline.</span></div>
+      <div class="row pre"><b>What must happen first</b><span>The drone model must be aligned to the building (the Q4 work already places it in the Staircase view); not every building has one.</span></div>
+    </div></li>
+    <li><span class="num">T2-14</span><div class="body">
+      <div class="title"><h3>Model-versus-cloud check</h3><span class="pill none">stations 2–5</span><span class="pill code">batch</span><span class="pill warn">new, from the Revit guide</span></div>
+      <div class="row"><b>The problem today</b><span>Revit's final checklist is mostly "does the model sit on the cloud": wall faces on the cloud, levels on the slab surfaces, walls copied between floors corrected to each floor's cloud. None of LumoCad's 52 plan warnings look at the point cloud.</span></div>
+      <div class="row"><b>What the agent does</b><span>For every wall, measure the distance between its face and the nearest cloud dots; for every floor level, the distance to the slab surface in the section cloud; flag outliers and walls that were copied to another floor but not corrected.</span></div>
+      <div class="row"><b>Why it is realistic</b><span>The point clouds are reachable through the file API, and the "flush to point cloud" and wall-thickness preview tools already compute these distances inside the browser.</span></div>
+      <div class="row pre"><b>What must happen first</b><span>P1 (model loader) plus loading the clouds on the server.</span></div>
+    </div></li>
+    <li><span class="num">T2-15</span><div class="body">
+      <div class="title"><h3>Floor levels from section and stair clouds</h3><span class="pill none">station 2</span><span class="pill code">batch</span><span class="pill warn">promoted from Tier 3</span></div>
+      <div class="row"><b>The problem today</b><span>Floor heights are set by hand by moving a reference slab. The Revit guide gives the recipe the architects use: in a section view, draw a horizontal plane on each slab surface in the cloud, and use the stair cloud as the vertical link between floors.</span></div>
+      <div class="row"><b>What the agent does</b><span>Do the same automatically: find the horizontal floor and ceiling surfaces in the section scans, chain the floors through the staircase scans, propose each floor's height and slab thickness; a person confirms.</span></div>
+      <div class="row"><b>Why it is realistic</b><span>LumoCad's "Automatic Heights" already reads floor and ceiling edges from section scans for room heights; the missing part is chaining floors and writing the storey elevation.</span></div>
     </div></li>
   </ol>
 </section>
@@ -448,10 +477,9 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
     <tbody>
       <tr><td class="id" data-l="ID">T3-1</td><td data-l="Station">1</td><td class="k" data-l="Agent">Room-shape plausibility check</td><td data-l="Plain words">A vision model looks at the sorted room from above and says "this does not look like a room" even when the overlap score is fine.</td></tr>
       <tr><td class="id" data-l="ID">T3-2</td><td data-l="Station">3</td><td class="k" data-l="Agent">Boundary overlay check</td><td data-l="Plain words">Catch a cupboard taken for a wall, or a corridor merged with a room.</td></tr>
-      <tr><td class="id" data-l="ID">T3-3</td><td data-l="Station">4</td><td class="k" data-l="Agent">Ceiling height and slab split proposals</td><td data-l="Plain words">From the ceiling outlines and the height distribution of the dots.</td></tr>
-      <tr><td class="id" data-l="ID">T3-4</td><td data-l="Station">5</td><td class="k" data-l="Agent">Door/window details from photos</td><td data-l="Plain words">Opening type, glass, side lights, transom, arch, from a crop of the panorama and the per-door phone photos. Which way a door opens stays unreliable from one photo.</td></tr>
+      <tr><td class="id" data-l="ID">T3-3</td><td data-l="Station">4</td><td class="k" data-l="Agent">Ceiling height and slab split proposals</td><td data-l="Plain words">From the ceiling outlines and the height distribution of the dots. Also detect partial-height partitions (bathroom cubicles), which the Revit guide says must not reach the slab above.</td></tr>
+      <tr><td class="id" data-l="ID">T3-4</td><td data-l="Station">5</td><td class="k" data-l="Agent">Door/window details from photos</td><td data-l="Plain words">Opening type, glass, side lights, transom, arch, from a crop of the panorama and the per-door phone photos. Which way a door opens stays unreliable from one photo. The Revit guide lists exactly this configuration check as a production step, so the value is confirmed.</td></tr>
       <tr><td class="id" data-l="ID">T3-5</td><td data-l="Station">5</td><td class="k" data-l="Agent">Door-versus-outline check</td><td data-l="Plain words">Does the placed door overlap the vision model's outline on the photo? Flag only.</td></tr>
-      <tr><td class="id" data-l="ID">T3-6</td><td data-l="Station">2</td><td class="k" data-l="Agent">Floor height and slab thickness</td><td data-l="Plain words">From the section and staircase scans; nothing automatic exists today.</td></tr>
       <tr><td class="id" data-l="ID">T3-7</td><td data-l="Station">7</td><td class="k" data-l="Agent">Flat grouping proposal</td><td data-l="Plain words">Which rooms form one flat, from door connections, names and floor.</td></tr>
       <tr><td class="id" data-l="ID">T3-8</td><td data-l="Station">QC</td><td class="k" data-l="Agent">Corrector-comment triage</td><td data-l="Plain words">Read each QC comment, classify it, link it to a warning, draft a fix or route it.</td></tr>
       <tr><td class="id" data-l="ID">T3-9</td><td data-l="Station">process</td><td class="k" data-l="Agent">Revit PDF page assignment</td><td data-l="Plain words">Decide which floor or section each page of a Revit PDF shows; only matters while Revit stays the delivery path.</td></tr>
@@ -492,7 +520,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
       <li><b>Which user the observation server task writes as</b>, and whether it runs in production at all.</li>
       <li><b>The state of Piotr's floor-sorting prototype</b> (Q3, scored 5), so T2-1 does not duplicate it.</li>
       <li><b>Real time per room and per station</b> for the preprocessing team. LumoPlan holds planned hours, and logged hours for 11 buildings only.</li>
-      <li><b>The Notion Revit step pages</b> are screen recordings; only the list of steps was used.</li>
+      <li><b>The Notion Revit step pages</b> are screen recordings. The written <a href="https://miltonmannarino.github.io/revit-workflow-transcripts/">Revit production workflow guide</a> covers setup, levels, the drone model, walls, doors and windows, roofs, curtain walls and final checks; it does not cover stairs, room tags, slabs, 2D views or sheets.</li>
     </ul>
   </div>
 </section>
