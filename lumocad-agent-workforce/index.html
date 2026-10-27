@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Agent Workforce Audit</title>
-<meta name="description" content="Where an agent workforce can take over work in Lumoview's scan-to-floor-plan pipeline: what is manual today, what already exists, and a ranked candidate list.">
+<meta name="description" content="Plain-language audit of where an AI agent could take over work in Lumoview's scan-to-floor-plan pipeline: how the pipeline works, what a person does today, what already exists, and a ranked list of candidates.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@500&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
@@ -37,19 +37,20 @@
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 17px; line-height: 1.6; padding-inline: 16px; padding-block: 48px 80px; }
-main { max-width: 960px; margin: 0 auto; display: grid; gap: 52px; }
-h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+main { max-width: 940px; margin: 0 auto; display: grid; gap: 52px; }
+h1, h2, h3, h4 { font-family: var(--display); text-wrap: balance; margin: 0; }
 h1 { font-size: clamp(2rem, 5vw, 2.6rem); line-height: 1.15; font-weight: 700; }
 h2 { font-size: 1.6rem; line-height: 1.25; font-weight: 700; }
-h3 { font-size: 1.08rem; line-height: 1.35; font-weight: 600; }
+h3 { font-size: 1.12rem; line-height: 1.35; font-weight: 600; }
+h4 { font-size: 0.98rem; font-weight: 600; }
 p { margin: 0; }
 a { color: var(--accent); }
-code { font-family: var(--mono); font-size: 0.82em; background: var(--soft); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+code { font-family: var(--mono); font-size: 0.8em; background: var(--soft); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; color: var(--muted); }
 .eyebrow { font-family: var(--display); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 header.top { display: grid; gap: 16px; }
-.lede { color: var(--muted); max-width: 70ch; }
-.prose { display: grid; gap: 12px; max-width: 74ch; }
-.prose ul, .prose ol { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+.lede { color: var(--muted); max-width: 72ch; }
+.prose { display: grid; gap: 12px; max-width: 76ch; }
+.prose ul, .prose ol { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; }
 section { display: grid; gap: 20px; scroll-margin-top: 16px; }
 section + section { padding-top: 40px; border-top: 1px solid var(--line); }
 nav.toc { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; }
@@ -66,11 +67,28 @@ nav.toc li { break-inside: avoid; }
 .pill.part { color: var(--part); background: var(--part-soft); }
 .pill.none { color: var(--none); background: var(--none-soft); }
 .pill.block { color: var(--block); background: var(--block-soft); }
+/* stations */
+ol.stations { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+ol.stations > li { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: grid; gap: 8px; }
+ol.stations .st { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+ol.stations .st .n { font-family: var(--mono); color: var(--accent); font-size: 0.85rem; }
+ol.stations p { font-size: 0.97rem; }
+.flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-family: var(--display); font-size: 0.9rem; }
+.flow span { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; }
+.flow span.h { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.flow i { color: var(--muted); font-style: normal; }
+/* definition rows */
+dl.defs { margin: 0; display: grid; gap: 10px; }
+dl.defs > div { display: grid; grid-template-columns: minmax(9rem, 12rem) 1fr; gap: 4px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; font-size: 0.95rem; }
+dl.defs dt { font-weight: 600; font-family: var(--display); }
+dl.defs dd { margin: 0; }
+@media (max-width: 560px) { dl.defs > div { grid-template-columns: 1fr; } }
+/* tables */
 table.t { width: 100%; border-collapse: collapse; font-size: 0.93rem; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 table.t th, table.t td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
 table.t th { font-family: var(--display); font-weight: 600; font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); background: var(--soft); }
 table.t tr:last-child td { border-bottom: 0; }
-table.t td.k { white-space: nowrap; font-weight: 600; }
+table.t td.k { font-weight: 600; }
 table.t td.id { font-family: var(--mono); font-size: 0.82rem; color: var(--accent); white-space: nowrap; }
 .wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; }
 @media (max-width: 700px) {
@@ -78,16 +96,21 @@ table.t td.id { font-family: var(--mono); font-size: 0.82rem; color: var(--accen
   table.t.stack thead { display: none; }
   table.t.stack td { border-bottom: 0; padding: 3px 12px; }
   table.t.stack td::before { content: attr(data-l); display: block; font-family: var(--display); font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
-  table.t.stack td.k, table.t.stack td.id { white-space: normal; }
+  table.t.stack td.id { white-space: normal; }
   table.t.stack tr { padding: 10px 0; border-bottom: 1px solid var(--line); }
 }
+/* station cards (section 5) */
+.station { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: grid; gap: 10px; }
+.station .head { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.station .row { font-size: 0.95rem; display: grid; gap: 2px; }
+.station .row > b { font-family: var(--display); font-weight: 600; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+/* candidate cards */
 ol.cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
-ol.cards > li { display: grid; grid-template-columns: 3.4rem 1fr; gap: 0 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px 16px 12px; }
+ol.cards > li { display: grid; grid-template-columns: 3.4rem 1fr; gap: 0 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px 16px 12px; scroll-margin-top: 16px; }
 .num { font-family: var(--mono); font-weight: 500; font-size: 0.85rem; color: var(--accent); padding-top: 3px; text-align: right; }
 .body { display: grid; gap: 8px; min-width: 0; }
 .title { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
-.body p { font-size: 0.97rem; }
-.row { font-size: 0.92rem; display: grid; gap: 2px; }
+.row { font-size: 0.95rem; display: grid; gap: 2px; }
 .row > b { font-family: var(--display); font-weight: 600; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .row.pre > b { color: var(--warn); }
 @media (max-width: 480px) { ol.cards > li { grid-template-columns: 1fr; padding: 14px; } .num { text-align: left; } }
@@ -96,6 +119,11 @@ ol.cards > li { display: grid; grid-template-columns: 3.4rem 1fr; gap: 0 12px; b
 .card b { font-family: var(--display); font-weight: 600; }
 .card p { font-size: 0.93rem; color: var(--muted); }
 @media (max-width: 720px) { .grid3 { grid-template-columns: 1fr; } }
+/* glossary */
+dl.gloss { margin: 0; display: grid; grid-template-columns: minmax(10rem, max-content) 1fr; gap: 8px 18px; font-size: 0.95rem; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+dl.gloss dt { font-weight: 600; }
+dl.gloss dd { margin: 0; }
+@media (max-width: 560px) { dl.gloss { grid-template-columns: 1fr; gap: 2px; } dl.gloss dd { margin-bottom: 8px; } }
 footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--line); padding-top: 20px; display: grid; gap: 6px; }
 </style>
 </head>
@@ -103,249 +131,444 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
 <main>
 
 <header class="top">
-  <span class="eyebrow">LumoCad · production pipeline · audit of 27 October 2026</span>
-  <h1>Where an agent workforce can take over work between scan and floor plan</h1>
-  <p class="lede">The question: which steps of the pipeline — sorting point clouds into rooms, puzzling rooms into storeys, modelling boundaries, walls, doors and windows, then delivering floor plan and room book — can an agent do, or do most of, so that people only review. This page says what a person does today at every step, what already exists in code, and lists the candidates ranked by how sure I am they work with what we have.</p>
-  <p class="lede">How it was checked: the LumoCad manuals and code, the <code>api</code> and <code>lumoplan</code> repos, the <code>lumoflow-skills</code> agent runtime spec, and Notion (the Revit workflow, the Q3 "Automation-first" and "halve post-processing time" key results, the Q4 End2End workflow). Code paths are given so a developer can verify; everyone else can skip them.</p>
+  <span class="eyebrow">LumoCad · production pipeline · audit of 27 October 2026 · plain-language edition</span>
+  <h1>Where an "agent workforce" could take over work between scan and floor plan</h1>
+  <p class="lede"><b>Who this is for.</b> Anyone at Lumoview. It assumes no knowledge of LumoCad, of software, or of how the production pipeline works. Every technical word is explained the first time it appears and again in the glossary at the end. Short notes in <code>monospace</code> are pointers for developers; everyone else can skip them.</p>
+  <p class="lede"><b>The question Milton asked.</b> Our pipeline turns a scanned building into a floor plan and a room book. Which of its steps could an "agent" (a piece of software that uses artificial intelligence to do a task and hands the result to a person for review) do for us, or mostly do for us, so that people only check instead of doing?</p>
+  <p class="lede"><b>How this was checked.</b> I read the LumoCad manuals and code, the code of the server ("the API") and of LumoPlan, the company's existing specification for running agents, and the Notion pages that describe the Revit workflow and the Q3/Q4 goals. Where a claim comes from code, I say so.</p>
 </header>
 
 <nav class="toc" aria-label="Contents">
   <span class="eyebrow">Contents</span>
   <ol>
+    <li><a href="#primer">Start here: how a building becomes a floor plan</a></li>
+    <li><a href="#words">What "an agent" means here</a></li>
     <li><a href="#tldr">In short</a></li>
     <li><a href="#numbers">The numbers that frame the ask</a></li>
-    <li><a href="#map">Pipeline map: what a person does today</a></li>
+    <li><a href="#map">Station by station: today</a></li>
     <li><a href="#tier1">Tier 1 — build first</a></li>
     <li><a href="#tier2">Tier 2 — one prerequisite each</a></li>
-    <li><a href="#tier3">Tier 3 — judgement and vision pilots</a></li>
-    <li><a href="#skip">Not worth it now</a></li>
+    <li><a href="#tier3">Tier 3 — pilots, and what to skip</a></li>
     <li><a href="#enablers">Shared enabling work</a></li>
     <li><a href="#unknown">What I could not see</a></li>
     <li><a href="#pilots">Suggested first three pilots</a></li>
+    <li><a href="#glossary">Glossary</a></li>
   </ol>
 </nav>
 
+<section id="primer">
+  <h2>1 · Start here: how a building becomes a floor plan</h2>
+  <p class="lede">Think of one building travelling through seven stations. At each station either a person or the software does something to it.</p>
+  <div class="flow"><span>Measure</span><i>→</i><span class="h">1 Sort</span><i>→</i><span class="h">2 Puzzle</span><i>→</i><span class="h">3 Boundaries</span><i>→</i><span>hand-in</span><i>→</i><span class="h">4 Walls</span><i>→</i><span class="h">5 Openings</span><i>→</i><span>3D QC</span><i>→</i><span class="h">6 Floor plan</span><i>→</i><span>2D QC</span><i>→</i><span class="h">7 Room book</span><i>→</i><span>delivery</span></div>
+  <ol class="stations">
+    <li>
+      <div class="st"><span class="n">Station 0</span><h3>Measurement, on site</h3></div>
+      <p>A person walks through the building with the Lumoview scanner and puts it down one or more times in every room. Each time it records three things:</p>
+      <div class="prose"><ul>
+        <li>A <b>point cloud</b>. A laser spins and measures the distance to everything around it thousands of times per second. The result is a cloud of dots; every dot is one spot on a wall, floor, window or piece of furniture, with its position in space. A point cloud is not a drawing. It is raw dots.</li>
+        <li>A <b>panorama</b>: a 360° photo taken from the same spot.</li>
+        <li><b>Motion-sensor data</b> (the "IMU"): how much the scanner was tilted and roughly which way was north.</li>
+      </ul></div>
+      <p>Doors and windows are measured by hand with a measuring tool and typed into the capture app: width, height, and which two rooms the door connects. We call these the <b>capture openings</b>. Everything uploads to the Lumoview server.</p>
+    </li>
+    <li>
+      <div class="st"><span class="n">Station 1</span><h3>Sorting: scans → rooms</h3></div>
+      <p>Each scanner placement is one <b>measurement</b>. One room usually has several measurements, taken from different spots. They do not know where they are relative to each other. "Sorting" means two things: (1) put every measurement into the right room (a measurement in no room is called <b>unsorted</b>); (2) rotate and slide the measurements of one room until their dots overlap and together draw the room's outline.</p>
+      <p>Today the software does step 2 automatically with the <b>room solver</b>: it tries thousands of positions and keeps the one where the dots overlap best. This "how well do the dots overlap" number is called a <b>correlation score</b> (the developers use two of them, NCC and IoU; both just mean "overlap from 0 to 1"). A person starts the solver, looks at every room, and fixes what went wrong with hand tools.</p>
+    </li>
+    <li>
+      <div class="st"><span class="n">Station 2</span><h3>Puzzle: rooms → floor → building</h3></div>
+      <p>After station 1 every room has a shape, but the rooms float independently on the screen, spread out on a grid. A person drags each room into place next to its neighbours, like puzzle pieces, until the floor looks like the real floor. Then the floors are stacked on top of each other at the right heights (the <b>storey elevation</b> is the height of a floor above the ground).</p>
+    </li>
+    <li>
+      <div class="st"><span class="n">Station 3</span><h3>Boundaries: dots → room outline</h3></div>
+      <p>Dots are not a drawing. For each room the software (or a person) draws a clean polygon along the inside face of the walls. This polygon is the room's <b>boundary</b>. From it come the room's area and, later, the walls.</p>
+    </li>
+    <li>
+      <div class="st"><span class="n">Station 4</span><h3>Walls</h3></div>
+      <p>Where two neighbouring room boundaries run parallel with a gap between them, the gap is a wall. The software turns these gaps into wall objects with a thickness. A person then decides each wall's <b>type</b> (for example "24 cm masonry" or "10 cm drywall"); the type is what the client and Revit need.</p>
+    </li>
+    <li>
+      <div class="st"><span class="n">Station 5</span><h3>Doors, windows, stairs</h3></div>
+      <p>On the panoramas a person marks each door and window by clicking its four corners. Such a mark is called an <b>observation</b>. Each observation then has to be matched with the hand-measured capture opening from station 0 (so the door gets its real width and height), and the door has to be placed into the right wall at the right spot. Stairs are placed by hand with a few clicks and typed values.</p>
+    </li>
+    <li>
+      <div class="st"><span class="n">Station 6</span><h3>Floor plan (2D)</h3></div>
+      <p>From the 3D model the software draws the 2D plan: walls, doors with their swing arcs, windows, room names and areas, dimension lines, section drawings (vertical cuts through the building), and sheets with a title block. It exports a <b>PDF</b> (to look at) and a <b>DXF</b> (a CAD file that architects can edit). Today many clients still receive plans produced in <b>Revit</b> (Autodesk's modelling program, which the architects at Lumoview use), not from LumoCad.</p>
+    </li>
+    <li>
+      <div class="st"><span class="n">Station 7</span><h3>Room book (Raumbuch)</h3></div>
+      <p>A table of all rooms: name, number, areas, and the properties typed into the checklist (flooring, wall finish, and so on). Areas come in several legal definitions: <b>DIN 277</b> (the standard way to measure a room's floor area), <b>WoFlV</b> (the German living-area rule, which for example counts a balcony at 50 % and a cellar at 0 %), and <b>BGF</b> (gross floor area of the whole floor including walls). Delivered as Excel and PDF.</p>
+    </li>
+    <li>
+      <div class="st"><span class="n">Around it</span><h3>Quality control and the process</h3></div>
+      <p>After stations 1–5 (3D) and after station 6 (2D) a <b>checker</b> goes through a checklist and a <b>corrector</b> fixes what was found; this can repeat several rounds. <b>Hand-in</b> is the moment a team declares a building finished at its station and passes it on. <b>LumoPlan</b> is the planning tool that shows which station each building is at and who is working on it. The <b>preprocessing</b> team (an external team, "Packing Sports") does stations 1, 3 and the marks of station 5; the <b>postprocessing</b> modellers do stations 4–7.</p>
+    </li>
+  </ol>
+</section>
+
+<section id="words">
+  <h2>2 · What "an agent" means here, and the words used in the ranking</h2>
+  <dl class="defs">
+    <div><dt>Automation / batch job</dt><dd>A fixed program that does the same thing every time, for many buildings, without a person. No artificial intelligence needed. Example: "run the room solver on every room that arrived tonight".</dd></div>
+    <div><dt>LLM agent</dt><dd>A program built around a large language model (the technology behind ChatGPT and Claude). It can read messy information, make judgement calls, write text, and use a limited set of tools we give it. Example: "read all the warnings and write a to-do list for the modeller".</dd></div>
+    <div><dt>Vision model</dt><dd>An AI that recognises things in images. Example: "is this a door or a window?"</dd></div>
+    <div><dt>Headless</dt><dd>Running software without a screen. Today most of LumoCad's calculations can only run inside the browser window a person has open. "Headless" means the same calculation runs on a server, by itself.</dd></div>
+    <div><dt>Human in the loop</dt><dd>The agent proposes, a person approves. Every candidate below is designed this way unless it says otherwise.</dd></div>
+    <div><dt>Confidence score</dt><dd>A number the software attaches to its own result saying how sure it is. Used to decide what can be accepted automatically and what a person must look at.</dd></div>
+    <div><dt>Triage</dt><dd>Sorting cases by how much they need a person, so people spend their time on the hard ones.</dd></div>
+  </dl>
+  <p class="lede">Each candidate carries a <b>kind</b> (<span class="pill code">batch</span> <span class="pill part">LLM</span> <span class="pill warn">vision</span>) and a <b>confidence</b>: how sure I am it works with what we already have (high, medium, low). Tier 1 is high, Tier 2 is medium-to-high with one thing to do first, Tier 3 is a pilot.</p>
+</section>
+
 <section id="tldr">
-  <h2>In short</h2>
+  <h2>3 · In short</h2>
   <div class="prose">
     <ul>
-      <li><b>The solvers mostly exist.</b> Room solver, boundary fit v2, boundary finetuning, walls from boundaries, plan extraction with 52 QA warning codes, room book schedule. All of them are pure TypeScript running on the browser main thread or in a web worker. <b>Nothing runs them headless</b>, so every run waits for a person to click.</li>
-      <li><b>Still fully manual:</b> the room puzzle (stage 2), storey stacking, the whole opening chain (draw marks → merge → link → place on wall → type → features), wall-type classification, dimensions (by decision), room naming and numbering, flat grouping, QC checklist ticking, catalogue mapping, stage completion in LumoPlan.</li>
-      <li><b>The leverage is not more solvers.</b> It is (a) running the existing solvers headless when data lands, (b) agents that triage the diagnostics those solvers already emit, (c) language and vision agents on the judgement steps.</li>
-      <li><b>Queue time is about half of every phase.</b> A building sits a median of 8 workdays in <code>pending3DPostprocessing</code>. Process agents (readiness gates, triage, routing) shorten delivery as much as modelling agents shorten effort.</li>
-      <li><b>A runtime already exists.</b> <code>lumoflow-skills/lumoagent-job-flow</code> defines an agentic serverless job (MCP tools, mandatory artifact state machine, Bruno trigger) with two precedents, <code>floor-plan-audit</code> and <code>qa-agent</code>. The API supports organisation API keys, which keep agent writes distinguishable from human writes.</li>
+      <li><b>The calculations mostly exist.</b> Room solver, boundary estimation, boundary clean-up, wall generation, floor-plan drawing with 52 built-in checks, room-book table. All of them are ordinary code that needs no screen in principle. But <b>nothing runs them without a person clicking in the browser.</b></li>
+      <li><b>Still fully by hand:</b> the room puzzle (station 2), stacking floors, the whole door/window chain of station 5 (mark → merge → match → place → type → details), deciding wall types, dimension lines (by decision), room names and numbers, grouping rooms into flats, ticking QC checklists, matching room-book words to the catalogue, and marking stages done in LumoPlan.</li>
+      <li><b>The biggest wins are not new calculations.</b> They are: (a) running the existing calculations automatically as soon as data arrives, (b) agents that read the diagnostics those calculations already produce and turn them into short to-do lists, (c) language and vision agents on the judgement steps.</li>
+      <li><b>Waiting is half the time.</b> For every phase, a building waits about as many days as it is worked on. A building sits a median of 8 workdays just waiting to be picked up for modelling. Agents that prepare, check and route buildings shorten delivery as much as agents that model.</li>
+      <li><b>We already have a way to run agents.</b> The company's <code>lumoflow-skills</code> repository contains a specification ("lumoagent job flow") for running an agent as a small cloud job with a fixed set of tools and a required output. Two agents already exist on it (<code>floor-plan-audit</code>, <code>qa-agent</code>). The server also supports a special kind of login for organisations, which lets agent changes be told apart from human changes.</li>
     </ul>
   </div>
 </section>
 
 <section id="numbers">
-  <h2>The numbers that frame the ask</h2>
+  <h2>4 · The numbers that frame the ask</h2>
   <div class="wrap"><table class="t stack">
-    <thead><tr><th>Signal</th><th>Value</th><th>Source</th></tr></thead>
+    <thead><tr><th>What it measures</th><th>Value</th><th>What it means</th><th>Source</th></tr></thead>
     <tbody>
-      <tr><td class="k" data-l="Signal">Q3 goal</td><td data-l="Value">"Prepare halving the post processing time until 31.12.2026" (Hendrik, scored 6/10)</td><td data-l="Source">Notion</td></tr>
-      <tr><td class="k" data-l="Signal">Ambition</td><td data-l="Value">Revenue €70k/month → €200k "via AI/automation, not headcount"</td><td data-l="Source">LumoPlan min-req doc</td></tr>
-      <tr><td class="k" data-l="Signal">Throughput target</td><td data-l="Value">1,500 m²/week = 37.5 m²/h</td><td data-l="Source">same</td></tr>
-      <tr><td class="k" data-l="Signal">Planned hours per building (median)</td><td data-l="Value">preprocessing 3 h · 3D post 12 h · 2D post 8 h · 3D QC 8 h · 3D corrections 8 h</td><td data-l="Source">prod baseline 2026-08-11</td></tr>
-      <tr><td class="k" data-l="Signal">Actual vs planned</td><td data-l="Value">postprocessing median 4.3 h vs 16 h planned (11 buildings)</td><td data-l="Source">same</td></tr>
-      <tr><td class="k" data-l="Signal">Working vs queued workdays</td><td data-l="Value">measurement 7/9 · preprocessing 4/6 · postprocessing 12/13</td><td data-l="Source">same</td></tr>
-      <tr><td class="k" data-l="Signal">Post-delivery dwell</td><td data-l="Value">57 workdays median</td><td data-l="Source">same</td></tr>
-      <tr><td class="k" data-l="Signal">Production volume</td><td data-l="Value">2,113 spaces · 9,080 measurements · 22,691 observations · 906 boundary profiles</td><td data-l="Source">LumoPlan preprocessing refactor</td></tr>
+      <tr><td class="k" data-l="Measures">Company goal for Q3</td><td data-l="Value">"Prepare halving the post processing time until 31.12.2026" (Hendrik, scored 6 of 10)</td><td data-l="Meaning">The company wants modelling to take half as long by the end of the year.</td><td data-l="Source">Notion</td></tr>
+      <tr><td class="k" data-l="Measures">Ambition</td><td data-l="Value">Revenue €70k/month today → €200k "via AI/automation, not headcount"</td><td data-l="Meaning">Growth should come from automation, not from hiring.</td><td data-l="Source">LumoPlan min-req doc</td></tr>
+      <tr><td class="k" data-l="Measures">Throughput target</td><td data-l="Value">1,500 m² per week = 37.5 m² per hour</td><td data-l="Meaning">How much building area the team should finish per week.</td><td data-l="Source">same</td></tr>
+      <tr><td class="k" data-l="Measures">Planned hours per building (median)</td><td data-l="Value">preprocessing 3 h · 3D modelling 12 h · 2D plan 8 h · 3D QC 8 h · 3D corrections 8 h</td><td data-l="Meaning">What the planners expect each station to take on a typical building.</td><td data-l="Source">prod baseline 2026-08-11</td></tr>
+      <tr><td class="k" data-l="Measures">Planned vs actually logged</td><td data-l="Value">modelling: 4.3 h logged vs 16 h planned (11 buildings)</td><td data-l="Meaning">Either the plan is too generous or hours are under-logged; both make planning unreliable.</td><td data-l="Source">same</td></tr>
+      <tr><td class="k" data-l="Measures">Working days vs waiting days</td><td data-l="Value">measurement 7 / 9 · preprocessing 4 / 6 · modelling 12 / 13</td><td data-l="Meaning">For each phase: days someone was working on it / days it waited for someone. Waiting ≈ working.</td><td data-l="Source">same</td></tr>
+      <tr><td class="k" data-l="Measures">Wait after delivery</td><td data-l="Value">57 workdays median until the next step</td><td data-l="Meaning">Buildings linger after delivery (invoicing, revisions).</td><td data-l="Source">same</td></tr>
+      <tr><td class="k" data-l="Measures">Scale in production</td><td data-l="Value">2,113 rooms · 9,080 measurements · 22,691 observations · 906 room boundaries</td><td data-l="Meaning">The size of the data an agent would work on.</td><td data-l="Source">LumoPlan preprocessing refactor</td></tr>
     </tbody>
   </table></div>
 </section>
 
 <section id="map">
-  <h2>Pipeline map: what a person does today</h2>
-  <p class="lede">State: <span class="pill ok">automatic</span> the machine does it and a person checks · <span class="pill part">assisted</span> the machine proposes, a person chooses and tunes · <span class="pill block">manual</span> a person does it.</p>
-  <div class="wrap"><table class="t stack">
-    <thead><tr><th>#</th><th>Stage</th><th>A person today</th><th>State</th><th>Where it runs · what matters</th></tr></thead>
-    <tbody>
-      <tr><td class="id" data-l="#">1</td><td class="k" data-l="Stage">Sorting<br><small>scans → room</small></td><td data-l="A person today">Runs the room solver or "Auto-sort all rooms"; classifies Unknown captures (blocking at hand-in); discards with one of 6 categories; fixes with magnet, fine-tune, align-to-target.</td><td data-l="State"><span class="pill ok">automatic</span> + review</td><td data-l="Where it runs">Main thread for one room (blocks the UI), web worker for a floor. The engine <code>runStoreyAutosortRoom</code> is pure and portable. No ground truth; optimiser unseeded; <code>converged</code> hard-coded true.</td></tr>
-      <tr><td class="id" data-l="#">2</td><td class="k" data-l="Stage">Puzzle<br><small>rooms → storey → stack</small></td><td data-l="A person today">Drags whole rooms out of the 10 m display grid into the floor shape; "Align selected spaces" and "Room edge alignment" only polish rooms already within ~0.5 m; sets each storey elevation by moving the reference slab in the Sections view.</td><td data-l="State"><span class="pill block">manual</span></td><td data-l="Where it runs">Floor autosort "does not solve the physical relative layout of all rooms on a floor". The captured door-to-room graph (<code>doorLeadsTo</code>, <code>spaceConnections</code>) is used only by sidebars, never by a solver. Piotr's floor-sorting prototype scored 5/10 in the Q3 key result.</td></tr>
-      <tr><td class="id" data-l="#">3</td><td class="k" data-l="Stage">Boundaries</td><td data-l="A person today">"Estimate room boundaries v2"; must first hand-draw reference planes for oblique walls, else those walls are dropped; fine-tune with directions and six sliders; wall-thickness labels fixed one pair at a time; "Fit boundaries to walls".</td><td data-l="State"><span class="pill part">assisted</span></td><td data-l="Where it runs">Main thread, pure. A confidence per room exists (<code>(1 − unsupported) × (0.65 + 0.35 × inclusion)</code>) but the panel shows only fit/fallback/failed counts.</td></tr>
-      <tr><td class="id" data-l="#">4</td><td class="k" data-l="Stage">Walls</td><td data-l="A person today">"Create boundary walls" (destructive replace with confirmation); Wall Type Organizer is discovery-only with no global apply; "Match walls to slabs".</td><td data-l="State"><span class="pill ok">automatic</span> geometry, human gate</td><td data-l="Where it runs">Generated walls carry no <code>wallTypeId</code>. Wall type is the one pure-judgement step left here.</td></tr>
-      <tr><td class="id" data-l="#">5</td><td class="k" data-l="Stage">Openings<br><small>doors, windows, stairs</small></td><td data-l="A person today">Clicks 4 corners per door/window in every panorama where it is visible; merges drafts; links each to its capture row in a modal; clicks the wall to place it (position = where they clicked); assigns types; sets features. Stairs: placed by 2–3 clicks with typed parameters.</td><td data-l="State"><span class="pill block">manual</span> chain</td><td data-l="Where it runs">Every panorama already has AI masks (door, window, floor, ceiling, radiator, each with a score) that LumoCad only displays. The API task <code>PROCESS_OBSERVATION</code> turns them into marks but is manual-trigger and its output counts as "automation-only" in LumoPlan progress. "Connect with Slots" in the doors/windows plan is NOT STARTED.</td></tr>
-      <tr><td class="id" data-l="#">6</td><td class="k" data-l="Stage">Floor plan</td><td data-l="A person today">Opens the Modelling QC panel (off by default), reads up to 52 warning codes, fixes the model; seeds room names; numbers rooms from a picked root; places every chain dimension by hand (Rio's decision: keep manual); builds sheets and title block; exports DXF/PDF.</td><td data-l="State"><span class="pill part">assisted</span></td><td data-l="Where it runs"><code>prepareFloorPlanDocument</code> is pure and tests already drive it with fake actors, but there is no loader to run it outside the browser. Customer delivery is still PDF + DWG from Revit; LumoCad DXF approval pending.</td></tr>
-      <tr><td class="id" data-l="#">7</td><td class="k" data-l="Stage">Room book</td><td data-l="A person today">Groups rooms into flats; fixes names; fills measurement checklists; exports Excel/PDF or the master template; unmapped catalogue values only reach <code>console.warn</code>.</td><td data-l="State"><span class="pill part">assisted</span></td><td data-l="Where it runs">Two room books exist and compute areas differently (roof-band WoFlV and stair deduction only in the LumoCad view). The platform export is API-only and already node-able.</td></tr>
-      <tr><td class="id" data-l="#">QC</td><td class="k" data-l="Stage">Checker / Corrector</td><td data-l="A person today">Ticks the 2D templates (General 9, Level 9, Elevation 7, Section 14) and 3D templates (9 × L1/L2); ticks the hand-in checklist (5 manual + 4 automatic items).</td><td data-l="State"><span class="pill block">manual</span></td><td data-l="Where it runs">Warning codes are not linked to checklist items. Hand-in ticks live in localStorage only. The QC hand-in is not live (<code>LUMOCAD_HAND_IN_LIVE_FROM</code> is null).</td></tr>
-      <tr><td class="id" data-l="#">Ops</td><td class="k" data-l="Stage">Coordinators</td><td data-l="A person today">Set up QC bundles, mark stages done in LumoPlan, nag, share and unshare buildings, reconcile Notion.</td><td data-l="State"><span class="pill block">manual</span></td><td data-l="Where it runs">The API has no outbound events; LumoPlan has no service-to-service auth; <code>PREPROCESSING_TEAM_AUTOMATION_ENABLED</code> is false.</td></tr>
-    </tbody>
-  </table></div>
+  <h2>5 · Station by station: what a person does today, what the computer already does</h2>
+  <p class="lede"><b>State</b> means: <span class="pill ok">automatic</span> the computer does it and a person checks · <span class="pill part">assisted</span> the computer proposes, a person chooses and tunes · <span class="pill block">manual</span> a person does it.</p>
+
+  <div class="station">
+    <div class="head"><h3>Station 1 · Sorting</h3><span class="pill ok">automatic</span><span class="pill none">with review</span></div>
+    <div class="row"><b>A person today</b><span>Starts the room solver for a room, or "auto-sort all rooms" for a floor. Assigns a type to every measurement the software could not classify (called <b>Unknown</b>; the building cannot be handed in while any remain). Throws bad scans away, choosing one of six reasons. Fixes rooms with hand tools: a "magnet" that snaps a scan into place, a fine-tune button, an align-to-target command.</span></div>
+    <div class="row"><b>What exists in code</b><span>The solver is self-contained and already runs in a background thread for whole floors, so it could run on a server. It reports several quality numbers per room. There is no "correct answer" data set to measure it against, and its random search is not repeatable (two runs can differ). <code>runStoreyAutosortRoom</code></span></div>
+  </div>
+  <div class="station">
+    <div class="head"><h3>Station 2 · Puzzle</h3><span class="pill block">manual</span></div>
+    <div class="row"><b>A person today</b><span>Drags every room out of the display grid into the floor shape. Two helper tools exist, but they only polish rooms that are already within about half a metre of the right place. The person also sets each floor's height by moving a reference slab in the Sections view.</span></div>
+    <div class="row"><b>What exists in code</b><span>The floor auto-sort explicitly "does not solve the physical relative layout of all rooms on a floor". The capture app records which door leads to which room; this <b>door graph</b> is shown in side panels but no calculation uses it. Piotr's "floor sorting prototype" in the Q3 key result scored 5 of 10 (not complete). <code>doorLeadsTo</code>, <code>spaceConnections</code></span></div>
+  </div>
+  <div class="station">
+    <div class="head"><h3>Station 3 · Boundaries</h3><span class="pill part">assisted</span></div>
+    <div class="row"><b>A person today</b><span>Clicks "Estimate room boundaries"; must first draw helper lines (<b>reference planes</b>) along any slanted wall, otherwise those walls silently drop out; runs "fine-tune" with a choice of directions and six sliders; fixes wall-thickness labels one pair at a time; runs "fit boundaries to walls".</span></div>
+    <div class="row"><b>What exists in code</b><span>All of it is ordinary code on the browser's main thread. The estimator computes a confidence per room, but the panel shows only counts (how many fitted, fell back, failed).</span></div>
+  </div>
+  <div class="station">
+    <div class="head"><h3>Station 4 · Walls</h3><span class="pill ok">automatic geometry</span><span class="pill block">type manual</span></div>
+    <div class="row"><b>A person today</b><span>Clicks "Create boundary walls" (this deletes the floor's existing walls and recreates them, after a confirmation); opens the Wall Type Organizer, which groups walls by thickness and suggests but applies nothing; runs "Match walls to slabs".</span></div>
+    <div class="row"><b>What exists in code</b><span>Generated walls carry no type at all. Deciding the type is the one pure judgement step left here.</span></div>
+  </div>
+  <div class="station">
+    <div class="head"><h3>Station 5 · Doors, windows, stairs</h3><span class="pill block">manual chain</span></div>
+    <div class="row"><b>A person today</b><span>Clicks four corners per door/window in every panorama where it is visible; merges duplicate marks of the same door; links each mark to its capture opening in a pop-up; clicks on the wall to place the door (the position is wherever they clicked); assigns a type; sets details such as side lights or glass panels. Stairs: two or three clicks plus typed values.</span></div>
+    <div class="row"><b>What exists in code</b><span>When a panorama is uploaded, a vision model on the server already produces <b>masks</b> (outlines of doors, windows, floor, ceiling and radiators, each with a confidence). LumoCad only draws these as a coloured overlay. A server task can turn the masks into observations, but a person has to start it by hand, and LumoPlan's progress tracking counts its output as "not done by a human". The planned feature "spawn a door from its observation" is marked NOT STARTED. <code>objectTags</code>, <code>PROCESS_OBSERVATION</code></span></div>
+  </div>
+  <div class="station">
+    <div class="head"><h3>Station 6 · Floor plan</h3><span class="pill part">assisted</span></div>
+    <div class="row"><b>A person today</b><span>Opens the "Modelling QC" panel (off by default), reads up to 52 kinds of warnings (for example "two walls do not meet", "room has no name", "section line not shown on plan"), fixes the model; clicks "seed room names"; picks a starting room and numbers rooms from it; draws every dimension line by hand (Rio decided to keep this manual); builds the sheets and fills the title block; exports PDF and DXF.</span></div>
+    <div class="row"><b>What exists in code</b><span>The plan is produced by one self-contained function and the automated tests already run it without a browser. What is missing is a way to load a building's model outside the browser. Customer delivery is still PDF + DWG from Revit; approval of the LumoCad DXF is pending. <code>prepareFloorPlanDocument</code></span></div>
+  </div>
+  <div class="station">
+    <div class="head"><h3>Station 7 · Room book</h3><span class="pill part">assisted</span></div>
+    <div class="row"><b>A person today</b><span>Groups rooms into flats; fixes names; fills the measurement checklists; exports Excel/PDF or the master template. If a checklist value does not match the fixed catalogue words, it is silently dropped (only a developer console message).</span></div>
+    <div class="row"><b>What exists in code</b><span>There are two room books (one inside LumoCad, one in the platform's Excel template) and they compute areas differently: only the LumoCad one subtracts for sloped roofs and stairs. The same room can show different numbers in the two.</span></div>
+  </div>
+  <div class="station">
+    <div class="head"><h3>Quality control</h3><span class="pill block">manual</span></div>
+    <div class="row"><b>A person today</b><span>Ticks the 2D checklists (General 9 items, per floor 9, per elevation 7, per section 14) and the 3D checklists (9 lists × 2 levels); ticks the 5 manual hand-in checkboxes (4 more are automatic).</span></div>
+    <div class="row"><b>What exists in code</b><span>The 52 plan warnings are not connected to the checklist items. The hand-in checkboxes are stored only in that person's browser. The QC hand-in feature is built but not switched on.</span></div>
+  </div>
+  <div class="station">
+    <div class="head"><h3>Process (coordinators)</h3><span class="pill block">manual</span></div>
+    <div class="row"><b>A person today</b><span>Sets up QC task bundles, marks stages done in LumoPlan, reminds people, shares and unshares buildings, keeps Notion in sync.</span></div>
+    <div class="row"><b>What exists in code</b><span>The server does not announce changes (no event feed); LumoPlan has no way for a program to log in; the automatic sharing with the preprocessing team is switched off.</span></div>
+  </div>
+
   <div class="callout">
     <b>The Revit workflow, for comparison</b>
-    <p>Notion's "Revit Workflow From Start To End" (Axel, Timothy, Elyes) has four phases: premodelling (template, load clouds, storey heights from stair clouds, align floors with reference planes, link models), 3D post (external walls, stairs, stairwell walls, roof, internal walls, curtain walls, windows, doors, room tags, in-place families, slabs), 2D post (view templates, views) and sheets. Every step page is a screen recording. LumoCad already has a tool for every step except in-place families and curtain walls, so "everything in LumoCad" is a coverage question for those two and a speed question for the rest.</p>
+    <p>The Notion page "Revit Workflow From Start To End" (Axel, Timothy, Elyes) has four phases: premodelling (template, load clouds, floor heights from stair clouds, align floors, link models) → 3D (external walls, stairs, stairwell walls, roof, internal walls, curtain walls, windows, doors, room tags, in-place families, slabs) → 2D (view templates, views) → sheets. Every step page is a screen recording. LumoCad already has a tool for every step except "in-place families" (custom one-off shapes) and "curtain walls" (glass façades). So "everything in LumoCad" is a coverage question for those two and a speed question for the rest.</p>
   </div>
 </section>
 
 <section id="tier1">
-  <h2>Tier 1 — build first</h2>
-  <p class="lede">High confidence: the hooks exist in code today and the leverage is large. Kind: <span class="pill code">batch</span> deterministic job, no language model needed · <span class="pill part">LLM</span> language or judgement over structured data · <span class="pill warn">vision</span> image model.</p>
+  <h2>6 · Tier 1 — build first</h2>
+  <p class="lede">High confidence: the pieces exist in code today and the gain is large. Each card says what the problem is today, what the agent would do, why it is realistic, and what has to happen first.</p>
   <ol class="cards">
-    <li><span class="num">T1-1</span><div class="body">
-      <div class="title"><h3>Readiness &amp; QA report agent</h3><span class="pill none">stage 6 + QC</span><span class="pill code">batch</span><span class="pill part">LLM</span></div>
-      <p>Nightly or before hand-in, run the plan extraction headless per building, emit the warnings report, map each code to the QC-2D checklist item it proves or disproves (wall join gaps ↔ "wall joins clean", unreferenced sections ↔ "section cuts referenced", windows outside the cut plane ↔ "windows cut", room codes ↔ "room labels", no manual dimensions ↔ "dimensions"), route each code to an owner and draft the hand-in note.</p>
-      <div class="row"><b>Why it works now</b><span>Extraction is pure; 52 codes are already defined in <code>constants/floorplanWarnings.ts</code>; tests already run the whole pipeline with fake actors.</span></div>
-      <div class="row pre"><b>Prerequisite</b><span>P1, the headless model loader.</span></div>
+    <li id="t1-1"><span class="num">T1-1</span><div class="body">
+      <div class="title"><h3>Readiness &amp; QA report agent</h3><span class="pill none">stations 6 + QC</span><span class="pill code">batch</span><span class="pill part">LLM</span></div>
+      <div class="row"><b>The problem today</b><span>The software can already check a plan for 52 kinds of problems, but only when a person opens a panel in the browser and reads the list. QC checkers then tick a separate checklist by hand, without those results.</span></div>
+      <div class="row"><b>What the agent does</b><span>Every night and before each hand-in, run the check for every building on a server. Turn the list into a readable report. For every checklist item that the check can prove ("walls meet cleanly", "all sections are shown on the plan", "windows are at the cut height", "every room is named", "there are dimension lines"), mark it proven or not. Send each problem to the right person. Draft the hand-in note.</span></div>
+      <div class="row"><b>Why it is realistic</b><span>The check is plain code; the automated tests already run it without a browser. The 52 warning codes are defined in one file. <code>constants/floorplanWarnings.ts</code>, <code>prepareFloorPlanDocument</code></span></div>
+      <div class="row pre"><b>What must happen first</b><span>P1, a way to load a building's model on a server (see section 9).</span></div>
     </div></li>
-    <li><span class="num">T1-2</span><div class="body">
-      <div class="title"><h3>Openings proposer: masks → draft observations</h3><span class="pill none">stage 5</span><span class="pill code">batch</span></div>
-      <p>Run the mask-to-observation conversion on every new panorama instead of by manual task, write the results as draft observations under an agent identity, and let the existing cleanup, merge and link screens be the human review step.</p>
-      <div class="row"><b>Why it works now</b><span>Masks with scores exist for every panorama; the <code>PROCESS_OBSERVATION</code> worker exists; the review UI exists.</span></div>
-      <div class="row pre"><b>Prerequisite</b><span>P2 agent identity; confirm with Piotr which identity the worker writes with today.</span></div>
+    <li id="t1-2"><span class="num">T1-2</span><div class="body">
+      <div class="title"><h3>Openings proposer: photo outlines → draft marks</h3><span class="pill none">station 5</span><span class="pill code">batch</span></div>
+      <div class="row"><b>The problem today</b><span>For every door and window a person opens each panorama and clicks four corners. Yet a vision model already outlines doors and windows on every panorama when it is uploaded. LumoCad only shows those outlines; a server task can turn them into marks but someone has to start it by hand, and its output is counted as "not done by a human".</span></div>
+      <div class="row"><b>What the agent does</b><span>Run that conversion automatically on every new panorama; save the results as drafts stamped as agent work; let the person's existing review screens (clean up, merge, link) be the check.</span></div>
+      <div class="row"><b>Why it is realistic</b><span>All the pieces exist. The work is wiring and identity. <code>objectTags</code>, <code>PROCESS_OBSERVATION</code></span></div>
+      <div class="row pre"><b>What must happen first</b><span>P2 (an identity for the agent). Confirm with Piotr which user the server task writes as today.</span></div>
     </div></li>
-    <li><span class="num">T1-3</span><div class="body">
-      <div class="title"><h3>Observation ↔ capture-opening matcher</h3><span class="pill none">stage 5</span><span class="pill code">batch</span></div>
-      <p>Merged observations have a position but no reliable dimensions; detached capture openings have dimensions and the two rooms but no position. Solve the assignment over shared rooms, width difference and door-vs-window, write the link, let a person confirm.</p>
-      <div class="row"><b>Why it works now</b><span>Both data sets exist; today a person picks the match per door in a modal.</span></div>
-      <div class="row pre"><b>Prerequisite</b><span>T1-2.</span></div>
+    <li id="t1-3"><span class="num">T1-3</span><div class="body">
+      <div class="title"><h3>Match marks to measured openings</h3><span class="pill none">station 5</span><span class="pill code">batch</span></div>
+      <div class="row"><b>The problem today</b><span>Each door exists twice: as a mark on the photo (knows where the door is, not how big) and as a hand-measured entry from the capture app (knows width, height and the two rooms, not where in the wall). A person links the two one by one in a pop-up.</span></div>
+      <div class="row"><b>What the agent does</b><span>Match them automatically using the rooms they share, the width, and door-versus-window; the person only confirms.</span></div>
+      <div class="row"><b>Why it is realistic</b><span>Both lists exist in the database; this is a matching problem with few candidates per door.</span></div>
+      <div class="row pre"><b>What must happen first</b><span>T1-2.</span></div>
     </div></li>
-    <li><span class="num">T1-4</span><div class="body">
-      <div class="title"><h3>Autosort on ingest + triage</h3><span class="pill none">stage 1</span><span class="pill code">batch</span><span class="pill part">LLM</span></div>
-      <p>Run the room solver in Node per room when scans land, with a retry ladder (default profile → high-recall profile → skip-IMU → creation-order → 3D reconstruction). Rank rooms by the metrics the solver already reports (tuning score, held-out NCC and IoU, connected fraction) and send people only to the failing rooms with the diagnostic reason.</p>
-      <div class="row"><b>Why it works now</b><span>The engine is pure and already runs in a worker; the summary JSON exists; reconstruction is already queued through <code>POST /task</code>.</span></div>
-      <div class="row pre"><b>Prerequisite</b><span>P3 pose write-back. Today the only external path is uploading a v4 sorting backup and a person clicking Restore.</span></div>
+    <li id="t1-4"><span class="num">T1-4</span><div class="body">
+      <div class="title"><h3>Sorting on arrival + triage</h3><span class="pill none">station 1</span><span class="pill code">batch</span><span class="pill part">LLM</span></div>
+      <div class="row"><b>The problem today</b><span>The room solver runs only when a person clicks it, in the browser, and for a single room it freezes the screen while it runs. The person then checks every room.</span></div>
+      <div class="row"><b>What the agent does</b><span>Run the solver on the server as soon as a room's scans arrive. If the result is weak, try again with other settings (a "high-recall" profile, ignoring the compass, aligning in the order scans were taken, or the heavier 3D reconstruction). Score every room with the quality numbers the solver already reports. Show people only the weak rooms, with the reason.</span></div>
+      <div class="row"><b>Why it is realistic</b><span>The solver is self-contained and already runs in a background thread; its summary file exists; the 3D reconstruction can already be requested from the server. <code>runStoreyAutosortRoom</code>, <code>POST /task</code></span></div>
+      <div class="row pre"><b>What must happen first</b><span>P3, a way to save the result back. Today the only route from outside the browser is uploading a backup file that a person then restores.</span></div>
     </div></li>
-    <li><span class="num">T1-5</span><div class="body">
-      <div class="title"><h3>Benchmark from hand-in backups</h3><span class="pill none">stage 1</span><span class="pill code">batch</span></div>
-      <p>Every hand-in uploads a human-verified v4 layout. That is a free labelled dataset: compute absolute pose error per room, run offline hyper-parameter optimisation, and derive auto-accept thresholds that T1-4 can defend.</p>
-      <div class="row"><b>Why it works now</b><span>The docs ask for exactly this ("absolute pose error should become the main benchmark") and no dataset is checked in.</span></div>
+    <li id="t1-5"><span class="num">T1-5</span><div class="body">
+      <div class="title"><h3>Benchmark from hand-in backups</h3><span class="pill none">station 1</span><span class="pill code">batch</span></div>
+      <div class="row"><b>The problem today</b><span>Nobody can say how good the solver is, because there is no set of "correct" rooms to measure it against. But every hand-in automatically uploads a snapshot of the final, human-approved room layout. That is a correct-answer set, for free, growing every week.</span></div>
+      <div class="row"><b>What the job does</b><span>Compare solver output with those snapshots, compute the error per room, tune the solver's settings, and derive the thresholds that say "this room is good enough to accept without a person" for T1-4.</span></div>
+      <div class="row"><b>Why it is realistic</b><span>The developers' own notes ask for exactly this; no data set is checked in yet.</span></div>
     </div></li>
-    <li><span class="num">T1-6</span><div class="body">
-      <div class="title"><h3>Reference-plane proposer</h3><span class="pill none">stage 3</span><span class="pill code">batch</span></div>
-      <p>Detect oblique wall families from the fit-line angle histogram and propose reference planes before the boundary fit runs. Today a missing plane silently drops those walls and the person has to notice.</p>
-      <div class="row"><b>Why it works now</b><span><code>generateBuildingMainGuidelines()</code> already clusters directions; chain it.</span></div>
+    <li id="t1-6"><span class="num">T1-6</span><div class="body">
+      <div class="title"><h3>Helper lines for slanted walls</h3><span class="pill none">station 3</span><span class="pill code">batch</span></div>
+      <div class="row"><b>The problem today</b><span>Boundary estimation assumes walls meet at right angles. For slanted walls a person must first draw helper lines along them; if forgotten, the slanted walls silently disappear from the boundary.</span></div>
+      <div class="row"><b>What the agent does</b><span>Find the slanted wall directions from the scan and propose the helper lines before the estimation runs.</span></div>
+      <div class="row"><b>Why it is realistic</b><span>A function that clusters wall directions already exists. <code>generateBuildingMainGuidelines()</code></span></div>
     </div></li>
-    <li><span class="num">T1-7</span><div class="body">
-      <div class="title"><h3>Issue-worklist agent</h3><span class="pill none">stages 3 + 4</span><span class="pill part">LLM</span></div>
-      <p>Consume the typed diagnostics the tools already produce (fit reasons, reconciliation issue codes, rounding and alignment skips, wall residual JSON, advisory near-collinear and non-parallel markers) and emit fix proposals that call existing edge actions (Align, Match angle, Make parallel). Include a batch "match all red and orange thickness pairs to the captured thickness" as one undo step.</p>
-      <div class="row"><b>Why it works now</b><span>Every diagnostic is typed and sits in a store; the per-pair solver exists, only orchestration is missing.</span></div>
+    <li id="t1-7"><span class="num">T1-7</span><div class="body">
+      <div class="title"><h3>Issue to-do list agent</h3><span class="pill none">stations 3 + 4</span><span class="pill part">LLM</span></div>
+      <div class="row"><b>The problem today</b><span>The boundary and wall tools already compute many diagnostics: why a fit failed, edges that nearly line up but do not, wall pairs whose thickness disagrees with the measured door depth (shown as red and orange labels), reasons a correction was skipped. The person has to find and fix them one at a time.</span></div>
+      <div class="row"><b>What the agent does</b><span>Read all diagnostics, write one to-do list with a proposed fix per item using the tools' own commands (align, match angle, make parallel), and offer "fix all red and orange thickness pairs" as one undoable action.</span></div>
+      <div class="row"><b>Why it is realistic</b><span>Every diagnostic is already structured data in the app; the one-pair fix exists, only the batching is missing.</span></div>
     </div></li>
-    <li><span class="num">T1-8</span><div class="body">
-      <div class="title"><h3>Wall-type classifier</h3><span class="pill none">stage 4</span><span class="pill part">LLM</span></div>
-      <p>Cluster wall thickness per building, snap each cluster to the nearest preset (365, 425, 300, 240, 175, 115; drywall 75, 100, 125, 150), weight by captured door thickness and the external/internal flag, propose assignments, person approves.</p>
-      <div class="row"><b>Why it works now</b><span>This is the only pure-judgement step left in stage 4; the organizer already groups by rounded thickness but applies nothing.</span></div>
+    <li id="t1-8"><span class="num">T1-8</span><div class="body">
+      <div class="title"><h3>Wall-type proposer</h3><span class="pill none">station 4</span><span class="pill part">LLM</span></div>
+      <div class="row"><b>The problem today</b><span>Walls are generated with a measured thickness but no type (24 cm masonry, 10 cm drywall, and so on). A person groups and assigns types by hand; the organizer only suggests.</span></div>
+      <div class="row"><b>What the agent does</b><span>Group the thicknesses, snap each group to the standard list (365, 425, 300, 240, 175, 115 mm; drywall 75, 100, 125, 150 mm), use the measured door depth and the inside/outside position as hints, propose; the person approves.</span></div>
+      <div class="row"><b>Why it is realistic</b><span>The grouping exists; applying is the missing step. This is the only pure judgement step left in station 4.</span></div>
     </div></li>
-    <li><span class="num">T1-9</span><div class="body">
-      <div class="title"><h3>Opening-type organizer auto-apply</h3><span class="pill none">stage 5</span><span class="pill code">batch</span></div>
-      <p>Accept the suggested groups, name types by convention, bind them; a separate pass merges duplicate types.</p>
-      <div class="row"><b>Why it works now</b><span>Deterministic and reversible through undo and type unbind.</span></div>
+    <li id="t1-9"><span class="num">T1-9</span><div class="body">
+      <div class="title"><h3>Door and window type auto-apply</h3><span class="pill none">station 5</span><span class="pill code">batch</span></div>
+      <div class="row"><b>The problem today</b><span>Same as walls: the organizer suggests door/window types, applies nothing, and duplicate types pile up.</span></div>
+      <div class="row"><b>What the agent does</b><span>Apply the suggestions, name the types by a convention, merge duplicates. Everything is undoable.</span></div>
     </div></li>
-    <li><span class="num">T1-10</span><div class="body">
-      <div class="title"><h3>Area reconciliation</h3><span class="pill none">stage 7</span><span class="pill code">batch</span></div>
-      <p>Diff the platform Raumbuch, the LumoCad Room Book and the plan tags per room; flag every delta (roof band, stair deduction, manual overrides, stored BGF fallback).</p>
-      <div class="row"><b>Why it works now</b><span>Both exports are node-able; today they can print different areas for the same room without anyone noticing.</span></div>
+    <li id="t1-10"><span class="num">T1-10</span><div class="body">
+      <div class="title"><h3>Area reconciliation</h3><span class="pill none">station 7</span><span class="pill code">batch</span></div>
+      <div class="row"><b>The problem today</b><span>The two room books compute areas differently; the same room can show different numbers depending on which export the client gets.</span></div>
+      <div class="row"><b>What the agent does</b><span>Compare the two, plus the area printed on the plan, for every room, and flag each difference with its cause (roof slope, stair deduction, a manual override).</span></div>
+      <div class="row"><b>Why it is realistic</b><span>Both exports can already run outside the browser.</span></div>
     </div></li>
-    <li><span class="num">T1-11</span><div class="body">
-      <div class="title"><h3>Catalogue mapper</h3><span class="pill none">stage 7</span><span class="pill part">LLM</span></div>
-      <p>Map unmapped checklist values to the German catalogue entries. Today they only reach the browser console.</p>
-      <div class="row"><b>Why it works now</b><span>Closed vocabulary, a classic language-model task with a human spot check.</span></div>
+    <li id="t1-11"><span class="num">T1-11</span><div class="body">
+      <div class="title"><h3>Catalogue word mapper</h3><span class="pill none">station 7</span><span class="pill part">LLM</span></div>
+      <div class="row"><b>The problem today</b><span>The room-book template accepts only fixed German catalogue words (for floor coverings and so on). Checklist entries that do not match are silently dropped.</span></div>
+      <div class="row"><b>What the agent does</b><span>Map free text to the nearest catalogue word; a person spot-checks.</span></div>
+      <div class="row"><b>Why it is realistic</b><span>A closed vocabulary is the easiest kind of language task.</span></div>
     </div></li>
-    <li><span class="num">T1-12</span><div class="body">
+    <li id="t1-12"><span class="num">T1-12</span><div class="body">
       <div class="title"><h3>Preprocessing progress &amp; triage agent</h3><span class="pill none">process</span><span class="pill part">LLM</span></div>
-      <p>Daily per building: compute the four preprocessing stages with the existing projected queries, raise the planned flags (boundaries requested but none drawn, sorted but no observations, automation-only observations), write a "why was this shared, what to do next" note, nag or bulk-unshare stale shares.</p>
-      <div class="row"><b>Why it works now</b><span>The queries exist in LumoPlan and are proven against production; the gap is synthesis and routing. It answers the named pain "nobody says why a building was shared".</span></div>
+      <div class="row"><b>The problem today</b><span>LumoPlan already computes how far preprocessing has got on each building (sorted? boundaries? openings? observations?), but nobody tells the team why a building was shared with them or what is left, and old shares linger.</span></div>
+      <div class="row"><b>What the agent does</b><span>Each day, per building, write a short note: status, gaps (for example "boundaries requested but none drawn", "sorted but no observations", "only agent-made observations"), what to do next; remind or unshare stale buildings.</span></div>
+      <div class="row"><b>Why it is realistic</b><span>The queries exist and are proven against production; the gap is summarising and routing.</span></div>
     </div></li>
-    <li><span class="num">T1-13</span><div class="body">
-      <div class="title"><h3>Processing-pipeline health agent</h3><span class="pill none">API</span><span class="pill code">batch</span></div>
-      <p>For recent telemetry, check that derived files exist (panorama → tags and vanish points; rotlidar → point-cloud fitting and <code>.rcs</code>; room → 3D package), re-dispatch missing ones through <code>POST /task</code>, summarise failed tasks.</p>
-      <div class="row"><b>Why it works now</b><span>There are no completion callbacks; rotlidar send errors are swallowed; the 3D package and observations are manual-only. Today a person has to notice.</span></div>
+    <li id="t1-13"><span class="num">T1-13</span><div class="body">
+      <div class="title"><h3>Processing health agent</h3><span class="pill none">server</span><span class="pill code">batch</span></div>
+      <div class="row"><b>The problem today</b><span>When scans upload, server jobs produce derived files (image outlines, aligned clouds, Revit import files, the 3D package). There is no notification when a job fails or never runs; some must be started by hand. A person notices days later.</span></div>
+      <div class="row"><b>What the agent does</b><span>Check that every recent upload has its derived files; re-run the missing ones; summarise failures.</span></div>
+      <div class="row"><b>Why it is realistic</b><span>All checks are "does file X exist for upload Y"; re-running is one server call.</span></div>
     </div></li>
   </ol>
 </section>
 
 <section id="tier2">
-  <h2>Tier 2 — high value, one prerequisite each</h2>
-  <div class="wrap"><table class="t stack">
-    <thead><tr><th>ID</th><th>Stage</th><th>Agent</th><th>What it does</th><th>Prerequisite / risk</th></tr></thead>
-    <tbody>
-      <tr><td class="id" data-l="ID">T2-1</td><td data-l="Stage">2</td><td class="k" data-l="Agent">Room-puzzle proposer</td><td data-l="What">Use the captured door-to-room graph, door widths and wall thickness, IMU north per room, wall-edge clusters and section/stair scans to propose a storey layout; verify with the anchored space solver gates (NCC ≥ 0.12, IoU ≥ 0.02); a person accepts. The biggest manual gap in the pipeline.</td><td data-l="Prereq"><b>Coordinate with Piotr's floor-sorting prototype (Q3, scored 5/10)</b> so this does not duplicate it. Rooms joined only by a door have little cloud overlap.</td></tr>
-      <tr><td class="id" data-l="ID">T2-2</td><td data-l="Stage">3 + 4</td><td class="k" data-l="Agent">Boundary → walls batch runner</td><td data-l="What">Generate v2 → finetune → walls per level with a confidence- and issue-driven auto-accept policy; fallback and failed rooms queued with the reason.</td><td data-l="Prereq">P1 loader. Every algorithm is pure and the preview/apply split is consistent.</td></tr>
-      <tr><td class="id" data-l="ID">T2-3</td><td data-l="Stage">5</td><td class="k" data-l="Agent">Auto-place matched openings on walls</td><td data-l="What">Project the observation's corner world positions onto the nearest wall of the right room pair to get the distance from wall start, snap to the wall interval, bind through the existing attach event. Closes "Connect with Slots".</td><td data-l="Prereq">T1-3. The measurement pose must be reachable server-side (not traced yet).</td></tr>
-      <tr><td class="id" data-l="ID">T2-4</td><td data-l="Stage">6</td><td class="k" data-l="Agent">Trivial-code auto-fixer</td><td data-l="What">Unnamed room → seed name; duplicate number → renumber; label outside boundary → move tag offset; missing swing → operation default; legacy manual area → propose only.</td><td data-l="Prereq">T1-1; a policy for manual areas.</td></tr>
-      <tr><td class="id" data-l="ID">T2-5</td><td data-l="Stage">6 + 7</td><td class="k" data-l="Agent">Room-name normaliser + WoFlV classifier</td><td data-l="What">Scan names → client-facing German names (Bad, Flur, Abstellraum…); factor class (Balkon/Loggia 0.5, Keller/Technik 0) from name and photos; propose, person accepts.</td><td data-l="Prereq">A naming convention sign-off from Rio or Alexandra.</td></tr>
-      <tr><td class="id" data-l="ID">T2-6</td><td data-l="Stage">6</td><td class="k" data-l="Agent">Title block, sheet set, section placement proposer</td><td data-l="What">Fill title blocks from building, project and storey metadata (high); propose a default sheet set per storey plus sections, roof plan and crops per flat (medium); propose one cut through the staircase and one representative cut through rooms (medium).</td><td data-l="Prereq">Sheet items S4/S5 are still open.</td></tr>
-      <tr><td class="id" data-l="ID">T2-7</td><td data-l="Stage">6</td><td class="k" data-l="Agent">DXF/PDF round-trip validator</td><td data-l="What">Layers, plot flags and entity counts per layer against the prepared document, on every export.</td><td data-l="Prereq">None; there is no golden-file regression today.</td></tr>
-      <tr><td class="id" data-l="ID">T2-8</td><td data-l="Stage">process</td><td class="k" data-l="Agent">Pre-hand-in readiness gate</td><td data-l="What">At hand-in: unsorted measurements, rooms without boundaries, storeys without openings against the building's scope; file child work items through the lineage API.</td><td data-l="Prereq">Per-building scope flags (T7) are undefined; a discarded-measurement bug leaves loose scans.</td></tr>
-      <tr><td class="id" data-l="ID">T2-9</td><td data-l="Stage">process</td><td class="k" data-l="Agent">QC bundle author + pre-QC checker</td><td data-l="What">Create per-storey 3D/2D QC bundles through <code>POST /workItem/multiple</code> and pre-populate findings from T1-1 as child items, so the checker starts from a list.</td><td data-l="Prereq">The QC hand-in is not live yet.</td></tr>
-      <tr><td class="id" data-l="ID">T2-10</td><td data-l="Stage">QC</td><td class="k" data-l="Agent">Hand-in checks server-side</td><td data-l="What">Run the 4 automatic hand-in checks plus heuristics for the 5 manual ones (cross-storey overlap of stair and shaft rooms, new Unknowns after refresh, weak rooms) and post the result server-side.</td><td data-l="Prereq">Fixes the localStorage-only checklist as a side effect.</td></tr>
-      <tr><td class="id" data-l="ID">T2-11</td><td data-l="Stage">1</td><td class="k" data-l="Agent">Discard-category proposer</td><td data-l="What">Propose one of the six discard categories and a note from solver diagnostics plus a panorama or top-view render.</td><td data-l="Prereq">Vision pilot.</td></tr>
-      <tr><td class="id" data-l="ID">T2-12</td><td data-l="Stage">2</td><td class="k" data-l="Agent">North auto + declination</td><td data-l="What">Compute north, flag bimodal or poorly calibrated rooms, apply the magnetic declination correction from the building's location.</td><td data-l="Prereq">Small; declination is listed as future work.</td></tr>
-    </tbody>
-  </table></div>
+  <h2>7 · Tier 2 — high value, one prerequisite each</h2>
+  <ol class="cards">
+    <li><span class="num">T2-1</span><div class="body">
+      <div class="title"><h3>Room-puzzle proposer</h3><span class="pill none">station 2</span><span class="pill code">batch</span><span class="pill part">LLM</span></div>
+      <div class="row"><b>The problem today</b><span>Dragging rooms into place is the biggest manual step left.</span></div>
+      <div class="row"><b>What the agent does</b><span>Use clues that already exist but that no calculation uses: which door leads to which room (from the capture app), door widths and wall thickness, the compass heading per room, matching wall lines across rooms, and the stair and section scans. Propose a layout; verify it with the existing overlap scoring; the person accepts.</span></div>
+      <div class="row pre"><b>What must happen first</b><span>Align with Piotr's floor-sorting prototype (scored 5 of 10 in Q3) so it is not built twice. Rooms joined only by a door have little overlap, which is the hard case.</span></div>
+    </div></li>
+    <li><span class="num">T2-2</span><div class="body">
+      <div class="title"><h3>Boundaries-to-walls batch runner</h3><span class="pill none">stations 3 + 4</span><span class="pill code">batch</span></div>
+      <div class="row"><b>What the agent does</b><span>Run boundary estimation, clean-up and wall generation per floor on the server; accept the confident rooms automatically; queue the rest with a reason.</span></div>
+      <div class="row pre"><b>What must happen first</b><span>P1.</span></div>
+    </div></li>
+    <li><span class="num">T2-3</span><div class="body">
+      <div class="title"><h3>Auto-place matched doors in walls</h3><span class="pill none">station 5</span><span class="pill code">batch</span></div>
+      <div class="row"><b>What the agent does</b><span>Once a mark and a measured opening are linked (T1-3), compute where along the wall the door sits from the photo geometry and place it there.</span></div>
+      <div class="row pre"><b>What must happen first</b><span>T1-3; the scanner's position for each scan must be readable on the server (not yet traced).</span></div>
+    </div></li>
+    <li><span class="num">T2-4</span><div class="body">
+      <div class="title"><h3>Easy-warning auto-fixer</h3><span class="pill none">station 6</span><span class="pill code">batch</span></div>
+      <div class="row"><b>What the agent does</b><span>Fix the easy plan warnings with the app's own buttons: unnamed room → seed a name; duplicate number → renumber; label outside its room → move it; door without a swing → default swing. Manual-area warnings: propose only.</span></div>
+      <div class="row pre"><b>What must happen first</b><span>T1-1; a policy on manual areas.</span></div>
+    </div></li>
+    <li><span class="num">T2-5</span><div class="body">
+      <div class="title"><h3>Room-name normaliser + living-area classifier</h3><span class="pill none">stations 6 + 7</span><span class="pill part">LLM</span></div>
+      <div class="row"><b>The problem today</b><span>Scanner room names are internal ("Raum 12"); the client's plan needs proper German names (Bad, Flur, Abstellraum). The living-area rule (WoFlV) depends on the room type: balcony 50 %, cellar 0 %.</span></div>
+      <div class="row"><b>What the agent does</b><span>Propose the client-facing name and the living-area class from the scan name and the photos.</span></div>
+      <div class="row pre"><b>What must happen first</b><span>A naming convention signed off by Rio or Alexandra.</span></div>
+    </div></li>
+    <li><span class="num">T2-6</span><div class="body">
+      <div class="title"><h3>Title block, sheet set and section placement</h3><span class="pill none">station 6</span><span class="pill code">batch</span><span class="pill part">LLM</span></div>
+      <div class="row"><b>What the agent does</b><span>Fill the title block from project and building data (high confidence). Propose which sheets to make: one plan per floor, sections, roof plan, one crop per flat (medium). Propose where to cut sections: one through the staircase, one through typical rooms (medium).</span></div>
+      <div class="row pre"><b>What must happen first</b><span>Two sheet features are still open.</span></div>
+    </div></li>
+    <li><span class="num">T2-7</span><div class="body">
+      <div class="title"><h3>Export validator</h3><span class="pill none">station 6</span><span class="pill code">batch</span></div>
+      <div class="row"><b>What the agent does</b><span>Re-open every exported DXF and PDF and check that layers, line types and element counts match the model. Today there is no such regression check.</span></div>
+    </div></li>
+    <li><span class="num">T2-8</span><div class="body">
+      <div class="title"><h3>Hand-in readiness gate</h3><span class="pill none">process</span><span class="pill code">batch</span></div>
+      <div class="row"><b>What the agent does</b><span>When preprocessing hands a building to modelling, check for unsorted scans, rooms without boundaries, floors without doors; create follow-up tasks.</span></div>
+      <div class="row pre"><b>What must happen first</b><span>Define per building what is in scope ("do we need boundaries here at all?"); fix a bug that leaves discarded scans looking unsorted.</span></div>
+    </div></li>
+    <li><span class="num">T2-9</span><div class="body">
+      <div class="title"><h3>QC task author</h3><span class="pill none">process</span><span class="pill code">batch</span></div>
+      <div class="row"><b>What the agent does</b><span>Create the QC task bundles automatically and pre-fill them with the findings from T1-1, so the checker starts from a list.</span></div>
+      <div class="row pre"><b>What must happen first</b><span>The QC hand-in feature must be switched on.</span></div>
+    </div></li>
+    <li><span class="num">T2-10</span><div class="body">
+      <div class="title"><h3>Hand-in checks on the server</h3><span class="pill none">QC</span><span class="pill code">batch</span></div>
+      <div class="row"><b>What the agent does</b><span>Run the four automatic hand-in checks plus heuristics for the five manual checkboxes on the server, and store the result centrally instead of in one person's browser.</span></div>
+    </div></li>
+    <li><span class="num">T2-11</span><div class="body">
+      <div class="title"><h3>Discard-reason proposer</h3><span class="pill none">station 1</span><span class="pill warn">vision</span></div>
+      <div class="row"><b>What the agent does</b><span>When a scan is thrown away, propose which of the six reasons applies, from the solver's diagnostics and a rendered image.</span></div>
+    </div></li>
+    <li><span class="num">T2-12</span><div class="body">
+      <div class="title"><h3>Automatic north</h3><span class="pill none">station 2</span><span class="pill code">batch</span></div>
+      <div class="row"><b>What the agent does</b><span>Compute north from the compass data, flag rooms with contradictory readings, and correct for magnetic declination (the difference between magnetic and true north at the building's location, which the software does not apply today).</span></div>
+    </div></li>
+  </ol>
 </section>
 
 <section id="tier3">
-  <h2>Tier 3 — judgement and vision pilots</h2>
+  <h2>8 · Tier 3 — judgement and vision pilots, and what to skip</h2>
   <div class="wrap"><table class="t stack">
-    <thead><tr><th>ID</th><th>Stage</th><th>Agent</th><th>Note</th></tr></thead>
+    <thead><tr><th>ID</th><th>Station</th><th>Agent</th><th>In plain words</th></tr></thead>
     <tbody>
-      <tr><td class="id" data-l="ID">T3-1</td><td data-l="Stage">1</td><td class="k" data-l="Agent">Room-shape plausibility check</td><td data-l="Note">Vision model on a rendered top view to catch plausible-score-but-wrong-shape rooms.</td></tr>
-      <tr><td class="id" data-l="ID">T3-2</td><td data-l="Stage">3</td><td class="k" data-l="Agent">Boundary overlay check</td><td data-l="Note">Cupboard taken as a wall, corridor merged with a room.</td></tr>
-      <tr><td class="id" data-l="ID">T3-3</td><td data-l="Stage">4</td><td class="k" data-l="Agent">Ceiling height and slab split proposals</td><td data-l="Note">From the ceiling masks and the point-cloud Z histogram; masks are a review overlay only today.</td></tr>
-      <tr><td class="id" data-l="ID">T3-4</td><td data-l="Stage">5</td><td class="k" data-l="Agent">Opening-features classifier</td><td data-l="Note">Operation type, glass, side lights, transom, arch from panorama crops and the per-door phone photos. Handing and flip from one panorama stay low confidence.</td></tr>
-      <tr><td class="id" data-l="ID">T3-5</td><td data-l="Stage">5</td><td class="k" data-l="Agent">Opening-vs-mask QA</td><td data-l="Note">Overlap of each placed opening's panorama projection with the mask; read-only flags.</td></tr>
-      <tr><td class="id" data-l="ID">T3-6</td><td data-l="Stage">2</td><td class="k" data-l="Agent">Storey elevation and slab thickness</td><td data-l="Note">From section and staircase scans; nothing automatic exists today.</td></tr>
-      <tr><td class="id" data-l="ID">T3-7</td><td data-l="Stage">7</td><td class="k" data-l="Agent">Flat / space-group proposal</td><td data-l="Note">From door connectivity, names and storey.</td></tr>
-      <tr><td class="id" data-l="ID">T3-8</td><td data-l="Stage">QC</td><td class="k" data-l="Agent">Corrector-comment triage</td><td data-l="Note">Classify comment text and attachments, link to warning codes, draft a fix or route it.</td></tr>
-      <tr><td class="id" data-l="ID">T3-9</td><td data-l="Stage">process</td><td class="k" data-l="Agent">Revit PDF page assignment</td><td data-l="Note">Vision plus title-block text; only matters while Revit stays the delivery path.</td></tr>
-      <tr><td class="id" data-l="ID">T3-10</td><td data-l="Stage">process</td><td class="k" data-l="Agent">Notion / platform / LumoPlan reconciliation + weekly hours report</td><td data-l="Note">Replaces about half a day a week of sheet work; blocked because LumoPlan data has no machine access.</td></tr>
+      <tr><td class="id" data-l="ID">T3-1</td><td data-l="Station">1</td><td class="k" data-l="Agent">Room-shape plausibility check</td><td data-l="Plain words">A vision model looks at the sorted room from above and says "this does not look like a room" even when the overlap score is fine.</td></tr>
+      <tr><td class="id" data-l="ID">T3-2</td><td data-l="Station">3</td><td class="k" data-l="Agent">Boundary overlay check</td><td data-l="Plain words">Catch a cupboard taken for a wall, or a corridor merged with a room.</td></tr>
+      <tr><td class="id" data-l="ID">T3-3</td><td data-l="Station">4</td><td class="k" data-l="Agent">Ceiling height and slab split proposals</td><td data-l="Plain words">From the ceiling outlines and the height distribution of the dots.</td></tr>
+      <tr><td class="id" data-l="ID">T3-4</td><td data-l="Station">5</td><td class="k" data-l="Agent">Door/window details from photos</td><td data-l="Plain words">Opening type, glass, side lights, transom, arch, from a crop of the panorama and the per-door phone photos. Which way a door opens stays unreliable from one photo.</td></tr>
+      <tr><td class="id" data-l="ID">T3-5</td><td data-l="Station">5</td><td class="k" data-l="Agent">Door-versus-outline check</td><td data-l="Plain words">Does the placed door overlap the vision model's outline on the photo? Flag only.</td></tr>
+      <tr><td class="id" data-l="ID">T3-6</td><td data-l="Station">2</td><td class="k" data-l="Agent">Floor height and slab thickness</td><td data-l="Plain words">From the section and staircase scans; nothing automatic exists today.</td></tr>
+      <tr><td class="id" data-l="ID">T3-7</td><td data-l="Station">7</td><td class="k" data-l="Agent">Flat grouping proposal</td><td data-l="Plain words">Which rooms form one flat, from door connections, names and floor.</td></tr>
+      <tr><td class="id" data-l="ID">T3-8</td><td data-l="Station">QC</td><td class="k" data-l="Agent">Corrector-comment triage</td><td data-l="Plain words">Read each QC comment, classify it, link it to a warning, draft a fix or route it.</td></tr>
+      <tr><td class="id" data-l="ID">T3-9</td><td data-l="Station">process</td><td class="k" data-l="Agent">Revit PDF page assignment</td><td data-l="Plain words">Decide which floor or section each page of a Revit PDF shows; only matters while Revit stays the delivery path.</td></tr>
+      <tr><td class="id" data-l="ID">T3-10</td><td data-l="Station">process</td><td class="k" data-l="Agent">Notion / platform / LumoPlan reconciliation + weekly hours report</td><td data-l="Plain words">Replaces about half a day a week of spreadsheet work; blocked because LumoPlan's data cannot be read by a program yet.</td></tr>
     </tbody>
   </table></div>
-</section>
-
-<section id="skip">
-  <h2>Not worth it now</h2>
-  <div class="prose">
+  <div class="callout warn">
+    <b>Not worth it now</b>
     <ul>
-      <li><b>Dimensions.</b> Rio's decision (M6): stop automating references; a person places and corrects them anyway.</li>
-      <li><b>Stairs from the legacy staircase measurement.</b> No input path exists and the geometry is complex.</li>
-      <li><b>Assignment and routing.</b> Deterministic rules already exist; a language model adds little.</li>
-      <li><b>Stage-overdue scanner.</b> The rules are trivial and it is blocked on LumoPlan service auth.</li>
+      <li><b>Dimension lines.</b> Rio's decision: a person places and corrects them anyway.</li>
+      <li><b>Stairs from the old staircase scans.</b> No input path exists and the geometry is hard.</li>
+      <li><b>Assigning people to buildings.</b> Fixed rules already exist; an AI adds little.</li>
+      <li><b>"Stage overdue" reminders.</b> Trivial rules, and blocked until LumoPlan can be reached by a program.</li>
     </ul>
   </div>
 </section>
 
 <section id="enablers">
-  <h2>Shared enabling work (do once)</h2>
+  <h2>9 · Shared enabling work (do once)</h2>
   <div class="wrap"><table class="t stack">
-    <thead><tr><th>ID</th><th>Enabler</th><th>Unlocks</th><th>Effort</th></tr></thead>
+    <thead><tr><th>ID</th><th>Enabler</th><th>In plain words</th><th>Unlocks</th><th>Effort</th></tr></thead>
     <tbody>
-      <tr><td class="id" data-l="ID">P1</td><td data-l="Enabler"><b>Headless model loader.</b> API data → storey, space, wall and opening actor snapshots. Today only the browser's <code>buildingMachine</code> builds these.</td><td data-l="Unlocks">T1-1, T1-10, T2-2, T2-4</td><td data-l="Effort">Medium. The single biggest enabler.</td></tr>
-      <tr><td class="id" data-l="ID">P2</td><td data-l="Enabler"><b>Agent write identity.</b> An organisation API key plus an "automation" editor marker, so LumoPlan progress (human allowlist) and QC can tell agent writes from human writes.</td><td data-l="Unlocks">T1-2 and everything that writes</td><td data-l="Effort">Small.</td></tr>
-      <tr><td class="id" data-l="ID">P3</td><td data-l="Enabler"><b>Pose write-back.</b> A server-accepted "proposed poses" path for sorting. Today: v4 backup upload plus a human Restore click.</td><td data-l="Unlocks">T1-4, T2-1</td><td data-l="Effort">A decision plus small API work.</td></tr>
-      <tr><td class="id" data-l="ID">P4</td><td data-l="Enabler"><b>Event source.</b> The API has no outbound events (<code>services/events.ts</code> is a stub). Agents must poll or get a change stream.</td><td data-l="Unlocks">All reactive agents</td><td data-l="Effort">Medium.</td></tr>
-      <tr><td class="id" data-l="ID">P5</td><td data-l="Enabler"><b>Runtime.</b> One job repo per agent on <code>lumoagent-job-flow</code> (MCP tools, artifact set, <code>validate_workflow</code>), as <code>floor-plan-audit</code> and <code>qa-agent</code> already do.</td><td data-l="Unlocks">All</td><td data-l="Effort">Per agent.</td></tr>
-      <tr><td class="id" data-l="ID">P6</td><td data-l="Enabler"><b>Labelled data.</b> v4 hand-in backups (poses), generated-vs-final boundary diffs, accepted type assignments.</td><td data-l="Unlocks">Thresholds, evaluation</td><td data-l="Effort">Ongoing.</td></tr>
+      <tr><td class="id" data-l="ID">P1</td><td class="k" data-l="Enabler">Headless model loader</td><td data-l="Plain words">Today the only program that can assemble a building's full model (floors, rooms, walls, doors) from the database is the browser app itself. A server-side agent needs the same assembly without a browser.</td><td data-l="Unlocks">T1-1, T1-10, T2-2, T2-4</td><td data-l="Effort">Medium. The single biggest enabler.</td></tr>
+      <tr><td class="id" data-l="ID">P2</td><td class="k" data-l="Enabler">Agent identity</td><td data-l="Plain words">Every change in the database is stamped with who made it, and progress tracking counts only changes by known team members. Agents need their own stamp (an "organisation API key", a login for a program rather than a person) so their work is visible as agent work.</td><td data-l="Unlocks">T1-2 and everything that writes</td><td data-l="Effort">Small.</td></tr>
+      <tr><td class="id" data-l="ID">P3</td><td class="k" data-l="Enabler">Saving sorting results from outside</td><td data-l="Plain words">Scan positions can only be saved from inside the browser; from outside only as a backup file a person restores. A server route is needed.</td><td data-l="Unlocks">T1-4, T2-1</td><td data-l="Effort">A decision plus small server work.</td></tr>
+      <tr><td class="id" data-l="ID">P4</td><td class="k" data-l="Enabler">Event feed</td><td data-l="Plain words">The server does not announce "a new scan arrived" or "status changed". Agents must ask repeatedly or get a feed.</td><td data-l="Unlocks">All reactive agents</td><td data-l="Effort">Medium.</td></tr>
+      <tr><td class="id" data-l="ID">P5</td><td class="k" data-l="Enabler">Runtime</td><td data-l="Plain words">The company already has a specification for running an agent as a small cloud job with a fixed set of allowed actions and a required output; two agents run on it. Each new agent is one small repository on the same pattern. <code>lumoagent-job-flow</code></td><td data-l="Unlocks">All</td><td data-l="Effort">Per agent.</td></tr>
+      <tr><td class="id" data-l="ID">P6</td><td class="k" data-l="Enabler">Correct-answer data</td><td data-l="Plain words">Examples of "right" results to measure against: the hand-in backups (scan positions), the difference between generated and final boundaries, accepted type assignments.</td><td data-l="Unlocks">Thresholds, evaluation</td><td data-l="Effort">Ongoing.</td></tr>
     </tbody>
   </table></div>
 </section>
 
 <section id="unknown">
-  <h2>What I could not see</h2>
+  <h2>10 · What I could not see</h2>
   <div class="callout warn">
     <ul>
-      <li><b>Repos not visible to Milton's GitHub account:</b> <code>lumoagent</code>, <code>floor-plan-audit</code>, <code>qa-agent</code>, <code>lumoflow</code>; also the WORKER-AI repo (Kim: panorama tags, measurement height, section and staircase tags) and the PointCloud worker repo (Piotr: cleanup, edge detection, tilt). Needed: read access or a short description of each job's inputs and outputs.</li>
-      <li><b>Which identity the observation worker writes with</b>, and whether <code>PROCESS_OBSERVATION</code> runs in production at all.</li>
-      <li><b>Piotr's floor-sorting prototype</b> (Q3 result 1, scored 5): what exists, so T2-1 does not duplicate it.</li>
-      <li><b>Real time per room and stage</b> for the Packing Sports preprocessing team. LumoPlan holds planned hours and actuals for 11 buildings only.</li>
-      <li><b>Notion Revit step pages</b> are screen recordings; only the step list was used.</li>
+      <li><b>Repositories not visible to Milton's GitHub account:</b> <code>lumoagent</code>, <code>floor-plan-audit</code>, <code>qa-agent</code>, <code>lumoflow</code>; nor the "WORKER-AI" jobs (Kim: panorama outlines, measurement height, section and staircase tags) and the "PointCloud worker" jobs (Piotr: cleanup, edge detection, tilt). Needed: read access or a short description of each job's input and output.</li>
+      <li><b>Which user the observation server task writes as</b>, and whether it runs in production at all.</li>
+      <li><b>The state of Piotr's floor-sorting prototype</b> (Q3, scored 5), so T2-1 does not duplicate it.</li>
+      <li><b>Real time per room and per station</b> for the preprocessing team. LumoPlan holds planned hours, and logged hours for 11 buildings only.</li>
+      <li><b>The Notion Revit step pages</b> are screen recordings; only the list of steps was used.</li>
     </ul>
   </div>
 </section>
 
 <section id="pilots">
-  <h2>Suggested first three pilots</h2>
+  <h2>11 · Suggested first three pilots</h2>
   <div class="grid3">
-    <div class="card"><b>1 · Readiness &amp; QA report</b><p>T1-1 + T1-12. Read-only, zero write risk, immediate value for coordinators, and it forces the headless loader (P1) into existence.</p></div>
-    <div class="card"><b>2 · Openings proposer + matcher</b><p>T1-2 + T1-3. The longest manual chain per room; mask data and the review screens already exist; needs only the agent identity (P2).</p></div>
-    <div class="card"><b>3 · Autosort on ingest + benchmark</b><p>T1-4 + T1-5. Attacks the preprocessing queue; the benchmark from hand-in backups makes auto-accept thresholds defensible.</p></div>
+    <div class="card"><b>1 · Readiness &amp; QA report</b><p>T1-1 + T1-12. Reads only, changes nothing, gives coordinators something useful immediately, and forces the model loader (P1) into existence.</p></div>
+    <div class="card"><b>2 · Openings proposer + matcher</b><p>T1-2 + T1-3. The longest manual chain per room; the vision outlines and the review screens already exist; needs only the agent identity (P2).</p></div>
+    <div class="card"><b>3 · Sorting on arrival + benchmark</b><p>T1-4 + T1-5. Attacks the preprocessing queue; the benchmark makes "accept without a person" thresholds defensible.</p></div>
   </div>
 </section>
 
+<section id="glossary">
+  <h2>12 · Glossary</h2>
+  <dl class="gloss">
+    <dt>Agent</dt><dd>Software that uses artificial intelligence to do a task and hands the result to a person for review.</dd>
+    <dt>API (the server)</dt><dd>The program on Lumoview's servers that stores all building data and that LumoCad, LumoPlan and the capture app talk to.</dd>
+    <dt>API key / organisation key</dt><dd>A login for a program rather than a person. An organisation key stamps changes as made by "the organisation", so agent work can be told apart from human work.</dd>
+    <dt>Batch job</dt><dd>A program that does the same fixed thing for many buildings without a person.</dd>
+    <dt>BGF</dt><dd>Gross floor area: the whole floor including walls.</dd>
+    <dt>Boundary</dt><dd>The clean polygon drawn along the inside face of a room's walls. Source of the room's area and of the walls.</dd>
+    <dt>Capture app / capture opening</dt><dd>The phone app used on site; a capture opening is a door or window measured by hand there (width, height, the two rooms it connects).</dd>
+    <dt>Checker / corrector</dt><dd>The two QC roles: one ticks the checklist, the other fixes what was found.</dd>
+    <dt>Confidence score</dt><dd>A number the software attaches to its own result saying how sure it is.</dd>
+    <dt>Correlation score (NCC, IoU)</dt><dd>How well two sets of dots overlap, from 0 (not at all) to 1 (perfectly). The room solver maximises it.</dd>
+    <dt>DIN 277</dt><dd>The German standard for measuring floor areas.</dd>
+    <dt>Door graph</dt><dd>The record of which door leads from which room to which, collected on site.</dd>
+    <dt>DXF / DWG</dt><dd>CAD file formats that architects can open and edit (DXF is the open one, DWG is Autodesk's).</dd>
+    <dt>Hand-in</dt><dd>The moment a team declares a building finished at its station and passes it on.</dd>
+    <dt>Headless</dt><dd>Running software without a screen, on a server.</dd>
+    <dt>IMU</dt><dd>The scanner's motion sensor: tilt and rough compass heading.</dd>
+    <dt>LLM</dt><dd>Large language model, the technology behind ChatGPT and Claude.</dd>
+    <dt>LumoCad</dt><dd>Lumoview's own 3D editor in the browser, where stations 1–7 happen.</dd>
+    <dt>LumoPlan</dt><dd>Lumoview's planning tool: which station each building is at, who works on it, hours.</dd>
+    <dt>Mask / outline</dt><dd>What a vision model produces on a photo: the pixels that belong to a door, a window, the floor, and so on.</dd>
+    <dt>Measurement</dt><dd>One placement of the scanner: one point cloud + one panorama + motion data.</dd>
+    <dt>Observation / mark</dt><dd>A door or window marked on a panorama by clicking its four corners.</dd>
+    <dt>Panorama</dt><dd>A 360° photo taken from the scanner's position.</dd>
+    <dt>Point cloud</dt><dd>The dots a laser scanner produces; each dot is one spot on a surface with its position in space.</dd>
+    <dt>Preprocessing / postprocessing</dt><dd>The two halves of the office work: preprocessing = sorting, boundaries and marks (external team); postprocessing = walls, openings, plan, room book (Lumoview modellers).</dd>
+    <dt>Raumbuch / room book</dt><dd>The table of all rooms with names, numbers, areas and properties, delivered to the client.</dd>
+    <dt>Reference plane</dt><dd>A helper line a person draws along a slanted wall so boundary estimation does not ignore it.</dd>
+    <dt>Revit</dt><dd>Autodesk's building-modelling program, used by the architects at Lumoview; still the delivery path for many clients.</dd>
+    <dt>Room solver</dt><dd>The calculation that positions the scans of one room so their dots overlap.</dd>
+    <dt>Storey elevation</dt><dd>The height of a floor above the ground.</dd>
+    <dt>Triage</dt><dd>Sorting cases by how much they need a person.</dd>
+    <dt>Unknown measurement</dt><dd>A scan the software could not classify; blocks hand-in until a person assigns a type.</dd>
+    <dt>Vision model</dt><dd>An AI that recognises things in images.</dd>
+    <dt>Wall type</dt><dd>The construction class of a wall (for example 24 cm masonry, 10 cm drywall); needed by the client and by Revit.</dd>
+    <dt>WoFlV</dt><dd>The German living-area regulation: balcony counts 50 %, cellar 0 %, sloped-roof areas partly.</dd>
+    <dt>Work item</dt><dd>A task in the platform (for example one QC checklist for one floor), with assignees and a checklist.</dd>
+  </dl>
+</section>
+
 <footer>
-  <p>Audit by Milton Mannarino with Claude Code, 27 October 2026. Source markdown: <code>manuals/lumocad-plans/automation/AGENT_WORKFORCE_AUDIT_2026-10-27.md</code> in the platform repo.</p>
-  <p>Inputs: platform <code>manuals/lumocad-subsystems/{automations,cad,user_tools}</code>, <code>manuals/lumocad-plans/{floorplan,auto-rooms,implemented,qc-work-items}</code>, <code>src/lumocad/</code>; <code>api</code> tasks, services and work-item handlers; <code>lumoplan/docs</code>; <code>lumoflow-skills</code>; Notion pages listed in the header.</p>
+  <p>Audit by Milton Mannarino with Claude Code, 27 October 2026. Plain-language edition. Source markdown: <code>manuals/lumocad-plans/automation/AGENT_WORKFORCE_AUDIT_2026-10-27.md</code> in the platform repo.</p>
+  <p>Inputs: platform <code>manuals/lumocad-subsystems/{automations,cad,user_tools}</code>, <code>manuals/lumocad-plans/{floorplan,auto-rooms,implemented,qc-work-items}</code>, <code>src/lumocad/</code>; <code>api</code> tasks, services and work-item handlers; <code>lumoplan/docs</code>; <code>lumoflow-skills</code>; Notion pages named in the header.</p>
 </footer>
 
 </main>
