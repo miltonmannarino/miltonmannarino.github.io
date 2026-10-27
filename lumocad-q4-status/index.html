@@ -235,7 +235,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
   </div>
   <div class="prose">
     <p><b>Where the requests came from.</b> Most items were written on 8 October from: a meeting with Djunejt (modelling) and one with Piotr (development), both early October; the "2.2 LumoCad Improvement Sprint" page where modellers wrote feedback on roofs and stairs; and the "Test current 2D features" page where Djunejt reviewed the drawings on 22 and 30 September. Each item below says who raised it.</p>
-    <p><b>Built vs released.</b> Code goes first to <code>development</code>, the branch the team integrates and tests on. It reaches customers (production, cloud.lumoview.com) when <code>development</code> is merged into <code>main</code>. The last release was on <b>19 October</b>. Anything built after that, including all floor plan work from 26 October, is <b>not yet in production</b>.</p>
+    <p><b>Built vs released.</b> Code goes first to <code>development</code>, the branch the team integrates and tests on. It reaches customers (production, cloud.lumoview.com) when <code>development</code> is merged into <code>main</code>. The last release was on <b>27 October</b> (evening). Everything described on this page is now in production; nothing built is waiting to be released.</p>
   </div>
 </section>
 
@@ -325,7 +325,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
       <b>Floor plan</b>
       <div class="bar" aria-hidden="true"><span class="ok" style="width:33.3%"></span><span class="code" style="width:11.1%"></span><span class="part" style="width:33.3%"></span><span class="none" style="width:22.2%"></span></div>
       <ul><li>3 ticked</li><li>1 built, test</li><li>3 partly</li><li>2 not started</li></ul>
-      <span class="prod">Work from 26 Oct is built but not yet released.</span>
+      <span class="prod">All released (last release 27 Oct).</span>
     </a>
     <a class="card" href="#roof">
       <b>Roof</b>
@@ -337,7 +337,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
       <b>Room book</b>
       <div class="bar" aria-hidden="true"><span class="ok" style="width:16.7%"></span><span class="warn" style="width:33.3%"></span><span class="code" style="width:16.7%"></span><span class="part" style="width:33.3%"></span></div>
       <ul><li>1 ticked</li><li>2 ticked, with gaps</li><li>1 built, test</li><li>2 partly</li></ul>
-      <span class="prod">Released, except the balcony change of 26 Oct.</span>
+      <span class="prod">All released (balcony change on 27 Oct).</span>
     </a>
     <a class="card" href="#stairs">
       <b>Staircase</b>
@@ -358,7 +358,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
           <li>Staircase #1: the key case was never tested in the app.</li>
         </ul>
         Details are under each item.</li>
-      <li><b>The balcony factor is contradictory.</b> The code (not yet released) counts balconies at 50 % of their area. The Notion note of 14 Oct, the Template 2 room book and Rio's sketch say 25 %. Production counts them at 100 % unless a modeller types a factor. This one number affects both the floor plan labels and the room book. Rio needs to decide.</li>
+      <li><b>The balcony factor is contradictory.</b> Since the 27 Oct release, production counts rooms named as balconies or terraces at 50 % of their area (before: 100 %, unless a modeller typed a factor). The Notion note of 14 Oct, the Template 2 room book and Rio's sketch say 25 %. This one number affects both the floor plan labels and the room book. Rio needs to decide.</li>
       <li><b>Two dependencies hold back several items.</b> The BGF assignment tool (Piotr) doesn't exist yet. Several items need a test set or a reference building from the modelling team.</li>
       <li><b>Some Notion text is out of date.</b>
         <ul>
@@ -377,7 +377,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
     <h2>2026-Q4 FloorPlan</h2>
     <div class="prose">
       <p><b>The goal:</b> a complete, deliverable 2D set produced fully in LumoCad (floor plans, sections, elevations, area plans and marketing plans), exported to PDF and DWG without going through Revit or AutoCAD. The floor plan is also the input for the room book.</p>
-      <p><b>Background:</b> LumoCad has generated floor plans, sections and elevations from the 3D model since the summer. On 22 and 30 September Djunejt reviewed real exports and listed what still needed manual clean-up. Most items below come from that review. On 26 October Milton worked through every item that didn't need input from the team: 7 changes, two of them fixes found while testing in the app. These are on <code>development</code> but <b>not yet released</b>, so customers still see the old title block and have no Flats button.</p>
+      <p><b>Background:</b> LumoCad has generated floor plans, sections and elevations from the 3D model since the summer. On 22 and 30 September Djunejt reviewed real exports and listed what still needed manual clean-up. Most items below come from that review. On 26 October Milton worked through every item that didn't need input from the team: 7 changes, two of them fixes found while testing in the app. They were released on 27 October, so customers now have the new title block and the Flats button.</p>
     </div>
   </div>
   <ol class="results">
@@ -397,7 +397,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
     <li id="fp2"><span class="num">2</span><div class="body">
       <div class="title"><h3>Clean elevations and sections</h3><span class="pill code">Built, test</span></div>
       <div class="row ctx"><b>What it's about</b>Djunejt sent two screenshots on 22 September:<ul><li><b>Elevations:</b> horizontal lines crossed the facade where nothing is in reality. Each storey's wall is a separate object in the model, so the generated drawing showed a line at every storey joint, even where the facade is one flat surface.</li><li><b>Sections:</b> some lines couldn't be identified at all ("difficult to identify what they are, we need a way to identify").</li></ul></div>
-      <div class="row"><b>Built (26 Oct, not released)</b><ul>
+      <div class="row"><b>Built (26 Oct, released 27 Oct)</b><ul>
         <li>Walls and slab edges lying in the same facade plane are merged into one outline before drawing, so no line appears where they are flush (<code>3e3c774ee</code>).</li>
         <li>An inspector for "what is this line?". In Floor Plan mode, hover or click any line and a label in the bottom-right corner names the element behind it, e.g. which wall and on which storey. This is the identification tool Djunejt asked for. If stray lines remain, they can now be reported by name and fixed.</li>
       </ul></div>
@@ -408,7 +408,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
     <li id="fp3"><span class="num">3</span><div class="body">
       <div class="title"><h3>Dimensions you can rely on</h3><span class="pill part">1 of 4</span></div>
       <div class="row ctx"><b>What it's about</b>Four complaints from Djunejt's review:<ul><li>A dimension snapped to the crossing of two walls should stay attached when a wall moves. Today it stays where it was, and shows a wrong number.</li><li>Snapping to crossings should work without holding Shift.</li><li>The automatically generated facade dimension chains included every door width, which clutters the plan.</li><li>Automatic dimensions sometimes snap to elements they should ignore.</li></ul></div>
-      <div class="row"><b>Built (26 Oct, not released)</b>Facade chains now dimension only windows; door widths are left out (<code>38fa74e2d</code>). Note: balcony doors are modelled as doors, so they drop out too. Rio should confirm that's right.</div>
+      <div class="row"><b>Built (26 Oct, released 27 Oct)</b>Facade chains now dimension only windows; door widths are left out (<code>38fa74e2d</code>). Note: balcony doors are modelled as doors, so they drop out too. Rio should confirm that's right.</div>
       <div class="row"><b>Missing</b>The other three. They live in the code that handles placing and editing dimensions on the canvas, which Piotr owns.</div>
       <div class="row test"><b>To tick it</b>On the reference building, move a wall: all dimensions follow, with no manual corrections.</div>
       <div class="row blk"><b>Waiting on</b>Piotr: does he do these, or may Milton change his dimension code?</div>
@@ -426,20 +426,20 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
       <div class="title"><h3>Title block and PDF export</h3><span class="pill ok">Ticked 26 Oct</span></div>
       <div class="row ctx"><b>What it's about</b>On section sheets, the drawing name "Schnitt 1-1" was printed on top of the "Geschoss:" label (screenshot from Djunejt, 22 Sep). The cause: the preview put the drawing name into the storey field, and long values didn't fit their box. Two additions were also asked for:<ul><li>a <b>Revision Index</b> field (A, B, C… when a plan is revised);</li><li>an option to <b>leave the title block out</b> of the PDF. Piotr read this from the clinic project's reference file, and Elias should confirm it's needed.</li></ul></div>
       <div class="row"><b>Built</b><ul><li>The storey field is correct on every sheet type. Sections and elevations show "-", because they cover all storeys.</li><li>Text that doesn't fit wraps instead of overlapping.</li><li>New "Index" field.</li><li>Title block on/off (13 Oct).</li></ul>Tested in the app on two buildings (Example Building and Forststrasse 20-23). A north arrow wrongly shown on elevations was found and fixed during that test.</div>
-      <div class="row blk"><b>Still open</b>Elias's confirmation of the on/off option. Customers get it with the next release.</div>
+      <div class="row blk"><b>Still open</b>Elias's confirmation of the on/off option. Released 27 Oct.</div>
     </div></li>
 
     <li id="fp6"><span class="num">6</span><div class="body">
       <div class="title"><h3>Automatic marketing plans</h3><span class="pill ok">Ticked 26 Oct</span></div>
       <div class="row ctx"><b>What it's about</b>For letting and sales, each flat gets its own plan sheet showing only that flat. Modellers used to draw a crop outline around every flat by hand. Djunejt asked (30 Sep) for this to happen automatically, along the outer faces of the walls around the flat. Separately, Jolanda reported that area plans and marketing plans uploaded for QC all landed in one category and couldn't be found.</div>
       <div class="row"><b>Built</b><ul><li>A <b>Flats</b> button in the Views list creates one crop per flat on every storey, cut along the outer wall faces (<code>362595134</code>).</li><li>Running it again updates the crops and keeps any names the modeller changed.</li><li>The area rows on these sheets say "Mieteinheit".</li><li>Rooms of one flat that aren't connected by walls still get one crop. A part of a flat in another building of the same plot gets its own second crop.</li><li>Nora gave area and marketing plans their own QC categories (29 Sep).</li></ul>Tested in the app on Forststrasse 20-23.</div>
-      <div class="row blk"><b>Still open</b>Customers get it with the next release.</div>
+      <div class="row"><b>Released</b>27 Oct.</div>
     </div></li>
 
     <li id="fp7"><span class="num">7</span><div class="body">
       <div class="title"><h3>Areas on the plan</h3><span class="pill part">Partly</span></div>
       <div class="row ctx"><b>What it's about</b>The plan shows each room's area. The title block shows the storey's BGF and NRF. Two further things are needed:<ul><li>Areas that could not be measured on site (no access) should look different from measured ones.</li><li>Balconies should count with a reduced factor in the living area.</li></ul></div>
-      <div class="row"><b>Built</b><ul><li>Room area labels.</li><li>BGF and NRF filled in automatically per sheet.</li><li>Rooms named Balkon, Terrasse, Loggia, etc. count at 0.5 in the living area. Released code counts them in full; this change is on development only (26 Oct). It restores a rule removed on 11 Sep, in the Rio feedback round (<code>9e36b166f</code>).</li></ul></div>
+      <div class="row"><b>Built</b><ul><li>Room area labels.</li><li>BGF and NRF filled in automatically per sheet.</li><li>Rooms named Balkon, Terrasse, Loggia, etc. count at 0.5 in the living area (released 27 Oct; before, they counted in full). It restores a rule removed on 11 Sep, in the Rio feedback round (<code>9e36b166f</code>).</li></ul></div>
       <div class="row"><b>Missing</b>"Measured vs not measured" per area. That information is supposed to come from Piotr's <b>BGF assignment tool</b>, a tool to say which floor area belongs to which flat and whether it was surveyed. It doesn't exist on any branch yet.</div>
       <div class="row test"><b>To tick it</b>On a reference building, the room labels and title block totals equal the room book figures for the same storey (to 0.01 m²).</div>
       <div class="row blk"><b>Waiting on</b>Piotr (BGF tool). Rio: balcony factor 0.5 or 0.25.</div>
@@ -565,7 +565,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
         <li><b>The LumoCad room book</b> (#1, #3, #4, #5): built from the 3D model. Found in LumoCad → right panel → Room Book. Areas come from the model.</li>
         <li><b>The Gewobag handover room book</b> (#2): built from the checklists the field team fills in on site with the measurement app (floor type, doors, windows… per room). It fills Alexandra's Excel template and lives in the platform's Room Data page, not in LumoCad. Gewobag is the Berlin housing company that is the first customer.</li>
       </ul>
-      <p>The team agreed three templates on 14 Oct. <b>Template 1</b> is the current standard; Template 2 (Djunejt's, with grouped sums and colours) and Template 3 come later. Everything except the balcony change of 26 Oct is released.</p>
+      <p>The team agreed three templates on 14 Oct. <b>Template 1</b> is the current standard; Template 2 (Djunejt's, with grouped sums and colours) and Template 3 come later. Everything is released; the balcony change went out on 27 Oct.</p>
     </div>
   </div>
   <ol class="results">
@@ -597,9 +597,9 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
       <div class="title"><h3>Wohnfläche according to WoFlV</h3><span class="pill part">Mostly</span></div>
       <div class="row ctx"><b>What it's about</b>Calculate the legal living area (see glossary):<ul><li>height bands under sloped ceilings, using the roof underside;</li><li>balconies and terraces with the agreed factor;</li><li>stairs deducted;</li><li>totals per room, flat and building.</li></ul>On 14 Oct the pilot building needed stairs deducted correctly (e.g. a staircase taking 2 m² of a corridor).</div>
       <div class="row"><b>Built</b><ul><li>Height bands from the roof underside: 100 % / 50 % / 0 %.</li><li>Stair deduction for stairs with more than three steps.</li><li>Totals per room, flat and building.</li><li>The surveyed ceiling slope (Roof #6).</li></ul></div>
-      <div class="row"><b>Gaps</b><ul><li><b>Balcony factor:</b> the development code says 0.5, while the 14 Oct note, Template 2 and Rio's sketch say 25 %. The law says "normally a quarter, at most half". Veranda and Wintergarten aren't recognised by name.</li><li>Not yet compared with a hand calculation on a real attic flat.</li><li>The comment column explains stair deductions but not the height reductions.</li><li>A stair spanning several storeys is deducted only on its bottom storey.</li></ul></div>
+      <div class="row"><b>Gaps</b><ul><li><b>Balcony factor:</b> production now says 0.5 (since 27 Oct), while the 14 Oct note, Template 2 and Rio's sketch say 25 %. The law says "normally a quarter, at most half". Veranda and Wintergarten aren't recognised by name.</li><li>Not yet compared with a hand calculation on a real attic flat.</li><li>The comment column explains stair deductions but not the height reductions.</li><li>A stair spanning several storeys is deducted only on its bottom storey.</li></ul></div>
       <div class="row test"><b>To tick it</b>A modelled attic flat with its roof: each room's Wohnfläche equals a hand calculation (to ±0.02 m²).</div>
-      <div class="row blk"><b>Waiting on</b>Rio: the balcony factor, and which flat is the reference. Then a release.</div>
+      <div class="row blk"><b>Waiting on</b>Rio: the balcony factor, and which flat is the reference.</div>
     </div></li>
 
     <li id="rb5"><span class="num">5</span><div class="body">
@@ -745,7 +745,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
       <div class="person-head"><h3>Rio &amp; Djunejt <span>· drawing rules, sign-offs, test sets</span></h3><button class="copy" type="button" data-target="q-rio-list">Copy</button></div>
       <ol id="q-rio-list">
         <li class="grp">Shared</li>
-        <li><a class="tag" href="#rb4">RB4</a> <a class="tag" href="#fp7">FP7</a><span class="q">Balcony / terrace / loggia in Wohnfläche: 25 % or 50 %? One fixed value or per project? Do veranda and Wintergarten count the same way?</span><span class="why">The code says 50 %, the 14 Oct note and Template 2 say 25 %, and production counts 100 %. It affects every flat with a balcony.</span></li>
+        <li><a class="tag" href="#rb4">RB4</a> <a class="tag" href="#fp7">FP7</a><span class="q">Balcony / terrace / loggia in Wohnfläche: 25 % or 50 %? One fixed value or per project? Do veranda and Wintergarten count the same way?</span><span class="why">Production has counted 50 % since 27 Oct; the 14 Oct note and Template 2 say 25 %. It affects every flat with a balcony.</span></li>
         <li><a class="tag" href="#fp2">FP2</a> <a class="tag" href="#fp9">FP9</a> <a class="tag" href="#rb1">RB1</a><span class="q">Which building is the reference / pilot for the 2D set and the room book, and is it delivered from production?</span><span class="why">Four items can only be signed off against a named real building.</span></li>
         <li><a class="tag" href="#fp9">FP9</a><span class="q">Can you collect the floor plan gap list (everything you'd still fix by hand) in one Notion list?</span><span class="why">"One building delivered fully from LumoCad" can't start without knowing what's left.</span></li>
         <li class="grp">Floor plan</li>
@@ -799,8 +799,8 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
 </section>
 
 <footer>
-  <span>Sources: the four Notion KR pages and their 34 items (read 27 Oct 2026); the code on <code>development</code> (a4111bd06) and <code>main</code> (bf33f39e3, released 19 Oct); the roof and stair plan documents; the OKR source notes of 8 Oct.</span>
-  <span>Not checked: whether the 19 Oct release deployed without errors, and any open pull requests.</span>
+  <span>Sources: the four Notion KR pages and their 34 items (read 27 Oct 2026); the code on <code>development</code> and <code>main</code> (both d0034b539 after the 27 Oct release, PR #104); the roof and stair plan documents; the OKR source notes of 8 Oct.</span>
+  <span>The 27 Oct production deploy was watched to completion.</span>
   <span>The original definitions of each item: <a href="../lumocad-q4-okrs/">LumoCad Q4 OKRs</a>.</span>
 </footer>
 </main>
