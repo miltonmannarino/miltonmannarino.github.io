@@ -144,7 +144,6 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
     <li><a href="#primer">Start here: how a building becomes a floor plan</a></li>
     <li><a href="#words">What "an agent" means here</a></li>
     <li><a href="#tldr">In short</a></li>
-    <li><a href="#numbers">The numbers that frame the ask</a></li>
     <li><a href="#map">Station by station: today</a></li>
     <li><a href="#tier1">Tier 1 — build first</a></li>
     <li><a href="#tier2">Tier 2 — one prerequisite each</a></li>
@@ -234,25 +233,8 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
   </div>
 </section>
 
-<section id="numbers">
-  <h2>4 · The numbers that frame the ask</h2>
-  <div class="wrap"><table class="t stack">
-    <thead><tr><th>What it measures</th><th>Value</th><th>What it means</th><th>Source</th></tr></thead>
-    <tbody>
-      <tr><td class="k" data-l="Measures">Company goal for Q3</td><td data-l="Value">"Prepare halving the post processing time until 31.12.2026" (Hendrik, scored 6 of 10)</td><td data-l="Meaning">The company wants modelling to take half as long by the end of the year.</td><td data-l="Source">Notion</td></tr>
-      <tr><td class="k" data-l="Measures">Ambition</td><td data-l="Value">Revenue €70k/month today → €200k "via AI/automation, not headcount"</td><td data-l="Meaning">Growth should come from automation, not from hiring.</td><td data-l="Source">LumoPlan min-req doc</td></tr>
-      <tr><td class="k" data-l="Measures">Throughput target</td><td data-l="Value">1,500 m² per week = 37.5 m² per hour</td><td data-l="Meaning">How much building area the team should finish per week.</td><td data-l="Source">same</td></tr>
-      <tr><td class="k" data-l="Measures">Planned hours per building (median)</td><td data-l="Value">preprocessing 3 h · 3D modelling 12 h · 2D plan 8 h · 3D QC 8 h · 3D corrections 8 h</td><td data-l="Meaning">What the planners expect each station to take on a typical building.</td><td data-l="Source">prod baseline 2026-08-11</td></tr>
-      <tr><td class="k" data-l="Measures">Planned vs actually logged</td><td data-l="Value">modelling: 4.3 h logged vs 16 h planned (11 buildings)</td><td data-l="Meaning">Either the plan is too generous or hours are under-logged; both make planning unreliable.</td><td data-l="Source">same</td></tr>
-      <tr><td class="k" data-l="Measures">Working days vs waiting days</td><td data-l="Value">measurement 7 / 9 · preprocessing 4 / 6 · modelling 12 / 13</td><td data-l="Meaning">For each phase: days someone was working on it / days it waited for someone. Waiting ≈ working.</td><td data-l="Source">same</td></tr>
-      <tr><td class="k" data-l="Measures">Wait after delivery</td><td data-l="Value">57 workdays median until the next step</td><td data-l="Meaning">Buildings linger after delivery (invoicing, revisions).</td><td data-l="Source">same</td></tr>
-      <tr><td class="k" data-l="Measures">Scale in production</td><td data-l="Value">2,113 rooms · 9,080 measurements · 22,691 observations · 906 room boundaries</td><td data-l="Meaning">The size of the data an agent would work on.</td><td data-l="Source">LumoPlan preprocessing refactor</td></tr>
-    </tbody>
-  </table></div>
-</section>
-
 <section id="map">
-  <h2>5 · Station by station: what a person does today, what the computer already does</h2>
+  <h2>4 · Station by station: what a person does today, what the computer already does</h2>
   <p class="lede"><b>State</b> means: <span class="pill ok">automatic</span> the computer does it and a person checks · <span class="pill part">assisted</span> the computer proposes, a person chooses and tunes · <span class="pill block">manual</span> a person does it.</p>
 
   <div class="station">
@@ -308,7 +290,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
 </section>
 
 <section id="tier1">
-  <h2>6 · Tier 1 — build first</h2>
+  <h2>5 · Tier 1 — build first</h2>
   <p class="lede">High confidence: the pieces exist in code today and the gain is large. Each card says what the problem is today, what the agent would do, why it is realistic, and what has to happen first.</p>
   <ol class="cards">
     <li id="t1-1"><span class="num">T1-1</span><div class="body">
@@ -316,7 +298,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
       <div class="row"><b>The problem today</b><span>The software can already check a plan for 52 kinds of problems, but only when a person opens a panel in the browser and reads the list. QC checkers then tick a separate checklist by hand, without those results.</span></div>
       <div class="row"><b>What the agent does</b><span>Every night and before each hand-in, run the check for every building on a server. Turn the list into a readable report. For every checklist item that the check can prove ("walls meet cleanly", "all sections are shown on the plan", "windows are at the cut height", "every room is named", "there are dimension lines"), mark it proven or not. Send each problem to the right person. Draft the hand-in note.</span></div>
       <div class="row"><b>Why it is realistic</b><span>The check is plain code; the automated tests already run it without a browser. The 52 warning codes are defined in one file. <code>constants/floorplanWarnings.ts</code>, <code>prepareFloorPlanDocument</code></span></div>
-      <div class="row pre"><b>What must happen first</b><span>P1, a way to load a building's model on a server (see section 9).</span></div>
+      <div class="row pre"><b>What must happen first</b><span>P1, a way to load a building's model on a server (see section 8).</span></div>
     </div></li>
     <li id="t1-2"><span class="num">T1-2</span><div class="body">
       <div class="title"><h3>Openings proposer: photo outlines → draft marks</h3><span class="pill none">station 5</span><span class="pill code">batch</span></div>
@@ -396,7 +378,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
 </section>
 
 <section id="tier2">
-  <h2>7 · Tier 2 — high value, one prerequisite each</h2>
+  <h2>6 · Tier 2 — high value, one prerequisite each</h2>
   <ol class="cards">
     <li><span class="num">T2-1</span><div class="body">
       <div class="title"><h3>Room-puzzle proposer</h3><span class="pill none">station 2</span><span class="pill code">batch</span><span class="pill part">LLM</span></div>
@@ -460,7 +442,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
 </section>
 
 <section id="tier3">
-  <h2>8 · Tier 3 — judgement and vision pilots, and what to skip</h2>
+  <h2>7 · Tier 3 — judgement and vision pilots, and what to skip</h2>
   <div class="wrap"><table class="t stack">
     <thead><tr><th>ID</th><th>Station</th><th>Agent</th><th>In plain words</th></tr></thead>
     <tbody>
@@ -488,7 +470,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
 </section>
 
 <section id="enablers">
-  <h2>9 · Shared enabling work (do once)</h2>
+  <h2>8 · Shared enabling work (do once)</h2>
   <div class="wrap"><table class="t stack">
     <thead><tr><th>ID</th><th>Enabler</th><th>In plain words</th><th>Unlocks</th><th>Effort</th></tr></thead>
     <tbody>
@@ -503,7 +485,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
 </section>
 
 <section id="unknown">
-  <h2>10 · What I could not see</h2>
+  <h2>9 · What I could not see</h2>
   <div class="callout warn">
     <ul>
       <li><b>Repositories not visible to Milton's GitHub account:</b> <code>lumoagent</code>, <code>floor-plan-audit</code>, <code>qa-agent</code>, <code>lumoflow</code>; nor the "WORKER-AI" jobs (Kim: panorama outlines, measurement height, section and staircase tags) and the "PointCloud worker" jobs (Piotr: cleanup, edge detection, tilt). Needed: read access or a short description of each job's input and output.</li>
@@ -516,7 +498,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
 </section>
 
 <section id="pilots">
-  <h2>11 · Suggested first three pilots</h2>
+  <h2>10 · Suggested first three pilots</h2>
   <div class="grid3">
     <div class="card"><b>1 · Readiness &amp; QA report</b><p>T1-1 + T1-12. Reads only, changes nothing, gives coordinators something useful immediately, and forces the model loader (P1) into existence.</p></div>
     <div class="card"><b>2 · Openings proposer + matcher</b><p>T1-2 + T1-3. The longest manual chain per room; the vision outlines and the review screens already exist; needs only the agent identity (P2).</p></div>
@@ -525,7 +507,7 @@ footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--lin
 </section>
 
 <section id="glossary">
-  <h2>12 · Glossary</h2>
+  <h2>11 · Glossary</h2>
   <dl class="gloss">
     <dt>Agent</dt><dd>Software that uses artificial intelligence to do a task and hands the result to a person for review.</dd>
     <dt>API (the server)</dt><dd>The program on Lumoview's servers that stores all building data and that LumoCad, LumoPlan and the capture app talk to.</dd>
