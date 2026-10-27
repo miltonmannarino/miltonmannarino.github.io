@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LumoCad Q4 Status</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@500&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root {
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --fg: #18202c;
+  --muted: #566173;
+  --line: #d3d9e2;
+  --soft: #e9edf3;
+  --accent: #2453c0;
+  --accent-soft: #e6ecfa;
+  --ok: #1d7a46; --ok-soft: #e3f3ea;
+  --warn: #9a5b00; --warn-soft: #fbf0dc;
+  --code: #2453c0; --code-soft: #e6ecfa;
+  --part: #6a4bb0; --part-soft: #efe9fa;
+  --none: #5b6474; --none-soft: #eceff3;
+  --block: #b0322b; --block-soft: #fae6e4;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11151c; --surface: #19202a; --fg: #e5e9f0; --muted: #9ba6b6;
+    --line: #2d3644; --soft: #212a36; --accent: #86a8ff; --accent-soft: #1f2a44;
+    --ok: #6fd39a; --ok-soft: #173326; --warn: #f0b860; --warn-soft: #3a2c14;
+    --code: #86a8ff; --code-soft: #1f2a44; --part: #b9a2f0; --part-soft: #2b2340;
+    --none: #a3adbc; --none-soft: #252c37; --block: #f08a82; --block-soft: #3d1f1d;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11151c; --surface: #19202a; --fg: #e5e9f0; --muted: #9ba6b6;
+  --line: #2d3644; --soft: #212a36; --accent: #86a8ff; --accent-soft: #1f2a44;
+  --ok: #6fd39a; --ok-soft: #173326; --warn: #f0b860; --warn-soft: #3a2c14;
+  --code: #86a8ff; --code-soft: #1f2a44; --part: #b9a2f0; --part-soft: #2b2340;
+  --none: #a3adbc; --none-soft: #252c37; --block: #f08a82; --block-soft: #3d1f1d;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 17px; line-height: 1.6;
+  padding-inline: 16px; padding-block: 48px 80px;
+}
+main { max-width: 880px; margin: 0 auto; display: grid; gap: 56px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 2.6rem); line-height: 1.15; font-weight: 700; }
+h2 { font-size: 1.6rem; line-height: 1.25; font-weight: 700; }
+h3 { font-size: 1.08rem; line-height: 1.35; font-weight: 600; }
+p { margin: 0; }
+a { color: var(--accent); }
+code { font-family: var(--mono); font-size: 0.84em; background: var(--soft); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+.eyebrow {
+  font-family: var(--display); font-size: 0.78rem; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+}
+header.top { display: grid; gap: 16px; }
+.lede { color: var(--muted); max-width: 66ch; }
+
+/* scoreboard */
+.board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px;
+  display: grid; gap: 10px; text-decoration: none; color: var(--fg); align-content: start;
+}
+.card:hover, .card:focus-visible { border-color: var(--accent); outline: none; }
+.card b { font-family: var(--display); font-weight: 600; }
+.bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--soft); }
+.bar span { display: block; height: 100%; }
+.bar .ok { background: var(--ok); } .bar .warn { background: var(--warn); } .bar .code { background: var(--code); }
+.bar .part { background: var(--part); } .bar .none { background: var(--none); opacity: .5; }
+.card ul { list-style: none; margin: 0; padding: 0; font-size: 0.88rem; color: var(--muted); display: grid; gap: 2px; }
+.card .prod { font-size: 0.82rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
+@media (max-width: 760px) { .board { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 420px) { .board { grid-template-columns: 1fr; } }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 0.88rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* pills */
+.pill {
+  display: inline-block; font-family: var(--display); font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; white-space: nowrap;
+}
+.pill.ok { color: var(--ok); background: var(--ok-soft); }
+.pill.warn { color: var(--warn); background: var(--warn-soft); }
+.pill.code { color: var(--code); background: var(--code-soft); }
+.pill.part { color: var(--part); background: var(--part-soft); }
+.pill.none { color: var(--none); background: var(--none-soft); }
+.pill.block { color: var(--block); background: var(--block-soft); }
+
+/* callouts */
+.callout { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--warn); border-radius: 8px; padding: 14px 16px; display: grid; gap: 8px; }
+.callout ul { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; }
+
+/* OKR sections */
+section.okr { display: grid; gap: 22px; padding-top: 40px; border-top: 1px solid var(--line); scroll-margin-top: 16px; }
+.okr-head { display: grid; gap: 8px; }
+.okr-head p { color: var(--muted); max-width: 70ch; }
+ol.results { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+ol.results > li {
+  display: grid; grid-template-columns: 2.4rem 1fr; gap: 0 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px 16px 12px;
+}
+.num {
+  font-family: var(--mono); font-weight: 500; font-size: 0.95rem; color: var(--accent);
+  font-variant-numeric: tabular-nums; padding-top: 2px; text-align: right;
+}
+.body { display: grid; gap: 8px; min-width: 0; }
+.title { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.body ul { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; }
+.body li::marker { color: var(--muted); }
+.row { font-size: 0.95rem; display: grid; gap: 4px; }
+.row > b { font-family: var(--display); font-weight: 600; font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.test { background: var(--accent-soft); border-radius: 6px; padding: 8px 10px; }
+.test > b { color: var(--accent); }
+.blk > b { color: var(--block); }
+
+/* questions */
+.people { display: grid; gap: 18px; }
+.person { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: grid; gap: 12px; }
+.person-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.person h3 span { color: var(--muted); font-weight: 500; font-size: 0.9rem; }
+.person ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; counter-reset: q; }
+.person li:not(.grp) { counter-increment: q; position: relative; padding-left: 2em; }
+.person li:not(.grp)::before { content: counter(q) "."; position: absolute; left: 0; top: 0.15em; color: var(--muted); font-family: var(--mono); font-size: 0.85em; }
+.tag { font-family: var(--mono); font-size: 0.76rem; color: var(--muted); margin-right: 4px; }
+button.copy {
+  font: inherit; font-size: 0.85rem; border: 1px solid var(--line); background: var(--bg); color: var(--fg);
+  border-radius: 6px; padding: 4px 10px; cursor: pointer;
+}
+button.copy:hover, button.copy:focus-visible { border-color: var(--accent); outline: none; }
+.grp { font-family: var(--display); font-weight: 600; font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+
+footer { color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--line); padding-top: 20px; display: grid; gap: 6px; }
+@media (max-width: 480px) {
+  ol.results > li { grid-template-columns: 1fr; padding: 16px; }
+  .num { text-align: left; padding-bottom: 4px; }
+}
+</style>
+</head>
+<body>
+<main>
+
+<header class="top">
+  <span class="eyebrow">LumoCad · 2026-Q4 · status on 27 Oct 2026</span>
+  <h1>Floor plan, roof, room book and stairs: where we really are</h1>
+  <p class="lede">I checked each Notion project result against the code on <code>development</code> (a4111bd06) and <code>main</code> (bf33f39e3, live since 19 Oct). For each result you get what is built, what has to be tested before it can be ticked, and who it is waiting on. The questions for Piotr, Rio/Djunejt, Alexandra and Elias are collected at the end, ready to copy.</p>
+  <div class="legend">
+    <span><i class="pill ok">Ticked</i> ticked, and the code backs it</span>
+    <span><i class="pill warn">Ticked, gap</i> ticked, but its own "done" line isn't met yet</span>
+    <span><i class="pill code">Built, test</i> code done, needs an app test or sign-off</span>
+    <span><i class="pill part">Partly</i> some bullets done</span>
+    <span><i class="pill none">Not started</i></span>
+  </div>
+</header>
+
+<nav class="board" aria-label="Summary">
+  <a class="card" href="#floorplan">
+    <b>Floor plan</b>
+    <div class="bar" aria-hidden="true"><span class="ok" style="width:33.3%"></span><span class="code" style="width:11.1%"></span><span class="part" style="width:33.3%"></span><span class="none" style="width:22.2%"></span></div>
+    <ul><li>3 ticked</li><li>1 built, test</li><li>3 partly</li><li>2 not started</li></ul>
+    <span class="prod">26 Oct work is on development only, not yet on main.</span>
+  </a>
+  <a class="card" href="#roof">
+    <b>Roof</b>
+    <div class="bar" aria-hidden="true"><span class="warn" style="width:22.2%"></span><span class="code" style="width:22.2%"></span><span class="part" style="width:55.6%"></span></div>
+    <ul><li>2 ticked, with gaps</li><li>2 built, test</li><li>5 partly</li></ul>
+    <span class="prod">All on main since 19 Oct. No roof commits since 13 Oct.</span>
+  </a>
+  <a class="card" href="#roombook">
+    <b>Room book</b>
+    <div class="bar" aria-hidden="true"><span class="ok" style="width:16.7%"></span><span class="warn" style="width:33.3%"></span><span class="code" style="width:16.7%"></span><span class="part" style="width:33.3%"></span></div>
+    <ul><li>1 ticked</li><li>2 ticked, with gaps</li><li>1 built, test</li><li>2 partly</li></ul>
+    <span class="prod">On main. Only the balcony 0.5 (26 Oct) is development-only.</span>
+  </a>
+  <a class="card" href="#stairs">
+    <b>Staircase</b>
+    <div class="bar" aria-hidden="true"><span class="warn" style="width:10%"></span><span class="code" style="width:20%"></span><span class="part" style="width:40%"></span><span class="none" style="width:30%"></span></div>
+    <ul><li>1 ticked, with gap</li><li>2 built, test</li><li>4 partly</li><li>3 not started / undefined</li></ul>
+    <span class="prod">On main since 19 Oct. No stair commits since 19 Oct.</span>
+  </a>
+</nav>
+
+<div class="callout" role="note">
+  <h3>Before anything else: four ticks that don't hold yet, and stale Notion text</h3>
+  <ul>
+    <li><b>Roof #9, "Inner roof and drone model":</b> its done line says "attic room heights come from the inner roof". They don't: <code>spaceBoundaryHeight.ts</code> still uses the finish ceiling height or the storey height (unchanged since 29 Jun). Wohnfläche does use the roof underside. Also missing: Airteam auto-fetch (needs an API key) and the FastFusion link.</li>
+    <li><b>Roof #1, "Roof editing never changes other elements":</b> the fix and its CI test hold. But Piotr's <i>Show Roof</i> toggle in boundary mode (12 Oct) makes roof nodes selectable there, and a plain box selection can grab roof and room nodes together. That fits "fixed twice, keeps coming back". Not reproduced in the browser yet.</li>
+    <li><b>Room book #2, "Gewobag handover export":</b> done means "Rio approved and runs on real Gewobag data". It has only run on "Test Alex". The export also leaves BGF per Geschoss blank and skips the stair and roof WoFlV rules, because it builds the schedule without LumoCad data.</li>
+    <li><b>Staircase #1, "Attached to slabs":</b> code is in production with unit tests, but nobody has tested a stair between two slabs <i>of the same storey</i> in the browser and exported it.</li>
+    <li><b>Stale Notion text:</b> the Floor plan KR note says "not pushed yet" (it is pushed). Room book #3 says "no logo, header or PDF" (added 16 Oct). Floor plan #7 and Room book #4 disagree on the balcony factor (0.5 vs 25 %).</li>
+  </ul>
+</div>
+
+<!-- ============================ FLOOR PLAN ============================ -->
+<section class="okr" id="floorplan">
+  <div class="okr-head">
+    <span class="eyebrow">KR · 9 results · 3 ticked</span>
+    <h2>2026-Q4 FloorPlan</h2>
+    <p>The 26 Oct solo pass covered #2, #3, #5, #6 and #7: 7 commits <code>4e870952a…a4111bd06</code>. They are on development, <b>not on main</b>, so production still has the old title block and no Flats button.</p>
+  </div>
+  <ol class="results">
+    <li><span class="num">1</span><div class="body">
+      <div class="title"><h3>Stairs and roofs drawn correctly in 2D</h3><span class="pill part">Partly</span></div>
+      <div class="row"><b>Built</b><ul>
+        <li>Stair cut plane: solid below the cut, dashed above, two-line break symbol, walking line, winder fans, and a void cross on storeys the stair passes through.</li>
+        <li>Roof outline, hatch, fall arrows, parapet and dormers on plans and sections.</li>
+        <li>Dashed "Hidden" layer for overhead lines, with a manual fallback for ceiling steps.</li>
+      </ul></div>
+      <div class="row"><b>Missing</b><ul><li><b>Railings:</b> there is no railing data anywhere in LumoCad (see Staircase #7).</li><li>Walls under sloped ceilings are not drawn dashed automatically.</li><li>No pass yet over the Staircase and Roof test sets.</li></ul></div>
+      <div class="row test"><b>To tick</b>Export plans for the stair test building and the roof test building, then have Djunejt compare them against drawing standards.</div>
+      <div class="row blk"><b>Waiting on</b>Railing model (Staircase #7); test sets from Djunejt.</div>
+    </div></li>
+
+    <li><span class="num">2</span><div class="body">
+      <div class="title"><h3>Clean elevations and sections</h3><span class="pill code">Built, test</span></div>
+      <div class="row"><b>Built</b><ul>
+        <li>Flush walls and slabs are joined per depth plane, so there is no line between them (<code>3e3c774ee</code>).</li>
+        <li>Hovering or selecting any line on a sheet shows what it is: a chip in the bottom right.</li>
+      </ul></div>
+      <div class="row test"><b>To tick</b>Pick a reference building. Floor Plan mode → Elevation North/South: no line where a wall and the slab edge are flush. Section 1-1: hover each line Djunejt flagged on 22 Sep; every line is named. Done line: "needs no manual clean-up".</div>
+      <div class="row blk"><b>Waiting on</b>Rio/Djunejt: which reference building.</div>
+    </div></li>
+
+    <li><span class="num">3</span><div class="body">
+      <div class="title"><h3>Dimensions you can rely on</h3><span class="pill part">1 of 4</span></div>
+      <div class="row"><b>Built</b><ul><li>Automatic facade chains leave out door widths (<code>38fa74e2d</code>). Balcony doors modelled as doors drop out as well.</li></ul></div>
+      <div class="row"><b>Missing</b><ul><li>Dimensions attached to a crossing that move with it.</li><li>Snapping to crossings without Shift.</li><li>Automatic dimensions ignoring the elements they shouldn't snap to.</li></ul></div>
+      <div class="row test"><b>To tick</b>On the reference building: move a wall and check that its dimensions follow with no manual fix.</div>
+      <div class="row blk"><b>Waiting on</b>Piotr: these three live in his dimension machine.</div>
+    </div></li>
+
+    <li><span class="num">4</span><div class="body">
+      <div class="title"><h3>Sheet dimensions separate from modelling measurements</h3><span class="pill none">Not started</span></div>
+      <div class="row"><b>Missing</b>Dimensions have no "sheet" vs "workspace" scope. Every dimension on a storey reaches the PDF and DXF.</div>
+      <div class="row test"><b>To tick</b>Take some measurements in the modelling workspace, then export the PDF and DWG: none of them appear. Dimensions placed in Floor Plan mode do appear.</div>
+      <div class="row blk"><b>Waiting on</b>Piotr: who builds the dimension variant, and how existing dimensions migrate.</div>
+    </div></li>
+
+    <li><span class="num">5</span><div class="body">
+      <div class="title"><h3>Title block and PDF export</h3><span class="pill ok">Ticked 26 Oct</span></div>
+      <div class="row"><b>Built</b><ul><li>No overlapping text; correct Geschoss on section and elevation sheets ("-"); Revision Index field; title block on/off toggle.</li><li>Tested on Example Building and Forststrasse 20-23.</li></ul></div>
+      <div class="row blk"><b>Open</b>Elias still has to confirm the on/off need. Reaches production with the next development → main merge.</div>
+    </div></li>
+
+    <li><span class="num">6</span><div class="body">
+      <div class="title"><h3>Automatic marketing plans</h3><span class="pill ok">Ticked 26 Oct</span></div>
+      <div class="row"><b>Built</b><ul><li>The <i>Flats</i> button in the Views header makes one crop per flat per level, cut along the outer wall faces. Each crop sheet shows "Mieteinheit" area rows.</li><li>Area and marketing plans have their own QC categories (Nora, 29 Sep).</li></ul></div>
+      <div class="row blk"><b>Open</b>Reaches production with the next main merge.</div>
+    </div></li>
+
+    <li><span class="num">7</span><div class="body">
+      <div class="title"><h3>Areas on the plan</h3><span class="pill part">Partly</span></div>
+      <div class="row"><b>Built</b><ul><li>Room area labels.</li><li>BGF and NRF (DIN 277) filled per sheet.</li><li>Balconies at 0.5 by name (<code>0459178ba</code>, development only; it reverses <code>9e36b166f</code>).</li></ul></div>
+      <div class="row"><b>Missing</b>Measured vs not-measured areas from the BGF assignment tool. That tool doesn't exist yet on any branch.</div>
+      <div class="row test"><b>To tick</b>Reference building: room labels and title block totals match the Room Book schedule for the same storey (within 0.01 m²).</div>
+      <div class="row blk"><b>Waiting on</b>Piotr (BGF tool). Rio: balcony factor 0.5 or 0.25.</div>
+    </div></li>
+
+    <li><span class="num">8</span><div class="body">
+      <div class="title"><h3>DWG and DXF export for building services</h3><span class="pill ok">Ticked 26 Oct</span></div>
+      <div class="row"><b>Built</b>TGA symbols on the plan, one layer per family following the clinic reference standard, plus a legend. DXF R2000 opens in AutoCAD and Revit. On main.</div>
+      <div class="row blk"><b>Open</b>Carlo's A/B check in AutoCAD.</div>
+    </div></li>
+
+    <li><span class="num">9</span><div class="body">
+      <div class="title"><h3>One building delivered fully from LumoCad</h3><span class="pill none">Not started</span></div>
+      <div class="row"><b>Known</b><ul><li>No gap list from the modelling team yet.</li><li>Forststrasse 20-23 (20 storeys) freezes the tab for about 60 s when Floor Plan mode opens. Cause not measured.</li><li>Jolanda's points (washed-out look, slow load and delete, can't hand in to 2D QC) haven't been re-checked since the QC hand-in work.</li></ul></div>
+      <div class="row test"><b>To tick</b>One customer building whose full 2D set goes out of LumoCad without Revit or AutoCAD.</div>
+      <div class="row blk"><b>Waiting on</b>Rio/Djunejt: the gap list and the pilot building.</div>
+    </div></li>
+  </ol>
+</section>
+
+<!-- ============================ ROOF ============================ -->
+<section class="okr" id="roof">
+  <div class="okr-head">
+    <span class="eyebrow">KR · 9 results · 2 ticked</span>
+    <h2>2026-Q4 Roof (including inner roof)</h2>
+    <p>45 roof commits went in between 8 and 13 Oct, all on main since 19 Oct. Nothing has landed since. The sprint 2.2 items RF-1…RF-26 still say "manual check pending".</p>
+  </div>
+  <ol class="results">
+    <li><span class="num">1</span><div class="body">
+      <div class="title"><h3>Roof editing never changes other elements</h3><span class="pill warn">Ticked, gap</span></div>
+      <div class="row"><b>Built</b>Roof and room nodes can't be mixed in a selection (<code>2c465da0a</code>, <code>cadSelection.ts</code>). Covered by 8 + 1 tests that CI runs on every push.</div>
+      <div class="row"><b>Gap</b>With boundary mode's Show Roof toggle on (Piotr, <code>01334cd64</code>), the mixing guard only covers the <i>additive</i> path. A plain box selection can hold both kinds of node.</div>
+      <div class="row test"><b>To test</b>Boundary mode, Show Roof on → box-select over a roof corner and a room corner → drag. Only one kind may move. Repeat in roof mode.</div>
+    </div></li>
+
+    <li><span class="num">2</span><div class="body">
+      <div class="title"><h3>Predictable rules for editing roof surfaces</h3><span class="pill part">1 of 4</span></div>
+      <div class="row"><b>Built</b>Non-flat faces are marked in 3D (<code>947006827</code>), on freeform roofs only.</div>
+      <div class="row"><b>Missing</b>Node slides along its edges (Q-15), edges slide along their neighbours (Q-16), a deliberate split choice (Q-17), vertical drag in 3D (Q-18), and the rules doc (Q-19).</div>
+      <div class="row test"><b>To tick</b>Rules agreed and documented, implemented, plus a walkthrough session with the modelling team.</div>
+      <div class="row blk"><b>Waiting on</b>Djunejt's rule proposal from his Revit research, and the session itself.</div>
+    </div></li>
+
+    <li><span class="num">3</span><div class="body">
+      <div class="title"><h3>Precise roof placement</h3><span class="pill code">Built, test</span></div>
+      <div class="row"><b>Built</b>Pick lines with an overhang per line; snapping to wall faces; 45° and Shift lock; live lengths and overhang (plan views only); "copy the slab outline" and pick-walls tools.</div>
+      <div class="row test"><b>To tick</b>Roof mode, top view, on a building whose slab sticks out past the walls:<ul><li>Pick 4 wall faces, typing 1.0 before one of them: that edge sits 1 m out.</li><li>Draw point by point and watch the live length and overhang.</li><li>Draw a 45° edge: it snaps.</li></ul>Done line: "to the centimetre without measuring by hand".</div>
+    </div></li>
+
+    <li><span class="num">4</span><div class="body">
+      <div class="title"><h3>Cutting and extending roofs</h3><span class="pill part">1 of 3</span></div>
+      <div class="row"><b>Built</b>Several roofs per building, joined, with the join type kept after reload (<code>26aa2d4a2</code>).</div>
+      <div class="row"><b>Missing</b>Cutting a rectangle out of a roof (Q-24); extending one face lower (Q-25).</div>
+      <div class="row test"><b>To test now</b>Join two roofs with a non-default join type → reload. The join survives, and the <code>PUT /building</code> request carries <code>properties</code> (server side not checked yet).</div>
+      <div class="row blk"><b>Waiting on</b>Djunejt: what "cut" and "extend" mean exactly.</div>
+    </div></li>
+
+    <li><span class="num">5</span><div class="body">
+      <div class="title"><h3>The right references in every view</h3><span class="pill part">Mostly</span></div>
+      <div class="row"><b>Built</b>Walls and the slab outline show in roof mode; the 3D roof is hidden in other CAD modes; dashed rooms and walls underlay with a toggle; Show Roof toggle in boundary mode (Piotr).</div>
+      <div class="row"><b>Missing</b>A roof toggle in the wall-mode top view; a roof-mode 3D toolbar that matches normal 3D, with boundary visualisations hidden (Q-28; Piotr's <code>mode-ux-fix.md</code> is "paused"); a more visible boundary toggle.</div>
+      <div class="row test"><b>To tick</b>Go wall mode → roof mode → wall mode, in top view and 3D. Check the defaults and toggles each way.</div>
+      <div class="row blk"><b>Waiting on</b>Piotr: un-pause mode-ux-fix, or hand Q-28 to Milton.</div>
+    </div></li>
+
+    <li><span class="num">6</span><div class="body">
+      <div class="title"><h3>Ceiling slope as a room property</h3><span class="pill part">Partly</span></div>
+      <div class="row"><b>Built</b><code>ceilingSlopeDeg</code> on the room; the room panel shows the roof slope above it, with an amber flag when they differ by more than 2° (<code>d8fbdde4c</code>).</div>
+      <div class="row"><b>Missing</b>Slope direction; input in the section view; <b>the roof-view overlay</b>, which is the done line; a room book column.</div>
+      <div class="row test"><b>To test now</b>Attic room under a 40° roof → enter 30 → amber "differs by 10°" → reload → Ctrl+Z.</div>
+      <div class="row blk"><b>Waiting on</b>Rio: is direction needed, and what should the overlay look like?</div>
+    </div></li>
+
+    <li><span class="num">7</span><div class="body">
+      <div class="title"><h3>Clean roof and dormer geometry</h3><span class="pill part">Partly</span></div>
+      <div class="row"><b>Built</b>Plumb eaves with no corner diamonds; dormers, skylights and boxes cut the roof slab; delete a whole roof (with a confirm, no undo); select and delete dormers in 3D.</div>
+      <div class="row"><b>Missing</b>Dormers in sections are thin lines with no fill. Dormer windows: still one centred window, no size input, not several per dormer (Q-30).</div>
+      <div class="row test"><b>To tick</b>Test roofs in 3D, section and plan: no geometry errors anywhere.</div>
+      <div class="row blk"><b>Waiting on</b>Rio/Djunejt: how a dormer looks in section, and window parameters.</div>
+    </div></li>
+
+    <li><span class="num">8</span><div class="body">
+      <div class="title"><h3>Coverage of the common roof shapes</h3><span class="pill code">Built, sign-off</span></div>
+      <div class="row"><b>Built</b>One-click gable, hip, M, jerkinhead, Dutch gable, gambrel/mansard, saltbox, butterfly and more. Hip-and-valley is the Hip preset on an L-shaped outline. The gallery test covers the 20-type chart plus the elite set. One fuzz seed (92) is still known-failing.</div>
+      <div class="row test"><b>To tick</b>Djunejt models the common set (score 7) and the advanced set (score 10) on a test building and signs off (Q-32).</div>
+    </div></li>
+
+    <li><span class="num">9</span><div class="body">
+      <div class="title"><h3>Inner roof and drone model as reference</h3><span class="pill warn">Ticked, gap</span></div>
+      <div class="row"><b>Built</b>The roof underside drives Wohnfläche bands. The drone model is on by default in roof mode and loads its OBJ from the building's model files.</div>
+      <div class="row"><b>Gap</b>Attic room <b>heights</b> don't come from the roof (Q-20). There is no Airteam auto-fetch (needs an API key and backend work), no FastFusion link, and no tapered boundaries.</div>
+      <div class="row test"><b>To test</b>Attic room under a slope: the panel/3D height should follow the roof. Today it won't.</div>
+      <div class="row blk"><b>Waiting on</b>Piotr: tapered boundaries vs Q-20. Milton: Airteam API key.</div>
+    </div></li>
+  </ol>
+</section>
+
+<!-- ============================ ROOM BOOK ============================ -->
+<section class="okr" id="roombook">
+  <div class="okr-head">
+    <span class="eyebrow">KR · 5 results + 1 ticket · 3 ticked</span>
+    <h2>2026-Q4 Room Book (incl. Wohnfläche, BGF)</h2>
+    <p>Template 1 (schedule, Excel, branded PDF) and the Gewobag Raumbuch export are on main. Since main, only the balcony 0.5 change touches the room book. Production still counts balconies at 100 % unless a factor was typed.</p>
+  </div>
+  <ol class="results">
+    <li><span class="num">1</span><div class="body">
+      <div class="title"><h3>Base (Template 1) room book in production</h3><span class="pill warn">Ticked, gap</span></div>
+      <div class="row"><b>Built</b>LumoCad right dock → Room Book → Schedule: Excel plus a branded PDF (logo, red header line, "Seite x von y"), totals per flat, level and building (<code>b0c9d2959</code>, <code>dd661b0d4</code>, <code>6204ede4e</code>).</div>
+      <div class="row"><b>Gap</b>Done line: "approved and shared with the team". There's no record of either, and it has never run on real pilot data.</div>
+      <div class="row test"><b>To tick</b>On cloud.lumoview.com, open the pilot building → export PDF and Excel → Rio compares them against his hand-made Template 1.</div>
+    </div></li>
+
+    <li><span class="num">2</span><div class="body">
+      <div class="title"><h3>Gewobag handover room book export</h3><span class="pill warn">Ticked, gap</span></div>
+      <div class="row"><b>Built</b>Room Data → book icon fills Alexandra's 11-sheet master template from the measurement checklists, including door and window sizes from measured openings.</div>
+      <div class="row"><b>Gaps</b><ul><li>BGF per Geschoss is always blank, and WoFlV skips the stair and roof rules (no LumoCad data, <code>useRaumbuchExport.ts:79</code>).</li><li>A door goes under the first room next to it, not the room it opens into.</li><li>Alexandra's V2 template has a formula bug (<code>BZ</code> counts <code>$C</code> instead of <code>$B</code>).</li><li>Only ever run on "Test Alex".</li></ul></div>
+      <div class="row test"><b>To tick</b>Real Gewobag building with filled checklists → export. All 11 sheets filled, no "unmapped" toast, dropdown values match <i>Kataloge</i>, Flächen sheet has NRF/WoFlV/BGF → Rio approves.</div>
+    </div></li>
+
+    <li><span class="num">3</span><div class="body">
+      <div class="title"><h3>Export of Room book 1 according to our standard</h3><span class="pill code">Built, test</span></div>
+      <div class="row"><b>Built</b>Everything the Notion text says is missing (logo, header, PDF) shipped on 16 Oct. The result has no done line and mostly overlaps with #1.</div>
+      <div class="row test"><b>To tick</b>Same as #1, plus: a stairwell row's comment says "WoFlV ohne Treppe x m²". Or merge this result into #1.</div>
+    </div></li>
+
+    <li><span class="num">4</span><div class="body">
+      <div class="title"><h3>Wohnfläche according to WoFlV</h3><span class="pill part">Mostly</span></div>
+      <div class="row"><b>Built</b>Headroom bands from the inner roof (0 / 50 / 100 %); stair deduction for stairs with more than 3 risers; totals per room, flat and building; surveyed ceiling slope.</div>
+      <div class="row"><b>Gaps</b><ul><li><b>Balcony factor conflict:</b> code (development) says 0.5; the 14 Oct Notion update, Template 2 and Rio's sketch say 25 %; WoFlV §4 says "normally ¼, at most ½". Veranda and Wintergarten aren't on the name list.</li><li>No comparison against a hand calculation yet (tests use synthetic geometry).</li><li>Headroom reductions aren't explained in the comment column.</li><li>A stair over several storeys is deducted only on its base storey.</li></ul></div>
+      <div class="row test"><b>To tick</b>Reference attic flat with its roof modelled, no typed factors → compare each room with a hand calculation to ±0.02 m².</div>
+    </div></li>
+
+    <li><span class="num">5</span><div class="body">
+      <div class="title"><h3>BGF and NRF per storey according to DIN 277</h3><span class="pill part">Partly</span></div>
+      <div class="row"><b>Built</b>BGF per storey is the sum of slab polygons (multi-slab). NRF is the sum of room areas. Room book and title block use the same function, apart from a ±0.01–0.02 rounding difference.</div>
+      <div class="row"><b>Missing</b>The BGF assignment tool (no code on any branch); a measured / not-measured flag per area; balcony slabs counted separately (slabs have no kind). Stair voids are subtracted from BGF; is that intended?</div>
+      <div class="row test"><b>To tick</b>On one building: each level's BGF/NRF in the room book matches that storey's plan title block.</div>
+    </div></li>
+
+    <li><span class="num">+</span><div class="body">
+      <div class="title"><h3>Template 1 PDF: logo, header line, branding</h3><span class="pill ok">Ticked 16 Oct</span></div>
+      <div class="row"><b>Built</b><code>roomBookPdf.ts</code> and <code>roomBookWorkbookBranding.ts</code> (<code>dd661b0d4</code>). On main.</div>
+    </div></li>
+  </ol>
+</section>
+
+<!-- ============================ STAIRS ============================ -->
+<section class="okr" id="stairs">
+  <div class="okr-head">
+    <span class="eyebrow">KR · 9 results + burndown · 1 ticked</span>
+    <h2>2026-Q4 Staircase</h2>
+    <p>All stair work is on main since 19 Oct, with no unmerged stair branches. One visible change: stairs saved without a construction type now load as "Smooth underside, 150 mm", so existing stairs look different in 3D.</p>
+  </div>
+  <ol class="results">
+    <li><span class="num">1</span><div class="body">
+      <div class="title"><h3>Stair work merged and attached to slabs</h3><span class="pill warn">Ticked, gap</span></div>
+      <div class="row"><b>Built</b>Base and top attach to a specific slab (<code>stairSlabReferences</code>, Piotr <code>1226597ab</code>). A stair between two slabs of one storey is unit-tested, and so is the IFC export of several slabs.</div>
+      <div class="row test"><b>To test</b>Storey with two slabs → add a stair → tick both slabs in <i>Slab connections</i> → place it. The opening appears in the upper slab only. Export plan (PDF/DXF) and IFC: the stair is drawn with the right rise.</div>
+    </div></li>
+
+    <li><span class="num">2</span><div class="body">
+      <div class="title"><h3>Stairs that span several floors</h3><span class="pill code">Built, test</span></div>
+      <div class="row"><b>Built</b>With 3 or more slabs ticked, you get one run per pair of slabs, each with its own turn. With only 2 ticked, one continuous run. Auto-placement ticks only the next slab up, so the repeat needs the in-between slabs ticked by hand. Riser count is shared, so behaviour with unequal storey heights is unknown.</div>
+      <div class="row test"><b>To tick</b>U stair, tick the slabs of 4 storeys → 3 U runs, each turning on its own floor. Switch to bottom and top slab only → one run. Repeat with unequal storey heights.</div>
+    </div></li>
+
+    <li><span class="num">3</span><div class="body">
+      <div class="title"><h3>Editing stairs after placement</h3><span class="pill part">1 of 4</span></div>
+      <div class="row"><b>Built</b>Move by dragging in the top view, with snapping to walls and guidelines.</div>
+      <div class="row"><b>Missing</b><ul><li>Selection in 3D: <code>Stair3D.tsx</code> has no pointer handlers, and selection isn't shown in 3D.</li><li>Rotate: no handle or field (the generic hold-R might work; untested).</li><li>First-step distance to the wall as a number.</li></ul></div>
+      <div class="row test"><b>To test now</b>Top view: select a stair → hold R and drag → reload. Is the rotation kept?</div>
+    </div></li>
+
+    <li><span class="num">4</span><div class="body">
+      <div class="title"><h3>Flexible flights and landings</h3><span class="pill part">2 of 4</span></div>
+      <div class="row"><b>Built</b><ul><li>Several landings: <i>Turns → Add → Landing, straight on</i>, repeatable. There's no count field, and the "Two straight runs" preset is still there.</li><li>Treppenauge: the "Stairwell well width" field for half-turn, half-winding and custom 180° turns.</li></ul></div>
+      <div class="row"><b>Missing</b>Landings trimmed by walls (ST-14); widening a single step (ST-13).</div>
+    </div></li>
+
+    <li><span class="num">5</span><div class="body">
+      <div class="title"><h3>New stair types</h3><span class="pill none">Not started</span></div>
+      <div class="row"><b>State</b>Spiral and curved stairs throw "not implemented" (<code>deriveStairGeometry.ts:1056</code>). Turns can only be 0°, 90° or 180°, so custom-angle winders aren't possible. No ramp code.</div>
+    </div></li>
+
+    <li><span class="num">6</span><div class="body">
+      <div class="title"><h3>Slab openings follow the stair</h3><span class="pill code">Built, test</span></div>
+      <div class="row"><b>Built</b>Deleting a stair removes its opening, copies included; undo restores it; openings follow the stair's shape. Openings can be edited point by point (Piotr <code>4ede60c76</code>), but any later stair edit regenerates them and overwrites the manual change.</div>
+      <div class="row test"><b>To tick</b>Delete a stair → reload: the slab is closed. Drag an opening's points → reload: still changed. Edit the stair: the opening is regenerated. Is that wanted?</div>
+    </div></li>
+
+    <li><span class="num">7</span><div class="body">
+      <div class="title"><h3>Clear stair representation in 3D and 2D</h3><span class="pill part">2 of 5</span></div>
+      <div class="row"><b>Built</b>Walking-line arrow (ST-11); separate "Toggle stairs" in the orbit toolbar; underside by construction type (solid, stepped, smooth, floating).</div>
+      <div class="row"><b>Missing</b><ul><li><b>Railings: none at all.</b> The Notion text says "export already writes railings", but the Revit import suppresses them.</li><li>Colours unchanged since May.</li><li>Sections draw a smooth underside as stepped.</li></ul></div>
+    </div></li>
+
+    <li><span class="num">8</span><div class="body">
+      <div class="title"><h3>Validated against the common stair types</h3><span class="pill none">Not started</span></div>
+      <div class="row"><b>State</b>Golden tests for 20 presets. About 12 of the 27 chart cases work; the rest need #5 (spiral, curved) or the pyramid entrance steps.</div>
+      <div class="row test"><b>To tick</b>Djunejt models the full test set on a test building, exports it, and signs off.</div>
+    </div></li>
+
+    <li><span class="num">9</span><div class="body">
+      <div class="title"><h3>Complex Staircases</h3><span class="pill none">No definition</span></div>
+      <div class="row"><b>State</b>The Notion page is empty. It's the only score-10 item on the KR.</div>
+    </div></li>
+
+    <li><span class="num">–</span><div class="body">
+      <div class="title"><h3>Staircase burndown list after Q3 (Piotr, 30 Sep)</h3><span class="pill part">2 of 5</span></div>
+      <div class="row"><b>State</b>Slab attach and the 3D underside are done in code; nothing is ticked on the list. Railings, spiral stairs and custom-angle winders are still open.</div>
+    </div></li>
+  </ol>
+</section>
+
+<!-- ============================ QUESTIONS ============================ -->
+<section class="okr" id="questions">
+  <div class="okr-head">
+    <span class="eyebrow">To unblock</span>
+    <h2>Questions to send</h2>
+    <p>Each one is answerable in a sentence or two and unblocks a named result. The tag shows which result.</p>
+  </div>
+  <div class="people">
+
+    <div class="person" id="q-piotr">
+      <div class="person-head"><h3>Piotr <span>· dimensions, multi-slab, BGF tool, modes</span></h3><button class="copy" type="button" data-target="q-piotr-list">Copy</button></div>
+      <ol id="q-piotr-list">
+        <li><span class="tag">FP3</span>Dimensions attached to a crossing that move with it, and snapping to crossings without Shift: are you doing these in the dimension machine, or can I? If you, roughly when?</li>
+        <li><span class="tag">FP4</span>Sheet vs modelling dimensions: OK to add a scope, where dimensions drawn in Floor Plan mode are sheet-only and all others stay in the workspace and never export? How should the existing dimensions on delivered buildings be treated?</li>
+        <li><span class="tag">FP7 RB5</span>BGF assignment tool: still yours, and when? How should measured vs not-measured areas look?</li>
+        <li><span class="tag">RB5</span>Can slabs get a kind (floor / balcony / terrace) and a measured flag as slab <code>properties[]</code>, like <code>slabDisplayLabel</code>? Is your "balcony slab = 0.5" for BGF or for WoFlV?</li>
+        <li><span class="tag">RB5</span>Stair voids are subtracted from the storey's BGF. On purpose?</li>
+        <li><span class="tag">R1</span>Boundary mode with Show Roof on: should roof nodes be editable there, or only visible? Right now a plain box selection can grab roof and room nodes together.</li>
+        <li><span class="tag">R5</span><code>mode-ux-fix.md</code> is paused. Will you pick it up for roof mode, or should I build the roof-mode 3D toolbar (Q-28) on top of it?</li>
+        <li><span class="tag">R9</span>Tapered boundaries (your End2End result 3): still planned, or do attic room heights from the roof underside (Q-20) replace them? Roof seeding reads one slab per storey (<code>useTopSlabOutline</code>). Does multi-slab change that?</li>
+        <li><span class="tag">S2</span>Did <code>1226597ab</code> bring back "repeat the turn on every floor"? Should auto-placement tick the in-between slabs, so a 4-storey stair repeats by default?</li>
+        <li><span class="tag">S6</span>Should manual edits to a stair opening survive a later stair edit (a lock flag), or is regenerating OK? Can you confirm the <code>keepOwnStairVoids</code> rule?</li>
+        <li><span class="tag">S7</span>The Staircase OKR says "the export already writes railings in 2D and 3D". Which export? I can't find railing data anywhere.</li>
+      </ol>
+    </div>
+
+    <div class="person" id="q-rio">
+      <div class="person-head"><h3>Rio &amp; Djunejt <span>· drawing rules, sign-offs, test sets</span></h3><button class="copy" type="button" data-target="q-rio-list">Copy</button></div>
+      <ol id="q-rio-list">
+        <li class="grp">Shared</li>
+        <li><span class="tag">FP7 RB4</span>Balcony / terrace / loggia in WoFlV: 0.25 or 0.5? One fixed value or per project? Do veranda and Wintergarten count the same?</li>
+        <li><span class="tag">FP2 FP9 RB1</span>Which building is the reference / pilot for the 2D set and the room book, and is it delivered from production?</li>
+        <li><span class="tag">FP9</span>Can you collect the floor plan gap list (everything you'd still fix by hand) in one Notion list?</li>
+        <li class="grp">Floor plan</li>
+        <li><span class="tag">FP5</span>Geschoss on section and elevation sheets now prints "-". OK, or should it say e.g. "alle"?</li>
+        <li><span class="tag">FP3</span>Facade chains now leave out all door widths, balcony doors included. OK?</li>
+        <li><span class="tag">FP1</span>Walls under sloped ceilings drawn dashed: generated automatically from the roof, or placed by hand?</li>
+        <li class="grp">Roof</li>
+        <li><span class="tag">R2</span>When will the Revit roof-editing rule proposal be ready, and when can we do the walkthrough?</li>
+        <li><span class="tag">R2</span>Raising an eave edge: slide along the hips (plan position changes), or keep the plan position and change the pitch?</li>
+        <li><span class="tag">R2</span>Dragging a node: stay on its edge by default, with free movement behind a key? Off-plane: do you pick the fold diagonal, or does the tool draw a visible fold line? Do the same rules apply to parametric roofs?</li>
+        <li><span class="tag">R3</span>Overhang: measured from the outer wall face or the slab edge? Needed in 3D too, or is the plan view enough?</li>
+        <li><span class="tag">R4</span>Rectangle cut: a hole through the roof (Revit vertical opening), or trimming the footprint? Extend lower: same pitch continued, or a new pitch from a break line?</li>
+        <li><span class="tag">R6</span>Ceiling slope: angle only, or direction too? Roof-view overlay: number per room, colour, or both?</li>
+        <li><span class="tag">R7</span>Dormer in section: solid fill or layers? Dormer windows: which sizes (width, height, sill)? Several per dormer: evenly spaced, or each placed?</li>
+        <li><span class="tag">R8</span>Date for modelling the roof test set? Does "Final Boss" count toward score 10?</li>
+        <li class="grp">Room book</li>
+        <li><span class="tag">RB4</span>Which attic flat is the WoFlV reference, and who does the hand calculation?</li>
+        <li><span class="tag">RB4</span>A stair over several storeys: deduct it only on the base storey, or on each storey it passes?</li>
+        <li><span class="tag">RB5</span>DIN 277: balcony area as a separate BGF line (BGF(S))? Do stair openings count in BGF?</li>
+        <li><span class="tag">RB1 RB3</span>Who signs off Template 1, and has it been shared? Can #3 be merged into #1?</li>
+        <li><span class="tag">RB4</span>Explaining headroom reductions in the comment column: Template 1 now, or Template 2?</li>
+        <li class="grp">Stairs</li>
+        <li><span class="tag">S3</span>First-step distance: to which wall (nearest, or one the user picks), measured along the walking line or square to the wall?</li>
+        <li><span class="tag">S4</span>Is "Add landing" (repeatable) OK instead of a count field? Can the "Two straight runs" preset go?</li>
+        <li><span class="tag">S4</span>Irregular landings: is trimming to the wall at landing height enough? Wider steps: each step its own width, or "first N steps X wider"? Symmetric or to one side?</li>
+        <li><span class="tag">S5</span>Priority between spiral, radial and S-shaped stairs? What sizes and centre columns do we actually meet? Are ramps in this quarter?</li>
+        <li><span class="tag">S7 FP1</span>Railings: one height per stair or per side? Which sides (inner, outer, both)? Is a plain line enough on the plan?</li>
+        <li><span class="tag">S7</span>Where should the walking line cross a half landing?</li>
+        <li><span class="tag">S8</span>Is the stair test set exactly the 27-type chart? Which test building? Are the pyramid entrance steps in scope?</li>
+        <li><span class="tag">S9</span>"Complex Staircases" is empty and the only score-10 item. What does it add beyond #5?</li>
+      </ol>
+    </div>
+
+    <div class="person" id="q-alex">
+      <div class="person-head"><h3>Alexandra <span>· Gewobag export</span></h3><button class="copy" type="button" data-target="q-alex-list">Copy</button></div>
+      <ol id="q-alex-list">
+        <li><span class="tag">RB2</span>Is there real Gewobag checklist data yet? Which building ID?</li>
+        <li><span class="tag">RB2</span>Can you fix the V2 template formula: <code>Raumbuch!BZ</code> counts <code>Sonderbauteile!$C</code> instead of <code>$B</code>?</li>
+        <li><span class="tag">RB2</span>Is "a door belongs to the room it opens into" needed for this delivery? Today it goes under the first adjacent room.</li>
+        <li><span class="tag">RB2</span>Please confirm: FF = Flügel, FV = Festverglasung, and a group of unticked checkboxes exports as blank, not "nein".</li>
+      </ol>
+    </div>
+
+    <div class="person" id="q-elias">
+      <div class="person-head"><h3>Elias <span>· title block</span></h3><button class="copy" type="button" data-target="q-elias-list">Copy</button></div>
+      <ol id="q-elias-list">
+        <li><span class="tag">FP5</span>The PDF export can now switch the title block (and the TGA legend) off on their own. Do you need that for client deliveries, or was it only for the clinic project?</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>Sources: Notion KR pages and their 34 project results (read 27 Oct); code on <code>development</code> a4111bd06 and <code>main</code> bf33f39e3; plan docs <code>PLAN_ROOF_Q4_OKR.md</code> and <code>PLAN_STAIR_SPRINT_2_2_FEEDBACK.md</code>.</span>
+  <span>Not checked: whether the production deploy of 19 Oct succeeded (no CI access from this machine), and open PRs.</span>
+  <span>Definitions of each result: <a href="../lumocad-q4-okrs/">LumoCad Q4 OKRs</a>.</span>
+</footer>
+</main>
+<script>
+document.querySelectorAll('button.copy').forEach(function (button) {
+  button.addEventListener('click', function () {
+    var list = document.getElementById(button.dataset.target);
+    var n = 0;
+    var text = Array.prototype.map.call(list.children, function (li) {
+      if (li.classList.contains('grp')) return '\n' + li.textContent.trim() + ':';
+      n += 1;
+      return n + '. ' + li.textContent.replace(/\s+/g, ' ').trim();
+    }).join('\n').trim();
+    var done = function () { var label = button.textContent; button.textContent = 'Copied'; setTimeout(function () { button.textContent = label; }, 1400); };
+    try { navigator.clipboard.writeText(text).then(done, function () {}); } catch (e) {}
+  });
+});
+</script>
+</body>
+</html>
