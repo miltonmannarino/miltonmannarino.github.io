@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Revit Workflow · Video Transcripts</title>
+<meta name="description" content="A searchable, page-by-page transcript and knowledge guide for Lumoview's Revit workflow recordings.">
+<meta name="theme-color" content="#f2efe8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&amp;display=swap">
+<style>
+:root {
+  --paper: #f2efe8;
+  --surface: #fbfaf7;
+  --ink: #1e2928;
+  --muted: #65706d;
+  --line: #d7d7ce;
+  --soft: #e9e6dc;
+  --teal: #0b6b62;
+  --teal-soft: #dcece8;
+  --orange: #c2572d;
+  --orange-soft: #f5e3d9;
+  --quote: #f7f4ed;
+  --shadow: 0 12px 38px rgb(35 48 45 / 8%);
+  --display: "DM Sans", "Helvetica Neue", Arial, sans-serif;
+  --body: "Source Serif 4", Georgia, serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+:root[data-theme="dark"] {
+  --paper: #111817;
+  --surface: #18211f;
+  --ink: #edf3f0;
+  --muted: #a6b2ae;
+  --line: #33403d;
+  --soft: #222d2a;
+  --teal: #70cfc2;
+  --teal-soft: #173a35;
+  --orange: #f39a72;
+  --orange-soft: #40261d;
+  --quote: #1c2724;
+  --shadow: 0 12px 38px rgb(0 0 0 / 22%);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #111817; --surface: #18211f; --ink: #edf3f0; --muted: #a6b2ae;
+    --line: #33403d; --soft: #222d2a; --teal: #70cfc2; --teal-soft: #173a35;
+    --orange: #f39a72; --orange-soft: #40261d; --quote: #1c2724;
+    --shadow: 0 12px 38px rgb(0 0 0 / 22%); color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.65; }
+button, input { font: inherit; }
+a { color: var(--teal); text-underline-offset: 3px; }
+.progress { position: fixed; inset: 0 0 auto; height: 3px; z-index: 20; background: transparent; }
+.progress > span { display: block; width: 0; height: 100%; background: linear-gradient(90deg, var(--teal), var(--orange)); }
+.shell { width: min(1180px, calc(100% - 36px)); margin: 0 auto; }
+.topbar { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 22px 0; font-family: var(--display); }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-weight: 700; letter-spacing: -0.02em; }
+.brand-mark { width: 30px; height: 30px; border: 1px solid var(--ink); border-radius: 50%; display: grid; place-items: center; font-family: var(--mono); font-size: 11px; }
+.actions { display: flex; gap: 8px; }
+.icon-button { border: 1px solid var(--line); color: var(--ink); background: var(--surface); border-radius: 999px; min-height: 38px; padding: 7px 12px; cursor: pointer; font-family: var(--display); font-size: 13px; }
+.icon-button:hover { border-color: var(--teal); color: var(--teal); }
+.hero { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: clamp(52px, 9vw, 100px) 0 44px; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(270px, .65fr); gap: clamp(36px, 7vw, 90px); align-items: end; }
+.eyebrow { margin: 0 0 18px; font-family: var(--display); color: var(--orange); font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+h1, h2, h3 { font-family: var(--display); letter-spacing: -.035em; line-height: 1.12; text-wrap: balance; }
+.hero h1 { margin: 0; max-width: 800px; font-size: clamp(2.7rem, 7vw, 5.7rem); font-weight: 600; }
+.hero .lede { margin: 24px 0 0; color: var(--muted); max-width: 680px; font-size: 1.15rem; line-height: 1.55; }
+.source-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; box-shadow: var(--shadow); }
+.source-card p { margin: 0; }
+.source-card .label { font-family: var(--display); color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.source-card .name { margin-top: 8px; font-family: var(--display); font-weight: 600; line-height: 1.35; }
+.source-card .note { margin-top: 14px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; margin-top: 48px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.metric { background: var(--surface); padding: 18px 20px; }
+.metric strong { display: block; font-family: var(--display); font-size: 1.75rem; line-height: 1.1; }
+.metric span { display: block; margin-top: 6px; color: var(--muted); font-family: var(--display); font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.content-grid { display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: clamp(36px, 6vw, 76px); padding: 56px 0 96px; align-items: start; }
+.sidebar { position: sticky; top: 22px; display: grid; gap: 22px; font-family: var(--display); }
+.sidebar-label { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.search { position: relative; }
+.search input { width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px 10px 34px; color: var(--ink); background: var(--surface); outline: none; font-family: var(--display); font-size: 14px; }
+.search input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-soft); }
+.search::before { content: "⌕"; position: absolute; left: 12px; top: 7px; color: var(--muted); }
+.toc { display: grid; gap: 3px; }
+.toc a { padding: 7px 9px; border-left: 2px solid transparent; color: var(--muted); text-decoration: none; font-size: 13px; line-height: 1.35; }
+.toc a:hover, .toc a.active { color: var(--teal); border-left-color: var(--teal); background: var(--teal-soft); }
+.controls { display: flex; gap: 6px; }
+.controls button { flex: 1; border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 8px; padding: 7px; cursor: pointer; font-family: var(--display); font-size: 12px; }
+.controls button:hover { color: var(--teal); border-color: var(--teal); }
+.results { min-height: 18px; color: var(--muted); font-size: 12px; }
+.article { min-width: 0; }
+.article > h1:first-child { display: none; }
+.article > p:nth-child(2), .article > p:nth-child(3), .article > p:nth-child(4) { max-width: 74ch; }
+.article > p:nth-child(2) { padding: 14px 16px; background: var(--teal-soft); border-radius: 9px; font-family: var(--display); font-size: 14px; }
+.article h2 { margin: 72px 0 22px; padding-top: 16px; border-top: 1px solid var(--line); font-size: clamp(1.6rem, 3vw, 2.2rem); scroll-margin-top: 20px; }
+.article h2#coverage { margin-top: 44px; }
+.article p { margin: 0 0 18px; }
+.article ul { margin: 0; padding-left: 1.2em; display: grid; gap: 10px; }
+.article strong { font-weight: 600; }
+.article code { font-family: var(--mono); font-size: .78em; background: var(--soft); color: var(--ink); border-radius: 4px; padding: 2px 5px; overflow-wrap: anywhere; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); }
+table { width: 100%; border-collapse: collapse; min-width: 650px; font-family: var(--display); font-size: 13px; }
+th, td { padding: 11px 13px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { position: sticky; top: 0; background: var(--soft); color: var(--muted); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; }
+tr:last-child td { border-bottom: 0; }
+td:nth-last-child(-n+2), th:nth-last-child(-n+2) { white-space: nowrap; }
+details.recording { margin: 12px 0; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: 0 4px 18px rgb(31 47 43 / 4%); overflow: clip; scroll-margin-top: 16px; }
+details.recording[open] { border-color: color-mix(in srgb, var(--teal) 55%, var(--line)); }
+details.recording[hidden] { display: none; }
+details.recording summary { display: flex; align-items: center; gap: 12px; padding: 17px 19px; cursor: pointer; list-style: none; }
+details.recording summary::-webkit-details-marker { display: none; }
+details.recording summary::before { content: "+"; flex: 0 0 auto; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--teal-soft); color: var(--teal); font-family: var(--mono); font-size: 15px; }
+details.recording[open] summary::before { content: "−"; }
+details.recording h3 { margin: 0; font-size: 1.06rem; font-weight: 600; }
+.recording-body { padding: 0 19px 22px 55px; }
+.recording-meta { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px !important; }
+.recording-meta span { display: inline-flex; align-items: center; min-height: 27px; padding: 4px 9px; border-radius: 999px; background: var(--soft); color: var(--muted); font-family: var(--mono); font-size: 11px; }
+.recording-meta .duration { background: var(--orange-soft); color: var(--orange); }
+blockquote { margin: 0; padding: 18px 20px; background: var(--quote); border-left: 3px solid var(--teal); border-radius: 0 9px 9px 0; }
+blockquote p { margin-bottom: 12px !important; }
+blockquote p:last-child { margin-bottom: 0 !important; }
+.empty { display: none; margin-top: 28px; padding: 20px; border: 1px dashed var(--line); border-radius: 10px; color: var(--muted); text-align: center; font-family: var(--display); }
+footer { border-top: 1px solid var(--line); padding: 26px 0 44px; color: var(--muted); font-family: var(--display); font-size: 13px; }
+@media (max-width: 820px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .source-card { max-width: 520px; }
+  .metrics { grid-template-columns: repeat(2, 1fr); }
+  .content-grid { grid-template-columns: 1fr; padding-top: 34px; }
+  .sidebar { position: static; padding-bottom: 26px; border-bottom: 1px solid var(--line); }
+  .toc { grid-template-columns: repeat(2, 1fr); }
+  .article h2 { margin-top: 54px; }
+}
+@media (max-width: 520px) {
+  .shell { width: min(100% - 24px, 1180px); }
+  .topbar { padding: 14px 0; }
+  .print-label { display: none; }
+  .hero { padding-top: 44px; }
+  .hero h1 { font-size: 2.65rem; }
+  .metrics { grid-template-columns: 1fr 1fr; }
+  .metric { padding: 14px; }
+  .metric strong { font-size: 1.45rem; }
+  .toc { grid-template-columns: 1fr; }
+  .recording-body { padding-left: 18px; }
+}
+@media print {
+  :root { --paper: #fff; --surface: #fff; --ink: #111; --muted: #555; --line: #ccc; --quote: #fff; }
+  .progress, .topbar, .sidebar, .actions { display: none !important; }
+  .shell { width: 100%; }
+  .hero { padding: 30px 0; }
+  .hero-grid { grid-template-columns: 1fr; }
+  .metrics { grid-template-columns: repeat(4, 1fr); }
+  .content-grid { display: block; padding-top: 20px; }
+  details.recording { break-inside: avoid; box-shadow: none; }
+  details.recording:not([open]) > .recording-body { display: block; }
+  details.recording summary::before { display: none; }
+  .recording-body { padding-left: 19px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<div class="progress" aria-hidden="true"><span id="progress"></span></div>
+
+<header class="shell topbar">
+  <a class="brand" href="/"><span class="brand-mark">LV</span><span>Lumoview knowledge artifacts</span></a>
+  <div class="actions">
+    <button class="icon-button" id="print" type="button" aria-label="Print or save as PDF"><span aria-hidden="true">⇩</span><span class="print-label"> Print / save PDF</span></button>
+    <button class="icon-button" id="theme" type="button" aria-label="Toggle colour theme">◐</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="shell">
+    <div class="hero-grid">
+      <div>
+        <p class="eyebrow">Revit · production knowledge · 27 October 2026</p>
+        <h1>Every workflow recording, transcribed.</h1>
+        <p class="lede">A searchable reference for the Revit workflow from project setup and point-cloud alignment through walls, complex roofs, and curtain walls.</p>
+      </div>
+      <aside class="source-card">
+        <p class="label">Primary source</p>
+        <p class="name"><a href="https://app.notion.com/p/lumoview/32f14a002f2c80be980dd62c0ab913fe?v=33014a002f2c80d99dae000c2606e03a">Revit Workflow From Start To End ↗</a></p>
+        <p class="note">Audio was exported from Notion and transcribed locally. Product names were corrected; uncertain speech and quiet UI work are explicitly marked.</p>
+      </aside>
+    </div>
+    <div class="metrics" aria-label="Transcript coverage">
+      <div class="metric"><strong>12</strong><span>child pages</span></div>
+      <div class="metric"><strong>16</strong><span>video entries</span></div>
+      <div class="metric"><strong>15</strong><span>unique recordings</span></div>
+      <div class="metric"><strong>1:07:16</strong><span>unique footage</span></div>
+    </div>
+  </div>
+</section>
+
+<main class="shell content-grid">
+  <aside class="sidebar">
+    <div>
+      <div class="sidebar-label">Search recordings</div>
+      <label class="search"><input id="search" type="search" placeholder="Roof, point cloud, wall…" autocomplete="off"></label>
+      <div class="results" id="results" aria-live="polite"></div>
+    </div>
+    <div>
+      <div class="sidebar-label">On this page</div>
+      <nav class="toc" id="toc" aria-label="Page sections"></nav>
+    </div>
+    <div class="controls">
+      <button type="button" id="expand">Expand all</button>
+      <button type="button" id="collapse">Collapse all</button>
+    </div>
+  </aside>
+
+  <article class="article" id="article">
+<h1 id="revit-workflow-video-transcripts">Revit workflow video transcripts</h1>
+<p>Source: <a href="https://app.notion.com/p/lumoview/32f14a002f2c80be980dd62c0ab913fe?v=33014a002f2c80d99dae000c2606e03a">Revit Workflow From Start To End</a></p>
+<p>Exported and transcribed locally on 2026-10-27. The database export contained 16 video entries across 12 child pages. Two pages use the same <code>Wall_Stairs.mp4</code> asset, so there are 15 unique recordings and 1:07:16 of unique footage.</p>
+<p>The transcripts below are lightly cleaned machine transcripts. Obvious product and Revit terms were corrected, false repetitions during quiet screen-recording sections were removed, and non-spoken UI work is marked in square brackets. Wording that could not be recovered confidently remains marked as unclear. No audio was sent to an external transcription service.</p>
+<h2 id="coverage">Coverage</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Notion child page</th><th>Assigned to</th><th>Recording(s)</th><th>Unique duration</th>
+</tr></thead><tbody>
+<tr><td>0.0 Random Helpful Revit Things</td><td>Jolanda Schwenkschuster</td><td>1</td><td>00:29</td></tr>
+<tr><td>1.1 Create a new project using the Lumoview template</td><td>Axel Vos</td><td>1</td><td>01:17</td></tr>
+<tr><td>1.2 Load point clouds</td><td>Axel Vos</td><td>2</td><td>04:18</td></tr>
+<tr><td>1.5 Import Airteammodel as DWG file</td><td>Axel Vos</td><td>1</td><td>02:29</td></tr>
+<tr><td>1.3 Determine story heights using stair point clouds</td><td>Axel Vos</td><td>1</td><td>04:21</td></tr>
+<tr><td>1.4 Align point clouds from different floors with reference planes</td><td>Axel Vos</td><td>1</td><td>04:46</td></tr>
+<tr><td>2.3 External walls</td><td>Timothy Hatton</td><td>2</td><td>04:40</td></tr>
+<tr><td>2.2 Stairs</td><td>Timothy Hatton</td><td>1 shared asset</td><td>02:30</td></tr>
+<tr><td>2.4 Walls of the stairwell</td><td>Timothy Hatton</td><td>same shared asset</td><td>—</td></tr>
+<tr><td>2.1 Roof modeling</td><td>Elyes Zahrouni</td><td>3</td><td>33:59</td></tr>
+<tr><td>2.6 Internal walls</td><td>Timothy Hatton</td><td>1</td><td>02:48</td></tr>
+<tr><td>Curtain Walls</td><td>Timothy Hatton</td><td>1</td><td>05:38</td></tr>
+</tbody></table></div>
+<p>The remaining named workflow pages in the database did not contain video files in the export: 1.6 Link models; 2.7 Windows; 2.8 Doors; 2.9 Room tags; 2.10 Model in-place family; 2.11 Floor slabs; 3.1 View templates; 3.2 Views creation; and 4.1 Sheets.</p>
+<h2 id="0-0-random-helpful-revit-things">0.0 Random Helpful Revit Things</h2>
+<h3 id="tidy-tabs-revit">Tidy Tabs Revit</h3>
+<p>File: <code>Tidy_Tabs_Revit.mp4</code> Duration: 00:29</p>
+<blockquote><p>I have so many tabs open in this one project, but I know I have a second project open. How do I get to my other project without manually closing all of these? There is a button, <strong>Close Inactive Views</strong>, which closes all the tabs you have open down to one tab per project that is currently open in Revit. It is that easy and very helpful.</p></blockquote>
+<p>The page also documents Revit's <strong>Temporary Hide/Isolate</strong> tool, represented by the glasses icon. When active, the view gets a blue border. Open the tool again and choose <strong>Reset Temporary Hide/Isolate</strong> to restore the hidden elements.</p>
+<h2 id="1-premodelling">1. Premodelling</h2>
+<h3 id="1-1-create-a-new-project-using-the-lumoview-template">1.1 Create a new project using the Lumoview template</h3>
+<p>File: <code>Bildschirmaufnahme_2026-03-27_um_15.31.12.mov</code> Duration: 01:17</p>
+<blockquote><p>Before I start modelling, I create a new project using the LumoView Revit template. I choose <strong>New &gt; Model</strong>, but we do not use Revit's default templates. Choose <strong>Browse</strong>, then go to the Google Drive shared folder, the Customer Success/Revit standards area, LumoView, and the template files. Use the latest general LumoView template, not the one marked “do not use.” There may also be customer-specific templates here—for example, Combistro or Ecoplan—so choose the correct one for the project, open it, and press <strong>OK</strong>. The project is ready.</p></blockquote>
+<h3 id="1-2-load-point-clouds-part-1">1.2 Load point clouds — part 1</h3>
+<p>File: <code>Bildschirmaufnahme_2026-03-27_um_16.15.22.mov</code> Duration: 01:46</p>
+<blockquote><p>To load the point clouds, choose <strong>Load RCS</strong>. RCS is the point-cloud file type. Revit asks for a login token to connect to LumoCloud. Generate the token, confirm the dialog, copy the token to the clipboard, paste it into Revit, and press <strong>OK</strong>. In the selection dialog, check <strong>Select all</strong> to load all of the available point clouds.</p></blockquote>
+<p>The recording is mostly UI interaction; several spoken connector words around the token dialog are inaudible.</p>
+<h3 id="1-2-load-point-clouds-part-2">1.2 Load point clouds — part 2</h3>
+<p>File: <code>Bildschirmaufnahme_2026-03-27_um_16.21.46.mov</code> Duration: 02:32</p>
+<blockquote><p>When point-cloud loading is complete, a window appears. Press <strong>OK</strong>. The point clouds are now in the file, but they are not visible yet. For the basement, change the base-level underlay/range to <code>PC UG01</code>; the basement point cloud appears. For the ground floor, choose <code>PC EG00</code>. The ground-floor data also contains the stairs, which will be important both for creating the stairs and for determining the floor heights later.  Continue for the other storeys: <code>PC OG01</code>, <code>PC OG02</code>, and <code>PC OG03</code>. Then go through the workspaces/floor plans, beginning with the basement (<code>UG</code>), and set the corresponding point cloud as the underlay for each floor. Repeat this for all other floors.</p></blockquote>
+<h3 id="1-5-import-airteam-model-as-a-dwg-file">1.5 Import Airteam model as a DWG file</h3>
+<p>File: <code>Bildschirmaufnahme_2026-03-30_um_12.25.07.mov</code> Duration: 02:29</p>
+<blockquote><p>First go to the Airteam Cloud website and find the project whose Airteam model you need. Open the project, scroll to the 3D model, and download the OBJ file. Copy it from Downloads into the project's 3D CAD model folder.  Drag the OBJ into the Revit file and choose metres as the units. Isolate the imported 3D model, then export it as DWG into the folder containing the Revit project. Leave Temporary Hide/Isolate mode active while exporting. Drag the resulting DWG back into Revit, explode it once, and delete the original imported DWG container. The converted geometry remains available in the project.</p></blockquote>
+<h3 id="1-3-determine-storey-heights-using-stair-point-clouds">1.3 Determine storey heights using stair point clouds</h3>
+<p>File: <code>Bildschirmaufnahme_2026-03-31_um_15.36.24.mov</code> Duration: 04:21</p>
+<blockquote><p>To determine the storey heights, navigate to the floor plans. In the <code>EG00</code> ground-floor workspace you can find the section point cloud, the floor-plan point cloud, and the staircase point cloud. Zoom into the staircase and use the <strong>Reference Plane</strong> tool. Draw a horizontal reference plane and align it to the point cloud, then copy it to each slab. This also lets us determine the slab heights.  First position the planes and then adjust them accurately against the point clouds for each floor. [The presenter zooms into each slab and fine-tunes several planes.] Annotate the heights, using the ground floor as <code>0.00</code>. Copy the annotation to the other floors and write down the measured heights. The spoken values are partially unclear; values resembling <code>-2.78</code>, <code>3.30</code>, <code>7.57</code>, and <code>11.66</code> are entered. Finally, open the 3D view and correct the Revit level elevations and resulting storey heights to match those measurements.</p></blockquote>
+<h3 id="1-4-align-point-clouds-from-different-floors-with-reference-planes">1.4 Align point clouds from different floors with reference planes</h3>
+<p>File: <code>Bildschirmaufnahme_2026-04-01_um_12.01.35.mov</code> Duration: 04:46</p>
+<blockquote><p>To align the point clouds from one floor to another, identify reliable building features: the external walls and the staircase. Here we can see the edges of the outside walls and the staircase. Use <strong>Reference Plane</strong> to draw lines on the edges of the outside walls, and then adjust the point clouds against those planes. Do this for each relevant wall and copy the reference planes as needed.  Add reference planes around the stair. Move from the first floor down to the ground floor; the point clouds are visibly not in the same position. Move the point cloud into place. The arrow keys can be used for small movements. Zoom in to make more precise adjustments. [A long quiet section follows while the alignment is refined.] The point cloud should now be in the correct position relative to the other floors.</p></blockquote>
+<h2 id="2-3d-postprocessing">2. 3D postprocessing</h2>
+<h3 id="2-3-external-walls-exterior-walls">2.3 External walls — exterior walls</h3>
+<p>File: <code>Exterior_Walls.mp4</code> Duration: 02:01</p>
+<blockquote><p>After setting up the point clouds, it is useful to create reference planes or lines so all point clouds can be aligned to the same references. In this project there is also an Airteam model. If there is no Airteam model, use features such as a balcony door or windows to determine the wall thickness.  Choose an exterior-wall type and use the measured thickness—35 centimetres in this example. Close the corner and move the wall into the correct position. Where correct wall joins matter, open <strong>Wall Joins</strong>, click the corner, and choose <strong>Miter</strong>.  Exterior walls should extend to the top of the next floor. A floor slab normally occupies some of the storey above, but the exterior wall continues upward. Select the exterior walls, set <strong>Top Constraint</strong> to the next level, and set <strong>Top Offset</strong> to zero.</p></blockquote>
+<h3 id="2-3-external-walls-stacked-walls">2.3 External walls — stacked walls</h3>
+<p>File: <code>Stacked_Walls.mp4</code> Duration: 02:39</p>
+<blockquote><p>A wall may need different materials or thicknesses above and below a break—for example, a below-ground part and an above-ground part, or concrete below with another construction above. Select a wall and create a <strong>Stacked Wall</strong> type. Duplicate a type, give it a name, and turn on the preview.  Insert as many component walls as required. In this example the lower wall is 12 centimetres thick and the upper wall is 25 centimetres thick. Align both components to the exterior face. Rather than fixing both component heights, make one component <strong>Variable</strong>. Set the lower component to a fixed height of two metres and let the 25-centimetre component fill the remaining height of the stacked wall.</p></blockquote>
+<h3 id="2-2-stairs-2-4-walls-of-the-stairwell">2.2 Stairs / 2.4 Walls of the stairwell</h3>
+<p>File: <code>Wall_Stairs.mp4</code> Duration: 02:30 Note: the identical file is embedded on both child pages.</p>
+<blockquote><p>After setting up the outside walls, I usually continue with the stairwell. In many buildings the exterior walls and stairwell walls continue from the basement to the top. That is not always the case, but it is true for this building. Measure the stairwell wall—25 centimetres here—and use an interior-wall type.  Starting with these walls means that, once they are complete, they can be copied to every storey. On each higher floor, adjust the point cloud to those walls. The walls become the reference for the next floor and remain aligned through the building. Adjust individual wall thicknesses where needed.  This example has three entrances with three stairways, but the recording models only one. Select the walls, use the filter to keep only walls, and choose <strong>Copy to Clipboard &gt; Paste Aligned to Selected Levels</strong>. Paste them to the first, second, and third floors. Revit now has the building exterior together with the stairwell walls on those levels.</p></blockquote>
+<h3 id="2-1-roof-modelling-roof-via-surfaces">2.1 Roof modelling — roof via surfaces</h3>
+<p>File: <code>Roof_via_Surfaces.mp4</code> Duration: 05:45</p>
+<p>The Notion page describes this as a work-in-progress method: convert the mesh-based Airteam OBJ into a surface model, export SAT, import it into a Revit mass, and create a roof with <strong>Roof by Face</strong>.</p>
+<blockquote><p>This video shows how to model the roof directly from the surfaces of the Airteam model. The main roof is inclined, and its front and back edges are not parallel. An extrusion or simple footprint would average the geometry and would not align perfectly. There are also additional complex roof parts.  The Airteam model begins as a mesh. Convert it into surfaces in Rhino and export it as an SAT file, which works well for selecting faces in Revit. In Revit, open <strong>Massing &amp; Site</strong>, create an <strong>In-Place Mass</strong>, and import the SAT inside that mass. Position the imported model over the building. This demonstration uses an approximate placement.  With the imported model inside the mass, isolate it and choose <strong>Architecture &gt; Roof &gt; Roof by Face</strong>. Select the required faces and create the roof. Hide the Airteam mass. In less than five minutes, Revit has produced a roof with a complex form.  The method is not mature yet and the joins around some complex faces still need testing, but it is a very fast way to obtain the overall roof shape. Whether to use every face or only the main faces depends on the project.</p></blockquote>
+<h3 id="2-1-roof-modelling-regular-roof-versus-model-in-place">2.1 Roof modelling — regular roof versus model-in-place</h3>
+<p>File: <code>Roof_demo_Lidiceplatz.mp4</code> Duration: 19:22</p>
+<blockquote><p>This demonstration compares Revit's regular roof tool with a model-in-place roof. Each is suitable for different cases. The example roof has one very steep slope of about 69 degrees, another slope of about three degrees, and a custom curved or special form.  Start with <strong>Roof by Footprint</strong>. Remove slope from the two side edges, set the steep and shallow angles, and place the roof on <code>OG04</code>. The result does not match the source roof because angle-based footprint construction does not let us decide exactly where the two slopes meet. Split the roof into two pieces, model each piece independently, and join them. Adjust the footprints and align the edges. This gives a closer approximation.  A drawback of the regular roof tool appears on a steep 69-degree slope: the roof termination and edge thickness are difficult to control. If the intended construction is 28 centimetres thick, the end does not necessarily terminate as a clean, consistent 28-centimetre edge.  The presenter's preferred alternative is an in-place component in the <strong>Roofs</strong> category. Use a <strong>Sweep</strong>: sketch the path, then draw the roof's section profile. The profile follows the path and produces cleaner edges. Include the small projecting, shallow-sloped part in the profile. Set the material and inspect the result in section.  Keep the Airteam model visible as a reference. Edit the sweep profile until it follows the source geometry, adjust the footprints, and join the pieces. The model-in-place result is thinner and joins more cleanly than the first footprint result. It is controlled by a path and profile rather than only by slope angles, so the form can be deepened or reshaped directly.  Model the roof's distinctive curved feature with <strong>Revolve</strong>. Define a vertical axis, sketch an approximate profile of the feature, finish the revolve, and move it into position against the other roof geometry. The demonstration is approximate; production work still needs accurate proportions, measurements, profiles, and placement.</p></blockquote>
+<p>During a long quiet middle section, the automatic transcript produced a repeated sequence of entered numbers. It has been omitted because it reflects parameter entry rather than meaningful speech.</p>
+<h3 id="2-1-roof-modelling-roof-via-points-and-edges">2.1 Roof modelling — roof via points and edges</h3>
+<p>File: <code>Roof_via_edges.mp4</code> Duration: 08:52</p>
+<blockquote><p>This video models the roof with points and edges while retaining a regular Revit roof. Load the Airteam model, place the roof at <code>OG04</code>, choose <strong>Roof by Footprint</strong>, and sketch an approximate outline. This is a demonstration, so the geometry is deliberately not fully detailed.  Select the finished roof and use <strong>Modify Sub Elements</strong>. The relevant tools are <strong>Add Point</strong>, <strong>Split Line</strong>, and <strong>Pick Supports</strong>. Add split lines that correspond to the visible ridges and breaks in the Airteam roof. One ridge is inclined relative to another; where appropriate, draw it parallel to the front edge rather than the back edge. Add the remaining visible edges.  Adjust the elevation of the new edges and points until the roof follows the Airteam model. [The presenter spends several minutes moving the sub-elements while mostly silent.] For a more complex form, add and move individual points. Revit exposes the height of each point, which allows local control over the surface.  The result remains a real Revit roof rather than generic geometry, so its thickness can be changed and it can host roof windows and roof openings. The disadvantage is complexity: modifying sub-elements can make the effective roof thickness vary from face to face instead of remaining uniform. This method therefore preserves native roof behaviour but may produce inconsistent construction thickness on a highly warped form.</p></blockquote>
+<h3 id="2-6-internal-walls">2.6 Internal walls</h3>
+<p>File: <code>Interior_Walls.mp4</code> Duration: 02:48</p>
+<blockquote><p>After the exterior and stairwell walls are in place, continue with the interior walls that define the room arrangement. In this example the walls are clearly visible in the point cloud, so the work is mainly measuring their thicknesses and drawing them.  If apartments repeat on multiple floors, copy the walls to those floors instead of redrawing them, then correct their positions against each floor's point cloud. This is building-dependent and is not always the best approach.  Interior walls should normally stop at the underside of the slab above rather than overlap it. Select the walls and attach their tops to the slab. Revit may warn that some selected elements do not touch the target; those are exterior walls and can be left unchanged. After attachment, the interior walls end at the slab. Do not include partial-height walls—such as 1.20- or 1.50-metre bathroom walls—in this operation unless their height is corrected afterwards.</p></blockquote>
+<h3 id="curtain-walls">Curtain Walls</h3>
+<p>File: <code>Curtain_Walls.mp4</code> Duration: 05:38</p>
+<blockquote><p>A curtain wall is another Revit wall type. Revit provides predefined and empty variants. I usually start from a predefined type and adjust it. Draw it like a normal wall, then select it and edit its type.  The example begins with a vertical-grid layout using a fixed distance of 1.50 metres. Change the layout rule—for example, to a maximum spacing of 1.15 metres—and Revit redistributes the grids. Panels can also be changed. Most generated curtain-wall elements are pinned by default, so unpin a panel before replacing it with a solid panel or another type.  Curtain walls can host curtain-wall-specific doors and windows. Ordinary hosted door families will not work unless they are designed for curtain walls. A basic wall can also be embedded into a curtain wall.  Use <strong>Curtain Grid</strong> to add grid lines. To keep only part of a line, select it and use <strong>Add/Remove Segments</strong>. Add or remove mullions as required. Generated mullions are pinned; unpin one before changing its type—for example, from a 30-millimetre square mullion to a round mullion.  Curtain walls are flexible but easy to make inconsistent. If the grid began with a fixed 1.50-metre spacing, was changed to a 1.15-metre maximum, and then received manually added mullions, later resizing the wall may mix up the manually and automatically generated elements. Recheck and correct the layout after dimension changes.  The empty curtain-wall type starts without generated grids or mullions. Add reference-driven curtain grids manually, split the wall where required, and place mullions on the desired grid segments. Each mullion can then be unpinned and changed independently.</p></blockquote>
+<h2 id="workflow-knowledge-distilled-from-the-recordings">Workflow knowledge distilled from the recordings</h2>
+<ul><li>Establish shared references before modelling: levels come from stair/section point clouds, while cross-storey XY alignment comes from exterior-wall edges and stair cores.</li><li>Use the correct LumoView or customer-specific template before importing any project data.</li><li>Load all RCS clouds through the LumoCloud token flow, then expose the corresponding <code>PC_*</code> cloud in each storey's view/underlay.</li><li>Model elements that repeat vertically—exterior walls and stair cores—early, copy them to selected levels, and use them as alignment references for the remaining storeys.</li><li>Exterior walls reach the next level; ordinary full-height interior walls attach to the underside of the slab above. Treat partial-height walls separately.</li><li>Use stacked walls where construction or thickness changes vertically. Keep one component variable so it fills the remaining storey height.</li><li>Airteam OBJ geometry is used in two ways: as a visual reference after conversion through DWG, or as selectable surfaces after mesh-to-surface conversion and SAT import into a Revit mass.</li><li>For complex roofs, choose between three trade-offs: <strong>Roof by Face</strong> is fastest from good surface input; a model-in-place sweep/revolve gives strong profile control; a sub-element-edited native roof preserves roof hosting but can distort thickness.</li><li>Curtain-wall grids, panels, and mullions mix generated and manually overridden elements. Recheck them whenever the host dimensions or layout rule changes.</li></ul>
+    <div class="empty" id="empty">No recording matches that search.</div>
+  </article>
+</main>
+
+<footer>
+  <div class="shell">Prepared from the Lumoview Notion workflow database · 27 October 2026 · 15 unique recordings</div>
+</footer>
+
+<script>
+(() => {
+  const root = document.documentElement;
+  const storedTheme = localStorage.getItem('artifact-theme');
+  if (storedTheme) root.dataset.theme = storedTheme;
+  document.querySelector('#theme').addEventListener('click', () => {
+    const current = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const next = current === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = next;
+    localStorage.setItem('artifact-theme', next);
+  });
+  document.querySelector('#print').addEventListener('click', () => window.print());
+
+  const article = document.querySelector('#article');
+  const headings = [...article.querySelectorAll('h3')];
+  headings.forEach((heading, index) => {
+    const details = document.createElement('details');
+    details.className = 'recording';
+    details.dataset.search = heading.textContent.toLowerCase();
+    details.open = index < 2;
+    const summary = document.createElement('summary');
+    const body = document.createElement('div');
+    body.className = 'recording-body';
+    heading.parentNode.insertBefore(details, heading);
+    summary.appendChild(heading);
+    details.append(summary, body);
+    let node = details.nextSibling;
+    while (node && !['H2', 'H3'].includes(node.tagName)) {
+      const next = node.nextSibling;
+      body.appendChild(node);
+      node = next;
+    }
+    details.dataset.search = details.textContent.toLowerCase();
+    const metadata = body.querySelector('p');
+    if (metadata && metadata.textContent.startsWith('File:')) {
+      const match = metadata.textContent.match(/^File:\s*(.+?)\s+Duration:\s*(.+)$/);
+      if (match) {
+        metadata.className = 'recording-meta';
+        metadata.innerHTML = `<span>${match[1]}</span><span class="duration">${match[2]}</span>`;
+      }
+    }
+  });
+
+  const sections = [...article.querySelectorAll('h2')];
+  const toc = document.querySelector('#toc');
+  sections.forEach((heading) => {
+    const link = document.createElement('a');
+    link.href = `#${heading.id}`;
+    link.textContent = heading.textContent;
+    toc.appendChild(link);
+  });
+
+  const recordings = [...article.querySelectorAll('details.recording')];
+  const search = document.querySelector('#search');
+  const results = document.querySelector('#results');
+  const empty = document.querySelector('#empty');
+  const filter = () => {
+    const query = search.value.trim().toLowerCase();
+    let visible = 0;
+    recordings.forEach((item) => {
+      const match = !query || item.dataset.search.includes(query);
+      item.hidden = !match;
+      if (match) {
+        visible += 1;
+        if (query) item.open = true;
+      }
+    });
+    results.textContent = query ? `${visible} of ${recordings.length} recordings` : `${recordings.length} recordings`;
+    empty.style.display = visible ? 'none' : 'block';
+  };
+  search.addEventListener('input', filter);
+  filter();
+  document.querySelector('#expand').addEventListener('click', () => recordings.filter((item) => !item.hidden).forEach((item) => item.open = true));
+  document.querySelector('#collapse').addEventListener('click', () => recordings.forEach((item) => item.open = false));
+
+  const tocLinks = [...toc.querySelectorAll('a')];
+  const observer = new IntersectionObserver((entries) => {
+    const active = entries.filter((entry) => entry.isIntersecting).at(-1);
+    if (!active) return;
+    tocLinks.forEach((link) => link.classList.toggle('active', link.hash === `#${active.target.id}`));
+  }, { rootMargin: '-15% 0px -75% 0px' });
+  sections.forEach((section) => observer.observe(section));
+
+  const progress = document.querySelector('#progress');
+  const updateProgress = () => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    progress.style.width = `${max > 0 ? (scrollY / max) * 100 : 0}%`;
+  };
+  addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
+})();
+</script>
+</body>
+</html>
