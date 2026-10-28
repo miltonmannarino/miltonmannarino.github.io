@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Dashboards and Adoption</title>
-<meta name="description" content="LumoPlan building dashboard, pricing categories, productivity and LumoCad adoption tracking: what was built on 19 Oct 2026, how to test it, what is missing.">
+<meta name="description" content="LumoPlan building dashboard, pricing categories, productivity and LumoCad adoption tracking: live in production since 19 Oct 2026, how to test it, what is open, questions for Rio.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -117,26 +117,26 @@ a { color: var(--open); }
 <body>
 <main>
 <header class="top">
-  <div class="eyebrow">LumoPlan · development branch · 2026-10-19</div>
+  <div class="eyebrow">LumoPlan · live in production · updated 2026-10-28</div>
   <h1>Dashboards and LumoCad adoption, first version</h1>
-  <p class="lede">Rio's two Q4 tickets due 26 Oct: a dashboard per building with real working hours per stage, a pricing view grouped by what the offer sells, and per-building tracking of whether the model was built in LumoCad or Revit.</p>
+  <p class="lede">Rio's two Q4 tickets: a dashboard per building with real working hours per stage, a pricing view grouped by what the offer sells, and per-building tracking of whether the model was built in LumoCad or Revit. Everything below is on <a href="https://plan.lumoview.com">plan.lumoview.com</a> since 19 Oct.</p>
 </header>
 
 <div class="summary">
-  <div class="s-done"><h3>Done</h3><ul>
+  <div class="s-done"><h3>Live</h3><ul>
     <li>Building page rebuilt along Rio's annotations.</li>
     <li>Project page groups buildings by offer category with pricing figures.</li>
-    <li>Two new Operations tabs: Productivity and Adoption.</li>
-    <li>Five commits on <code>development</code>, not pushed. Type check clean, 2,127 unit tests green.</li>
+    <li>Two new Operations tabs: Productivity and Adoption, with Rio's sheet columns and a Team table.</li>
+    <li>Shipped 19 Oct in PR #55 and #56, deploys green. Type check clean, 2,127 unit tests and the E2E page checks green.</li>
   </ul></div>
   <div class="s-test"><h3>How to test</h3><ul>
-    <li>Run <code>pnpm dev</code> and follow the four checklists below.</li>
-    <li>Then <code>pnpm dev:prod</code> to look at real numbers, read only.</li>
+    <li>Open production and follow the four checklists below. Use a real building you know.</li>
+    <li>Adoption entries made while testing can be removed from the dialog afterwards.</li>
   </ul></div>
-  <div class="s-miss"><h3>Missing</h3><ul>
-    <li>E2E not run: the saved login expired on 8 Oct.</li>
-    <li>Not checked against production data.</li>
-    <li>Questions for Rio and Vilte are listed at the end.</li>
+  <div class="s-miss"><h3>Open</h3><ul>
+    <li>Real numbers not yet sanity-checked against what Rio expects.</li>
+    <li>The required feedback step waits on Rio (A1 below).</li>
+    <li>Twelve questions for Rio, two blocking, listed at the end.</li>
   </ul></div>
 </div>
 
@@ -150,7 +150,7 @@ a { color: var(--open); }
   <li><strong>Rows sorted by date</strong>, so a follow-up measurement sits where it happened instead of at the bottom.</li>
   <li><strong>New cards:</strong> Worked hours (all phases, split on hover), BGF/h and Invoiced. Invoiced sums sent and paid invoices, splits a shared invoice by area and deducts partial invoices once.</li>
   <li><strong>Cost cards explain themselves</strong> on hover: hours × the hourly rate per phase from Settings, no overhead.</li>
-  <li><strong>Category</strong> in the header, and a <strong>Modelling tool</strong> card at the bottom.</li>
+  <li><strong>Category</strong> in the header, and a <strong>Modelling tool</strong> card at the bottom with a Set button.</li>
 </ul>
 
 <h3>Project page</h3>
@@ -159,6 +159,7 @@ a { color: var(--open); }
   <li>Category comes from the offer. Level 1 is positions 02/05, Level 2 is 03/06. Outputs are 3D, 2D, sections 08a, elevations 08b and roombook 09a, so a group reads like "Level 1 · 2D + Roombook".</li>
   <li>Each group header and the total row show worked hours, BGF/h, internal cost per m² and price per m². These are Rio's Notion columns.</li>
   <li>New columns Worked h, BGF/h and Category, also in the CSV export.</li>
+  <li>The Projects list and the project page show the <strong>Product</strong> sold, read from the accepted offers (model level plus outputs). On production 3 of 12 open projects have one; the rest read "No offer" because their offer predates LumoPlan.</li>
 </ul>
 
 <h3>Operations › Productivity</h3>
@@ -179,20 +180,23 @@ a { color: var(--open); }
 </div>
 
 <h3>Operations › Adoption</h3>
+<p>Built to match the two tabs of Rio's draft sheet, <em>Projects</em> and <em>Team</em>.</p>
 <ul>
-  <li><strong>One record per building:</strong> modelled in LumoCad, started in LumoCad and finished in Revit, or Revit.</li>
-  <li><strong>Leaving LumoCad needs two answers:</strong> "should it have been LumoCad?" (yes, no because too complex, or not sure) and a reason.</li>
+  <li><strong>One record per building:</strong> planned for LumoCad or not, and modelled in LumoCad, started in LumoCad and finished in Revit, Revit, or not started yet. A record can exist before modelling starts.</li>
+  <li><strong>Leaving a LumoCad plan needs two answers:</strong> "should it have been LumoCad?" (yes, no because too complex, or not sure) and a reason from a fixed list. A switch can also name the step it happened at. A building planned for Revit and done in Revit is asked nothing more.</li>
+  <li><strong>Status and completion date</strong> (planned, in progress, completed) come from LumoPlan's own data, nobody types them. Cancelled buildings do not count.</li>
   <li><strong>Feedback:</strong> every record asks for LumoCad feedback, and the tab lists it, so nobody has to chase it in Notion.</li>
-  <li><strong>Figures:</strong> recorded against missing, LumoCad share, switched, Revit, avoidable against too complex. There is a breakdown by project and by person, and a chart of switch reasons.</li>
-  <li><strong>Who counts as a person:</strong> whoever booked or logged 3D or 2D postprocessing on the building, so nobody types names.</li>
+  <li><strong>Cards as in the sheet:</strong> tracked, not tracked, intended for LumoCad, finished in LumoCad, switched to Revit, finished / intended, switched / intended, avoidable against too complex. Breakdown by project and a chart of switch reasons.</li>
+  <li><strong>Team table:</strong> one row per internal team member, including people who never touched LumoCad. Uses LumoCad and finished a building in LumoCad are read from the building records; uses independently and a note are typed in per person; current projects and buildings come from the bookings.</li>
   <li><strong>Bulk-set:</strong> tick buildings, or the header box for all shown, and save once. Sixty buildings are one request.</li>
 </ul>
 
 <h3>Under the hood</h3>
 <ul>
   <li>Stage rows, categories, productivity, invoiced amounts and adoption figures are pure functions with unit tests.</li>
-  <li>New collection <code>buildingModelling</code>, route <code>/server/building-modelling</code>.</li>
-  <li>Categories also read LumoPlan's own offers, by building or through the project an accepted offer created. The platform offer API alone had no building links on dev.</li>
+  <li>New collections <code>buildingModelling</code> and <code>modellerAdoption</code>, routes under <code>/server/</code>.</li>
+  <li>Categories also read LumoPlan's own offers, by building or through the project an accepted offer created. The platform offer API alone had no building links.</li>
+  <li>Buildings without a project are left out of the adoption figures.</li>
 </ul>
 
 <h2 id="test"><span class="track">test</span>How to test</h2>
@@ -223,31 +227,116 @@ a { color: var(--open); }
 
 <h3>4 · Operations › Adoption</h3>
 <ol class="steps">
-  <li>Click a building row, pick Revit. <span class="expect">Save stays disabled until "should it have been LumoCad?" and a reason are set.</span></li>
-  <li>Save: the cards, both breakdowns, the reasons chart and the feedback list update.</li>
-  <li>Tick two or more buildings, Set modelling tool, LumoCad, Save. <span class="expect">"Saved for N buildings", selection cleared.</span></li>
-  <li>Open a building page: the Modelling tool card shows the record and edits it.</li>
-  <li>Remove record from the dialog to clean up test entries.</li>
+  <li>Click a building row. The Modelling tool dialog opens; under <em>Modelled in</em> pick <em>Revit</em>, then <em>Planned for LumoCad? Yes</em>. <span class="expect">Save stays disabled until "should it have been LumoCad?" and a reason are set.</span></li>
+  <li>Switch the plan to <em>No, Revit is the plan</em>. <span class="expect">The two questions disappear and Save is enabled.</span></li>
+  <li>Save: the cards, the project breakdown, the reasons chart and the feedback list update.</li>
+  <li>Tick two or more buildings, <em>Set modelling tool</em>, LumoCad, Save. <span class="expect">"Saved for N buildings", selection cleared.</span></li>
+  <li>Team table: a person who modelled one of those buildings now reads <em>Uses LumoCad</em>. Click a row to set <em>Uses independently</em> and a note.</li>
+  <li>Open a building page: the Modelling tool card shows the record; <em>Edit</em> opens the same dialog.</li>
+  <li><em>Remove record</em> in the dialog cleans up test entries.</li>
 </ol>
 
 <h3>5 · Automated checks</h3>
 <pre>npx tsc --noEmit                         # clean
 npx vitest run --dir src                 # 2,127 passed
-npx playwright test e2e/app.spec.ts      # needs a fresh login first</pre>
+npx playwright test e2e/app.spec.ts      # 74 passed on 19 Oct, plus the two new tabs</pre>
 
-<h2><span class="track">missing</span>What's missing</h2>
+<h2><span class="track">open</span>What's still open</h2>
 <ul>
-  <li><strong>E2E (Milton):</strong> the saved login is from 8 Oct, so the signed-in page checks stop at the sign-in screen. Refresh with <code>e2e/save-auth.spec.ts --headed</code> and rerun.</li>
-  <li><strong>Real numbers (Milton):</strong> only checked on the dev cluster, which holds 17 hour entries and 5 offers. Open the three views with <code>pnpm dev:prod</code> and sanity-check a few categories and BGF/h values.</li>
-  <li><strong>Older offers (Milton):</strong> buildings whose offer predates both LumoPlan offers and the platform link show "No offer".</li>
-  <li><strong>Field list (Rio):</strong> his draft sheet is private, so the adoption fields and switch reasons follow the ticket text. He said he would document the fields.</li>
-  <li><strong>Required feedback step (Rio):</strong> proposal is to ask for the record when a 3D or 2D postprocessing stage is marked done. Not built until he agrees.</li>
-  <li><strong>Overhead and rate (Vilte):</strong> cost per m² uses the Settings rates with no overhead. Rio's sheet says "with overhead".</li>
+  <li><strong>Real numbers (Milton + Rio):</strong> only the Product column was checked on production. Walk through a few categories and BGF/h values together and compare with Rio's sheet.</li>
+  <li><strong>Required feedback step (Rio):</strong> A1 below. Not built until answered.</li>
+  <li><strong>Retire the sheet? (Rio):</strong> A2 below. Two places to fill in means two sets of numbers.</li>
+  <li><strong>Older offers (Milton):</strong> buildings whose offer predates both LumoPlan offers and the platform link show "No offer". A manual override for old projects is not built.</li>
+  <li><strong>Overhead and rate (Vilte):</strong> cost per m² uses the Settings rates, 45 €/h by default, with no overhead. Rio's sheet says "with overhead".</li>
   <li><strong>External hours (parked):</strong> Packing Sports hours are not in LumoPlan yet.</li>
-  <li><strong>Ship (Milton):</strong> push and open the PR when happy, then show Rio on 26 Oct.</li>
+  <li><strong>Notion (Milton):</strong> both tickets were due 26 Oct; update them once Rio has seen the views.</li>
 </ul>
 
-<footer>Source of truth: <code>docs/dashboards-adoption-2026-10.md</code> in the lumoplan repo. Written 19 Oct 2026.</footer>
+<h2 id="questions"><span class="track">rio</span>Questions for Rio</h2>
+<p>Same ids as <code>docs/min-reqs/rio-adoption-questions-2026-10-19.md</code>. <strong>A blocks</strong>: without an answer the piece is not built or the numbers drift apart. <strong>B is already built with a default</strong>: answer only if the default is wrong; silence keeps it.</p>
+
+<div class="q block">
+  <h3>A1 · The required feedback step</h3>
+  <p>The ticket says field-ops feedback on LumoCad should become a structured, required step. Today the feedback box is optional and the Adoption tab lists what people wrote.</p>
+  <p>When should LumoPlan <em>require</em> it, and from whom? (a) every time a 3D or 2D postprocessing stage is marked done; (b) only when the building was not modelled in LumoCad end to end; (c) once per building, when it is delivered; (d) something else. Modeller or field ops?</p>
+  <p class="ans">Maps to A4 · blocks the build</p>
+</div>
+
+<div class="q block">
+  <h3>A2 · Does LumoPlan replace the sheet?</h3>
+  <p>Is the Google Sheet retired now that LumoPlan has these fields? If it already holds entries, should they be copied in (send the latest version), or do we start fresh?</p>
+  <p class="ans">Maps to A5–A8 · blocks clean numbers</p>
+</div>
+
+<div class="q def">
+  <h3>B1 · "Uses LumoCad independently"</h3>
+  <p>Models without help from a colleague, or chooses LumoCad without being told? <strong>Default:</strong> a Yes/No per person typed in by you, meaning "models in LumoCad without needing help".</p>
+  <p class="ans">Maps to A8</p>
+</div>
+
+<div class="q def">
+  <h3>B2 · "Uses LumoCad" and "finished a building in LumoCad" per person</h3>
+  <p>Read from the building records, or typed per person like the sheet? <strong>Default:</strong> read from the buildings. A person shows as a user once their buildings have a record.</p>
+  <p class="ans">Maps to A8</p>
+</div>
+
+<div class="q def">
+  <h3>B3 · Who is "the team"</h3>
+  <p>Internal postprocessing only, or also preprocessing, Packing Sports, freelancers? <strong>Default:</strong> the internal postprocessing team as in LumoPlan's team view. Packing Sports and freelance measurers are not listed.</p>
+  <p class="ans">Maps to A8</p>
+</div>
+
+<div class="q def">
+  <h3>B4 · "Building finished in LumoCad"</h3>
+  <p>Only when delivered, or already when the LumoCad modelling is done? <strong>Default:</strong> delivered and modelled in LumoCad end to end. Started in LumoCad, finished in Revit is a switch, not a finish.</p>
+  <p class="ans">Maps to A6</p>
+</div>
+
+<div class="q def">
+  <h3>B5 · Shares: of which buildings?</h3>
+  <p>All buildings in production, or the ones entered? <strong>Default:</strong> of the buildings with a record, like the sheet. A separate <em>Not tracked</em> card counts in-progress or completed buildings without a record.</p>
+  <p class="ans">Maps to A6</p>
+</div>
+
+<div class="q def">
+  <h3>B6 · How far back</h3>
+  <p>Do buildings delivered before LumoCad was used need a record, or does tracking start at a date? <strong>Default:</strong> no start date; every delivered building without a record counts in <em>Not tracked</em>.</p>
+  <p class="ans">Maps to A6</p>
+</div>
+
+<div class="q def">
+  <h3>B7 · Planned buildings</h3>
+  <p>Which buildings are "Planned"? <strong>Default:</strong> a postprocessing schedule exists but nobody is booked or has logged hours. Cancelled buildings are left out.</p>
+  <p class="ans">Maps to A5, A6</p>
+</div>
+
+<div class="q def">
+  <h3>B8 · Steps when switched to Revit</h3>
+  <p>Which steps should the list offer? <strong>Default:</strong> Preprocessing, 3D modelling, 3D QC, 2D plans, 2D QC, Client revisions. A switch can be saved without a step.</p>
+  <p class="ans">Maps to A7</p>
+</div>
+
+<div class="q def">
+  <h3>B9 · Reason for switching</h3>
+  <p>The sheet has free text; LumoPlan has a list plus a note. Keep the list? <strong>Default:</strong> yes, so reasons can be counted: geometry too complex, LumoCad feature missing, LumoCad bug or too slow, deadline pressure, customer needs Revit/IFC, modeller not trained, other (note required).</p>
+  <p class="ans">Maps to A7</p>
+</div>
+
+<div class="q def">
+  <h3>B10 · Planned for Revit, done in Revit</h3>
+  <p>Should LumoPlan still ask why? <strong>Default:</strong> no. Nothing went off plan, so nothing more is asked; a note is optional.</p>
+  <p class="ans">Maps to A5</p>
+</div>
+
+<h3>Also open, dashboards side</h3>
+<ul>
+  <li><strong>Overhead factor and hourly rate</strong> for internal cost per m² (Vilte): which factor, and is 45 €/h right?</li>
+  <li><strong>Size bands</strong>: under 500, 500–1,500, 1,500–5,000, over 5,000 m². Keep?</li>
+  <li><strong>Mixed Level 1 / Level 2 offers</strong>: own category, or counted under the higher level?</li>
+  <li><strong>Headline numbers</strong> on the Operations dashboard: which four should Hendrik and you see first, and should the 70,000 revenue target become a setting?</li>
+</ul>
+
+<footer>Source of truth: <code>docs/dashboards-adoption-2026-10.md</code> and <code>docs/min-reqs/rio-adoption-questions-2026-10-19.md</code> in the lumoplan repo. Written 19 Oct 2026, updated 28 Oct 2026 after the production deploy.</footer>
 </main>
 </body>
 </html>
