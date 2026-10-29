@@ -117,7 +117,7 @@ a { color: var(--open); }
 <body>
 <main>
 <header class="top">
-  <div class="eyebrow">LumoPlan · live in production · updated 2026-10-28</div>
+  <div class="eyebrow">LumoPlan · live in production, one slice on a branch · updated 2026-10-29</div>
   <h1>Dashboards and LumoCad adoption, first version</h1>
   <p class="lede">Rio's two Q4 tickets: a dashboard per building with real working hours per stage, a pricing view grouped by what the offer sells, and per-building tracking of whether the model was built in LumoCad or Revit. Everything below is on <a href="https://plan.lumoview.com">plan.lumoview.com</a> since 19 Oct.</p>
 </header>
@@ -128,6 +128,7 @@ a { color: var(--open); }
     <li>Project page groups buildings by offer category with pricing figures.</li>
     <li>Two new Operations tabs: Productivity and Adoption, with Rio's sheet columns and a Team table.</li>
     <li>Shipped 19 Oct in PR #55 and #56, deploys green. Type check clean, 2,127 unit tests and the E2E page checks green.</li>
+    <li><strong>On a branch, not yet in prod (29 Oct):</strong> the Adoption tab counts only buildings created on or after 28 Oct, as Rio asked; a <em>Show all buildings</em> switch brings the older ones back.</li>
   </ul></div>
   <div class="s-test"><h3>How to test</h3><ul>
     <li>Open production and follow the four checklists below. Use a real building you know.</li>
@@ -137,6 +138,7 @@ a { color: var(--open); }
     <li>Real numbers not yet sanity-checked against what Rio expects.</li>
     <li>The required feedback step waits on Rio (A1 below).</li>
     <li>Twelve questions for Rio, two blocking, listed at the end.</li>
+    <li>The 28 Oct cutoff needs the e2e login refreshed, a click-through on dev and a PR before it reaches prod.</li>
   </ul></div>
 </div>
 
@@ -189,6 +191,7 @@ a { color: var(--open); }
   <li><strong>Cards as in the sheet:</strong> tracked, not tracked, intended for LumoCad, finished in LumoCad, switched to Revit, finished / intended, switched / intended, avoidable against too complex. Breakdown by project and a chart of switch reasons.</li>
   <li><strong>Team table:</strong> one row per internal team member, including people who never touched LumoCad. Uses LumoCad and finished a building in LumoCad are read from the building records; uses independently and a note are typed in per person; current projects and buildings come from the bookings.</li>
   <li><strong>Bulk-set:</strong> tick buildings, or the header box for all shown, and save once. Sixty buildings are one request.</li>
+  <li><strong>Counting from 28 Oct on (branch, 29 Oct):</strong> in the review on 28 Oct Rio asked that old projects stop skewing the numbers. The tab now counts only buildings created in the platform on or after 28 Oct. The date is editable with a reset link, <em>Show all buildings</em> restores everything, and the building table has a Created column. Nothing is deleted: older buildings keep their records, the feedback list still reads every building, and the names on past work stay as they are.</li>
 </ul>
 
 <h3>Under the hood</h3>
@@ -197,6 +200,7 @@ a { color: var(--open); }
   <li>New collections <code>buildingModelling</code> and <code>modellerAdoption</code>, routes under <code>/server/</code>.</li>
   <li>Categories also read LumoPlan's own offers, by building or through the project an accepted offer created. The platform offer API alone had no building links.</li>
   <li>Buildings without a project are left out of the adoption figures.</li>
+  <li><strong>Names on past work never disappear.</strong> Agreed with Rio on 28 Oct as a standing rule: people are stored by id and named from LumoPlan's own employee list, which the Personio sync only adds to, so a colleague who leaves still shows on every task, booking and record. The cutoff above is a filter on what is counted, never a delete.</li>
 </ul>
 
 <h2 id="test"><span class="track">test</span>How to test</h2>
@@ -234,12 +238,15 @@ a { color: var(--open); }
   <li>Team table: a person who modelled one of those buildings now reads <em>Uses LumoCad</em>. Click a row to set <em>Uses independently</em> and a note.</li>
   <li>Open a building page: the Modelling tool card shows the record; <em>Edit</em> opens the same dialog.</li>
   <li><em>Remove record</em> in the dialog cleans up test entries.</li>
+  <li><em>Branch build only:</em> under the intro the counting date reads 28.10.2026 and a grey note says how many older buildings are left out. <span class="expect">The Buildings table lists only buildings whose Created column is on or after 28.10.2026.</span></li>
+  <li>Tick <em>Show all buildings</em>. <span class="expect">Tracked and the other cards grow, the table lists every building, the note reads "Every building counts."</span></li>
+  <li>Untick it, set the date to an earlier day, then click <em>Reset to 28.10.2026</em>. <span class="expect">The counts follow the date each time; no record changes.</span></li>
 </ol>
 
 <h3>5 · Automated checks</h3>
-<pre>npx tsc --noEmit                         # clean
-npx vitest run --dir src                 # 2,127 passed
-npx playwright test e2e/app.spec.ts      # 74 passed on 19 Oct, plus the two new tabs</pre>
+<pre>npx tsc --noEmit                         # clean (29 Oct)
+npx vitest run --dir src                 # 2,173 passed (29 Oct; 2,127 at the 19 Oct ship)
+npx playwright test e2e/app.spec.ts      # 74 passed on 19 Oct; not re-run since, the saved login expired</pre>
 
 <h2><span class="track">open</span>What's still open</h2>
 <ul>
@@ -249,7 +256,8 @@ npx playwright test e2e/app.spec.ts      # 74 passed on 19 Oct, plus the two new
   <li><strong>Older offers (Milton):</strong> buildings whose offer predates both LumoPlan offers and the platform link show "No offer". A manual override for old projects is not built.</li>
   <li><strong>Overhead and rate (Vilte):</strong> cost per m² uses the Settings rates, 45 €/h by default, with no overhead. Rio's sheet says "with overhead".</li>
   <li><strong>External hours (parked):</strong> Packing Sports hours are not in LumoPlan yet.</li>
-  <li><strong>Notion (Milton):</strong> both tickets were due 26 Oct; update them once Rio has seen the views.</li>
+  <li><strong>Ship the cutoff (Milton):</strong> commit 0c99300 on branch <code>chore/security-deps-2026-10</code>, not pushed. Needs the e2e login refreshed (YubiKey), a click-through on dev and a PR to main.</li>
+  <li><strong>Notion (Milton):</strong> ticket 1 got the 28 Oct reset, the people-history rule and the A9 build note on 29 Oct; ticket 2 got the rule. Close them once Rio has seen the views.</li>
 </ul>
 
 <h2 id="questions"><span class="track">rio</span>Questions for Rio</h2>
