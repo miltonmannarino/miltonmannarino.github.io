@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="project" content="miltonmannarino/workbench">
+<meta name="robots" content="noindex, nofollow">
+<title>Workbench, 30 October: steering, reading aloud, per-chat drafts</title>
+<meta name="description" content="What changed in Workbench on 30 October 2026: queued messages with Send now, Read aloud, a message box per chat, and the permission mode remembered for new chats.">
+<style>
+:root {
+  --bg: #f8f7f3; --panel: #f2f0ea; --surface: #fffefb; --ink: #1f1e1b; --ink2: #3d3b36;
+  --muted: #6e6a61; --faint: #a29e94; --line: #e4e0d6; --line2: #d6d1c4;
+  --accent: #c15f3c; --accent-soft: #f6e3da; --accent-ink: #ffffff;
+  --code-bg: #f1eee6; --ok: #2f8a4c; --warn: #9a6110;
+  --shadow: 0 1px 2px rgba(30,25,15,.06), 0 8px 24px rgba(30,25,15,.07);
+  --sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --serif: Charter, 'Iowan Old Style', 'Source Serif 4', Georgia, serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b1a18; --panel: #211f1c; --surface: #282623; --ink: #eceae3; --ink2: #d3d0c7;
+    --muted: #a7a398; --faint: #76726a; --line: #34312c; --line2: #45413a;
+    --accent: #e27d58; --accent-soft: #3b2a22; --accent-ink: #1b1a18;
+    --code-bg: #24221f; --ok: #6fcf8b; --warn: #e2b25c;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+code, kbd { font-family: var(--mono); font-size: .86em; font-variant-ligatures: none; }
+p code, li code, td code { background: var(--code-bg); padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
+kbd { border: 1px solid var(--line2); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; background: var(--surface); }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+header.top { padding: 56px 0 24px; }
+.kicker { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.kicker b { color: var(--accent); font-weight: 600; }
+h1 { font: 400 clamp(34px, 5vw, 50px)/1.08 var(--serif); letter-spacing: -.015em; margin: 14px 0 18px; max-width: 18ch; }
+.lead { font: 400 clamp(18px, 2vw, 21px)/1.6 var(--serif); color: var(--ink2); max-width: 64ch; margin: 0; }
+.status { font-size: 14px; color: var(--muted); max-width: 70ch; border-left: 3px solid var(--line2); padding: 2px 0 2px 12px; margin: 22px 0 0; }
+
+nav.toc { margin: 30px 0 0; border-top: 1px solid var(--line2); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+nav.toc a { display: block; padding: 14px 16px 16px 0; text-decoration: none; color: var(--ink); border-right: 1px solid var(--line); margin-right: 16px; }
+nav.toc a:last-child { border-right: 0; }
+nav.toc .n { font: 600 12px var(--mono); color: var(--accent); }
+nav.toc .q { display: block; font: 400 18px/1.3 var(--serif); margin-top: 4px; }
+
+h2 { font: 400 clamp(26px, 3.4vw, 34px)/1.2 var(--serif); margin: 0 0 6px; letter-spacing: -.01em; }
+.part { padding: 52px 0 8px; }
+.part > .wrap > .sub { color: var(--muted); margin: 0 0 26px; max-width: 66ch; }
+
+/* one feature: words left, a drawn piece of the app right */
+.feat { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 34px; padding: 30px 0; border-top: 1px solid var(--line); align-items: start; }
+.feat h3 { font: 600 19px/1.3 var(--sans); margin: 0 0 4px; }
+.feat h3 .n { font: 600 13px var(--mono); color: var(--accent); margin-right: 8px; }
+.feat .why { color: var(--muted); margin: 0 0 12px; }
+.feat p { margin: 0 0 12px; max-width: 62ch; }
+.feat ul { margin: 0 0 12px; padding-left: 20px; }
+.feat li { margin: 4px 0; }
+.files { font-size: 13px; color: var(--muted); }
+.files code { font-size: 12px; }
+
+/* the drawn app pieces */
+.mock { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; box-shadow: var(--shadow); font-size: 13px; overflow-x: auto; }
+.mock .cap { font: 500 11px var(--mono); color: var(--faint); margin: 0 0 10px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line2); border-radius: 999px; padding: 4px 11px; background: var(--surface); color: var(--ink2); white-space: nowrap; }
+.chip.on { border-color: var(--accent); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.arrow { color: var(--faint); font-family: var(--mono); }
+.box { background: var(--surface); border: 1px solid var(--line2); border-radius: 12px; padding: 10px 12px; }
+.box .ph { color: var(--faint); }
+.box .typed { color: var(--ink); }
+.tabs { display: flex; gap: 4px; margin-bottom: -1px; position: relative; }
+.tabs span { border: 1px solid var(--line2); border-bottom-color: var(--line2); border-radius: 8px 8px 0 0; padding: 4px 10px; background: var(--panel); color: var(--muted); }
+.tabs span.cur { background: var(--surface); border-bottom-color: var(--surface); color: var(--ink); font-weight: 500; }
+.answer { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.answer .fold { color: var(--faint); font-size: 12px; border-left: 2px solid var(--line2); padding-left: 8px; margin-bottom: 8px; }
+.answer .fold.said { text-decoration: line-through; text-decoration-color: var(--line2); }
+.answer .final { color: var(--ink); background: var(--accent-soft); border-radius: 6px; padding: 4px 6px; margin: 0 -6px; }
+.foot { display: flex; gap: 12px; align-items: center; margin-top: 10px; color: var(--muted); font-size: 12px; }
+.foot .b { border-radius: 6px; padding: 2px 7px; }
+.foot .b.live { color: var(--accent); background: var(--accent-soft); font-weight: 500; }
+.tray { background: var(--surface); border: 1px solid var(--line2); border-bottom: 0; border-radius: 12px 12px 0 0; margin: 0 12px; padding: 4px 8px 4px 12px; }
+.qi { display: flex; align-items: center; gap: 8px; min-height: 30px; }
+.qi .tag { font: 600 11px var(--sans); color: var(--accent); flex: none; }
+.qi .tag.held { color: var(--warn); }
+.qi .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink2); }
+.qi .a { flex: none; font-size: 12px; color: var(--muted); padding: 2px 6px; border-radius: 6px; }
+.qi .a.hot { color: var(--accent); background: var(--accent-soft); font-weight: 500; }
+.composer { background: var(--surface); border: 1px solid var(--line2); border-radius: 14px; padding: 10px 12px; }
+.crow { display: flex; justify-content: flex-end; gap: 6px; margin-top: 10px; }
+.sq { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-size: 13px; }
+.sq.out { color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); }
+.sq.fill { background: var(--accent); color: var(--accent-ink); }
+.timeline { list-style: none; padding: 0; margin: 14px 0 0; font-size: 12.5px; }
+.timeline li { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 8px; padding: 3px 0; border-top: 1px dashed var(--line); }
+.timeline li:first-child { border-top: 0; }
+.timeline b { font: 600 11px var(--mono); color: var(--muted); }
+
+/* how to test */
+.steps { counter-reset: s; list-style: none; padding: 0; margin: 0; }
+.steps > li { counter-increment: s; position: relative; padding: 14px 0 14px 44px; border-top: 1px solid var(--line); }
+.steps > li::before { content: counter(s); position: absolute; left: 0; top: 14px; width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font: 600 13px var(--mono); display: grid; place-items: center; }
+.steps b { display: block; margin-bottom: 2px; }
+.steps .exp { color: var(--muted); }
+.checks { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 18px; }
+.checks th, .checks td { text-align: left; padding: 9px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+.checks th { font-weight: 600; color: var(--muted); font-size: 12px; border-top: 0; }
+.ok { color: var(--ok); font-weight: 600; white-space: nowrap; }
+.warn { color: var(--warn); font-weight: 600; white-space: nowrap; }
+.tablewrap { overflow-x: auto; }
+
+/* what's missing */
+.gaps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 34px; }
+.gap { padding: 14px 0; border-top: 1px solid var(--line); }
+.gap h4 { margin: 0 0 4px; font-size: 15px; }
+.gap p { margin: 0; color: var(--ink2); font-size: 14.5px; }
+.gap .who { display: inline-block; font: 600 11px var(--mono); color: var(--accent); margin-top: 6px; }
+
+footer { padding: 46px 0 60px; color: var(--muted); font-size: 13px; }
+
+@media (max-width: 820px) {
+  nav.toc { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  nav.toc a:nth-child(2) { border-right: 0; }
+  .feat { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .gaps { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 480px) {
+  .wrap { padding: 0 16px; }
+  nav.toc { grid-template-columns: minmax(0, 1fr); }
+  nav.toc a { border-right: 0; border-bottom: 1px solid var(--line); margin-right: 0; }
+}
+@media print {
+  .mock { box-shadow: none; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="kicker"><b>miltonmannarino/workbench</b><span>Work from 30 October 2026</span><span>Not committed yet</span></div>
+    <h1>Steer while it works, hear the answer, keep each chat’s draft</h1>
+    <p class="lead">Four changes to the chat screen in Workbench. You can now send a message while the agent is still working. Answers can be read aloud. Each chat keeps its own unsent text. And new chats start with the permission mode you last picked.</p>
+    <p class="status">Status: built, type-checked, and covered by a new automated test for the queue. Nobody has tried it in the running app yet. The changes are in the working copy on <code>main</code>, next to unrelated work from another session (voice dictation and a Work Hub ticket rename), and nothing is committed.</p>
+    <nav class="toc" aria-label="The four changes">
+      <a href="#queue"><span class="n">01</span><span class="q">Queue messages, steer with Send now</span></a>
+      <a href="#read"><span class="n">02</span><span class="q">Read answers aloud</span></a>
+      <a href="#drafts"><span class="n">03</span><span class="q">A message box per chat</span></a>
+      <a href="#mode"><span class="n">04</span><span class="q">Permission mode carries over</span></a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="part" aria-labelledby="changed">
+  <div class="wrap">
+    <h2 id="changed">What changed</h2>
+    <p class="sub">Grouped by what you see on screen. Each part has a small drawing of that part of the app. The drawings are mock-ups, not screenshots.</p>
+
+    <article class="feat" id="queue">
+      <div>
+        <h3><span class="n">01</span>Queue messages while the agent works</h3>
+        <p class="why">Before: while the agent was busy, the send button turned into Stop. To redirect the agent you had to stop it or wait until it finished.</p>
+        <p>Now you can type and press <kbd>Enter</kbd> at any time. If the agent is busy, the message waits in a queue, shown in a strip above the message box. Messages go out one by one, in the order you sent them, each starting a new turn when the one before it ends. (A <em>turn</em> is one request plus everything the agent does to answer it.)</p>
+        <ul>
+          <li><b>Send now</b> is how you steer. It stops the current turn and sends this message next, ahead of anything else queued.</li>
+          <li><b>Edit</b> takes a text-only message out of the queue and puts it back in the box. Messages with files or context have no Edit button, so nothing gets dropped silently.</li>
+          <li><b>×</b> removes it.</li>
+          <li><b>Stop</b> or a failed turn <em>holds</em> the queue instead of sending it. Held messages go out only when you click Send now.</li>
+        </ul>
+        <p>The queue lives on the Workbench server, not in the browser tab. It works the same for Claude, Codex and local models, and keeps going if you switch chats or close the tab. A chat set to merge its worktree when it finishes now waits until the queue is empty before merging.</p>
+        <p>“Steering” here means <em>stop, then send</em>. The agent doesn’t receive your message in the middle of its current step. It is interrupted, and your message starts a fresh turn with the whole conversation behind it.</p>
+        <p class="files"><code>server/chats.ts</code> (the queue), <code>server/index.ts</code> and <code>shared/protocol.ts</code> (two new messages: <code>send_queued</code>, <code>unqueue</code>), <code>web/src/App.tsx</code> (the strip, Enter, buttons), <code>web/src/styles.css</code>.</p>
+      </div>
+      <div class="mock" role="img" aria-label="Drawing: a strip above the message box lists two queued messages, each with Send now, Edit and remove buttons. The message box shows a queue button next to Stop.">
+        <p class="cap">message box while the agent works</p>
+        <div class="tray">
+          <div class="qi"><span class="tag">Queued</span><span class="t">Actually use the v2 endpoint, not v1</span><span class="a hot">Send now</span><span class="a">Edit</span><span class="a">×</span></div>
+          <div class="qi"><span class="tag">Queued</span><span class="t">Then add a test for the empty case</span><span class="a">Send now</span><span class="a">Edit</span><span class="a">×</span></div>
+        </div>
+        <div class="composer">
+          <span class="ph">Queue a message for Claude: it goes out when this turn ends…</span>
+          <div class="crow"><span class="sq out" title="Queue">↑</span><span class="sq fill" title="Stop">■</span></div>
+        </div>
+        <ol class="timeline" aria-label="What Send now does">
+          <li><b>you</b><span>click Send now on “use the v2 endpoint”</span></li>
+          <li><b>server</b><span>moves it to the front, stops the running turn</span></li>
+          <li><b>agent</b><span>turn ends as “Interrupted”</span></li>
+          <li><b>server</b><span>sends “use the v2 endpoint”, then the rest in order</span></li>
+        </ol>
+      </div>
+    </article>
+
+    <article class="feat" id="read">
+      <div>
+        <h3><span class="n">02</span>Read answers aloud</h3>
+        <p class="why">You asked what text-to-speech would cost. Using the browser’s built-in voice costs nothing, needs no download or server, and works offline, so that’s what we built first.</p>
+        <p>Each finished answer has a <b>Read</b> button next to <b>Copy</b>. It turns into <b>Stop</b> while speaking. Only one answer reads at a time. Opening another chat stops it.</p>
+        <ul>
+          <li><b>What it reads:</b> only the final answer, the text after the agent’s last tool step. That’s the part Zen and Learning modes leave unfolded. The first version read every progress note in the turn (“Checking X…”, “Found it…”), which sounded like the whole chat. That was fixed the same day.</li>
+          <li><b>What it skips:</b> code blocks, Markdown symbols (<code>**</code>, <code>#</code>, list bullets) and long web addresses (read as “link”). Tables are read row by row.</li>
+          <li><b>Voice:</b> prefers a macOS “Premium” or “Enhanced” voice in your language if one is installed, otherwise the system default.</li>
+          <li><b>Long answers</b> are spoken a sentence or two at a time, because Chrome cuts off speech after about 15 seconds.</li>
+        </ul>
+        <p class="files"><code>web/src/SpeakButton.tsx</code> (new), <code>web/src/Thread.tsx</code>, <code>web/src/App.tsx</code>, <code>web/src/styles.css</code>.</p>
+      </div>
+      <div class="mock" role="img" aria-label="Drawing: an answer with two folded progress notes crossed out and the final paragraph highlighted. The footer shows Done in 42s, Copy, and Stop highlighted because it is reading.">
+        <p class="cap">one finished answer</p>
+        <div class="answer">
+          <div class="fold said">Checking how the composer stores its text…</div>
+          <div class="fold said">Found it: one shared value for every chat.</div>
+          <div class="final">Each chat now keeps its own draft. Switching chats puts away what the box holds and brings back what that chat had.</div>
+          <div class="foot"><span>Done in 42s</span><span class="b">Copy</span><span class="b live">■ Stop</span></div>
+        </div>
+        <p class="cap" style="margin:12px 0 0">crossed out: skipped · highlighted: read aloud</p>
+      </div>
+    </article>
+
+    <article class="feat" id="drafts">
+      <div>
+        <h3><span class="n">03</span>A message box per chat</h3>
+        <p class="why">Before: there was one message box for the whole app. Half a message typed in chat A was still sitting there when you opened chat B.</p>
+        <p>Now each chat keeps its own unsent text and attached files. When you switch chats, the box saves what’s in it under the chat you’re leaving and loads the other chat’s draft. The swap happens before the screen redraws, so the old text never flashes. The “new chat” screen keeps one draft per project.</p>
+        <p>A file still loading when you switch chats lands in the chat you added it to, not the one on screen. Work Hub context was already kept per chat and is unchanged.</p>
+        <p class="files"><code>web/src/App.tsx</code>.</p>
+      </div>
+      <div class="mock" role="img" aria-label="Drawing: two chat tabs. Chat A is selected and its box holds half-typed text. Chat B, when opened, has its own empty box.">
+        <p class="cap">switching chats</p>
+        <div class="tabs"><span class="cur">Chat A</span><span>Chat B</span></div>
+        <div class="box"><span class="typed">Can you also check the mobile lay|</span></div>
+        <p style="margin:12px 0 8px" class="arrow">↓ open Chat B</p>
+        <div class="tabs"><span>Chat A</span><span class="cur">Chat B</span></div>
+        <div class="box"><span class="ph">Reply to Claude…</span></div>
+        <p class="cap" style="margin:12px 0 0">back to A: “Can you also check the mobile lay” is still there</p>
+      </div>
+    </article>
+
+    <article class="feat" id="mode">
+      <div>
+        <h3><span class="n">04</span>New chats start in the permission mode you last picked</h3>
+        <p class="why">The permission mode decides how much the agent may do without asking: <b>Ask before edits</b>, <b>Accept edits</b>, or <b>Auto</b> (a safety check approves routine actions).</p>
+        <p>If you set <b>Auto</b> in one chat, the next new chat now starts on Auto as well. There were two problems before:</p>
+        <ul>
+          <li>A pick made inside an open chat applied to that chat only. It was saved for new chats only if you picked it on the empty new-chat screen.</li>
+          <li>The saved value shared a storage key (<code>wb-mode</code>) with the Coder / Zen / Learning view switch, so each setting kept erasing the other.</li>
+        </ul>
+        <p>The permission mode now has its own key, <code>wb-edit-mode</code>, and every pick is saved. On first load it reads the old key, so an existing choice carries over. Changing the default never changes chats that already exist.</p>
+        <p class="files"><code>web/src/App.tsx</code>.</p>
+      </div>
+      <div class="mock" role="img" aria-label="Drawing: in chat A the permission chip is set to Auto; a new chat opens with the chip already on Auto.">
+        <p class="cap">permission chip in the message box</p>
+        <div class="row"><span class="chip">Opus · XH</span><span class="chip on">Auto</span><span class="arrow">← picked in chat A</span></div>
+        <p style="margin:14px 0 8px" class="arrow">↓ New chat</p>
+        <div class="row"><span class="chip">Opus · XH</span><span class="chip on">Auto</span><span class="arrow">← already Auto</span></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="part" aria-labelledby="test">
+  <div class="wrap">
+    <h2 id="test">How to test</h2>
+    <p class="sub">Reload Workbench first so the browser picks up the new build. Every check below is untested in the real app, so this list is the first hands-on try.</p>
+    <ol class="steps">
+      <li><b>Queue.</b> Send a message that takes a while (for example “read every file in server/ and summarise it”). While it runs, type “and keep it under 100 words” and press <kbd>Enter</kbd>.<br><span class="exp">Expected: a strip above the box shows it as <b>Queued</b>. When the turn ends, it is sent by itself and starts a new turn.</span></li>
+      <li><b>Send now.</b> Repeat, but click <b>Send now</b> on the queued message.<br><span class="exp">Expected: the running turn ends as “Interrupted.” and your message goes out straight away.</span></li>
+      <li><b>Held after Stop.</b> Queue a message, then press <b>Stop</b>.<br><span class="exp">Expected: the message stays in the strip marked <b>Held</b> and isn’t sent until you click Send now. <b>×</b> removes it. <b>Edit</b> puts the text back in the box.</span></li>
+      <li><b>Read aloud.</b> Under an answer that used tools, click <b>Read</b>.<br><span class="exp">Expected: it reads only the final answer, not the progress notes and not the code blocks. The button becomes <b>Stop</b>. Switching chats stops the voice.</span></li>
+      <li><b>Drafts per chat.</b> Type “hello” in chat A, open chat B, type “world”, then go back to A.<br><span class="exp">Expected: B started empty. A still says “hello”.</span></li>
+      <li><b>Permission carry-over.</b> In any open chat, set the permission chip to <b>Auto</b>, then click New chat.<br><span class="exp">Expected: the new chat’s chip already says Auto. Switching between Coder and Zen doesn’t reset it.</span></li>
+    </ol>
+
+    <div class="tablewrap">
+      <table class="checks">
+        <caption style="text-align:left;color:var(--muted);font-size:13px;padding:0 0 6px">Automated checks run during the work</caption>
+        <thead><tr><th scope="col">Check</th><th scope="col">Result</th><th scope="col">Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Type check (<code>npm run typecheck</code>)</td><td class="ok">Pass</td><td>After every change.</td></tr>
+          <tr><td>Web build (<code>npm run build</code>)</td><td class="ok">Pass</td><td>Only the existing “chunk is larger than 500 kB” warning.</td></tr>
+          <tr><td>New queue test (<code>test/queue.test.ts</code>)</td><td class="ok">Pass, 3 of 3 runs</td><td>Real server with the test stand-in for Claude. Checks queuing in order, Send now jumping the queue and interrupting, Stop holding the queue, and removing a message. The stand-in gained an optional delay and Stop handling for this.</td></tr>
+          <tr><td>Every test file run on its own</td><td class="warn">23 of 24 files pass</td><td>The one failure is a Work Hub test that expects a chat to be named after its first message. Another session’s uncommitted change names ticket chats after the ticket instead. Not caused by today’s work.</td></tr>
+          <tr><td>Full suite (<code>npm test</code>)</td><td class="warn">Didn’t finish</td><td>Another Claude session was running its own test suite at the same time, and both copies’ Work Hub build tests clashed. Run it again when nothing else is testing.</td></tr>
+          <tr><td>Markdown-to-speech cleaning</td><td class="ok">Checked by hand</td><td>Ran on a sample with a heading, bold, inline code, links, a code block and a table. Fixed two table problems.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="part" aria-labelledby="missing">
+  <div class="wrap">
+    <h2 id="missing">What’s missing</h2>
+    <p class="sub">Open decisions are yours. Follow-ups can be built as soon as you say so.</p>
+    <div class="gaps">
+      <div class="gap"><h4>Nothing tried in the real app</h4><p>All four features are built and type-checked, but nobody has used them yet. The steps above are the test plan.</p><span class="who">Milton · first</span></div>
+      <div class="gap"><h4>Not committed, and mixed with other work</h4><p>Today’s changes share files (<code>App.tsx</code>, <code>styles.css</code>, <code>chats.ts</code>) with uncommitted dictation work and the ticket-rename change from another session. Commit them separately, or together on purpose.</p><span class="who">Milton · decision</span></div>
+      <div class="gap"><h4>Queue is lost when the server restarts</h4><p>Queued messages live in the server’s memory, so a restart or rebuild drops them. Saving them with the chat is possible.</p><span class="who">Claude · follow-up</span></div>
+      <div class="gap"><h4>Queue only visible inside its chat</h4><p>The sidebar doesn’t show that a chat has queued or held messages.</p><span class="who">Claude · follow-up</span></div>
+      <div class="gap"><h4>Real mid-turn steering</h4><p>Send now interrupts and resends. Claude Code can take a message mid-turn without stopping, but how that behaves when driven this way isn’t documented. Worth trying only if interrupting feels too blunt.</p><span class="who">Milton · decision</span></div>
+      <div class="gap"><h4>Drafts are lost on page reload</h4><p>Per-chat drafts are kept in memory. Text could be saved in the browser so it survives a reload. Files are too big to save there.</p><span class="who">Claude · follow-up</span></div>
+      <div class="gap"><h4>Dictation lands in the chat on screen</h4><p>If you switch chats while dictation is still turning speech into text, the words go into the chat you’re now in.</p><span class="who">Claude · follow-up</span></div>
+      <div class="gap"><h4>Read aloud: next steps</h4><p>No auto-read when a turn ends (for example in Zen mode), and no voice or speed setting. If the browser voice feels robotic, a free local voice model (Kokoro or Piper) is the next step. A paid cloud voice only if quality really matters.</p><span class="who">Milton · decision</span></div>
+      <div class="gap"><h4>Copy answer still copies everything</h4><p>Read now uses only the final answer. Copy still includes the progress notes. Should it match?</p><span class="who">Milton · decision</span></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">Workbench (<code>miltonmannarino/workbench</code>), working copy on <code>main</code> as of 30 October 2026.</div>
+</footer>
+</body>
+</html>
