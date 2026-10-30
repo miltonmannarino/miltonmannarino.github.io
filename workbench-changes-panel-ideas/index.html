@@ -84,6 +84,12 @@ h1 { font: 400 clamp(34px, 5vw, 52px)/1.08 var(--serif); letter-spacing: -.015em
 .sec .prose li b { color: var(--ink); font-family: var(--sans); font-size: 15px; font-weight: 600; }
 .how { margin-top: 20px; border-top: 1px dashed var(--line2); padding-top: 14px; font-size: 14px; color: var(--ink2); max-width: 58ch; }
 .how > b { display: block; font-size: 13px; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px; }
+.tag { font: 600 11.5px/1.4 var(--sans); padding: 2px 9px; border-radius: 99px; }
+.tag.c { background: color-mix(in srgb, var(--cool) 15%, transparent); color: var(--cool); }
+.tag.q { background: var(--bubble); color: var(--ink2); }
+.tag.ai { background: var(--accent-soft); color: var(--accent); }
+.tag.no { border: 1px solid var(--line2); color: var(--muted); }
 .how p { font: 14px/1.55 var(--sans) !important; margin: 0 0 8px !important; color: var(--ink2) !important; }
 .sample { display: inline-block; font-size: 12px; color: var(--muted); margin: 10px 0 0; }
 .mocks { display: grid; gap: 22px; position: sticky; top: 16px; }
@@ -140,6 +146,7 @@ h1 { font: 400 clamp(34px, 5vw, 52px)/1.08 var(--serif); letter-spacing: -.015em
 .cmt-q .who { font-size: 11.5px; color: var(--muted); font-family: var(--mono); }
 .cmt-q .t { font: 14.5px/1.45 var(--serif); margin-top: 2px; }
 .chip { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+.cmt-q .chip { white-space: normal; text-align: center; max-width: 140px; }
 .chip.ok { background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); }
 .chip.warn { background: color-mix(in srgb, var(--warn) 14%, transparent); color: var(--warn); }
 .chip.re { background: color-mix(in srgb, var(--cool) 16%, transparent); color: var(--cool); }
@@ -232,7 +239,7 @@ h1 { font: 400 clamp(34px, 5vw, 52px)/1.08 var(--serif); letter-spacing: -.015em
 .plain { padding: 64px 0 10px; }
 .plain > .wrap > p { font: 17px/1.62 var(--serif); color: var(--ink2); max-width: 66ch; }
 .tbl { overflow-x: auto; margin-top: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 14px; }
+table { border-collapse: collapse; width: 100%; min-width: 880px; font-size: 14px; }
 th, td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--line); }
 th { font-size: 13px; color: var(--muted); font-weight: 600; background: var(--panel); }
 tr:last-child td { border-bottom: 0; }
@@ -249,6 +256,10 @@ td:first-child { font-weight: 600; white-space: nowrap; }
 .open { list-style: none; margin: 18px 0 0; padding: 0; max-width: 860px; }
 .open li { padding: 14px 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; }
 .open li p { margin: 0; font: 16px/1.55 var(--serif); color: var(--ink2); }
+.ai-rules { margin: 18px 0 0; padding-left: 20px; max-width: 70ch; }
+.ai-rules li { font: 16px/1.6 var(--serif); color: var(--ink2); margin-bottom: 6px; }
+.ai-rules b { font-family: var(--sans); font-size: 15px; color: var(--ink); }
+td.verdict b { display: block; }
 .open li b { font-family: var(--sans); font-size: 15px; color: var(--ink); display: block; margin-bottom: 2px; }
 .owner { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
 
@@ -311,7 +322,7 @@ footer { margin-top: 64px; padding: 26px 0 48px; border-top: 1px solid var(--lin
       <li><b>The running app</b>▶ Run starts the project's dev server and knows the address it prints.</li>
       <li><b>Commands and their output</b>Test runs, type checks and builds the agent ran, with what they printed.</li>
     </ul>
-    <p class="nofake"><b>No AI summaries.</b> Each view is worked out from these records, so it gives the same answer every time and can't make things up. A model may add explanations later, but the views don't depend on it.</p>
+    <p class="nofake"><b>No AI in the main path.</b> Each view is worked out from these records, so it gives the same answer every time and can't make things up. A small model is used in one place only, rarely, and its answers are kept so they're never paid for twice (see <a href="#ai">where a small model is worth it</a>).</p>
   </div>
 </section>
 
@@ -330,6 +341,7 @@ footer { margin-top: 64px; padding: 26px 0 48px; border-top: 1px solid var(--lin
       </ul>
       <div class="how">
         <b>How it's worked out</b>
+        <div class="tags"><span class="tag c">Computed: groups, unexplained lines, struggle marks</span><span class="tag q">Quoted from the chat: your message, the agent's sentence</span><span class="tag no">AI: none</span></div>
         <p>Replay the chat's edits in order, starting from the chat's snapshot. Tag each line in the final diff with the last edit that wrote it, and that edit with the turn and message it belongs to. Lines with no tag are "unexplained." Counting how many edits touched the same line gives the struggle marks.</p>
       </div>
       <span class="sample">Mockup with sample data. Use the switch to compare with today's view.</span>
@@ -441,13 +453,14 @@ footer { margin-top: 64px; padding: 26px 0 48px; border-top: 1px solid var(--lin
       <h2 id="v2-h">What changed since I last looked?</h2>
       <p>Working with an agent is a loop: you review, you comment, the agent fixes, you review again. Today the second review shows the whole diff again, and you have to work out what moved. This view shows only what changed since your last review, which is called an <em>interdiff</em> (a diff between two versions of a diff).</p>
       <ul>
-        <li><b>Each comment gets an answer.</b> Under each comment you sent: the change that answered it, "replied in chat, no change," or "not touched."</li>
+        <li><b>Each comment gets a status.</b> Under each comment you sent: the change that answered it. If its line didn't change, whether the agent's next answer mentions something on that line (a name or a value like <code>700px</code>), with that part of the answer shown.</li>
         <li><b>Seen marks that reset.</b> Tick a hunk as seen. If the agent edits it again, the tick goes away and the hunk says so.</li>
         <li><b>Everything else folded.</b> Hunks you've already seen and that haven't changed stay hidden behind one link.</li>
       </ul>
       <div class="how">
         <b>How it's worked out</b>
-        <p>When you send comments (or press a new "Mark reviewed" button), Workbench takes a second snapshot, the same way it takes the chat-start one. The view is the diff between that snapshot and now. Each comment already stores its line and that line's code (<code>web/src/review.ts</code>). Follow that line through the new edits: if it changed, the comment was answered by a change; if not, check whether the agent's next answer replied in words.</p>
+        <div class="tags"><span class="tag c">Computed: since-review diff, seen marks, comment status</span><span class="tag q">Quoted: the agent's next answer</span><span class="tag no">AI: none</span></div>
+        <p>When you send comments (or press a new "Mark reviewed" button), Workbench takes a second snapshot, the same way it takes the chat-start one. The view is the diff between that snapshot and now. Each comment already stores its line and that line's code (<code>web/src/review.ts</code>). Follow that line through the new edits: if it changed, the comment was answered by a change. If not, search the agent's next answer for the names and values on that line and show where they appear. Whether that answer really settles your point is left to you: judging it would take a model, and it isn't worth one here.</p>
       </div>
       <span class="sample">Mockup with sample data.</span>
     </div>
@@ -479,17 +492,17 @@ footer { margin-top: 64px; padding: 26px 0 48px; border-top: 1px solid var(--lin
           <div class="cmt">
             <div class="cmt-q">
               <div><div class="who">Your comment · styles.css:858</div><div class="t">Why 700px? Could this follow the chat column width?</div></div>
-              <span class="chip re">Replied, no change</span>
+              <span class="chip re">Line not changed · mentioned in answer</span>
             </div>
-            <div class="reply">Agent, 11:23: <i>“700px is where the two chips start to overlap. The column width is 760px, so following it would wrap too early.”</i></div>
+            <div class="reply">Agent's next answer (11:23), where it mentions <code>700px</code>: <i>“700px is where the two chips start to overlap. The column width is 760px, so following it would wrap too early.”</i></div>
           </div>
 
           <div class="cmt">
             <div class="cmt-q">
               <div><div class="who">Your comment · App.tsx:1712</div><div class="t">What is <code>data-tabs</code> for? I don't see it used.</div></div>
-              <span class="chip warn">Not touched</span>
+              <span class="chip warn">Line not changed · not mentioned</span>
             </div>
-            <div class="reply">No edit to this line and no reply about it. It stays in the comment bar so you can send it again.</div>
+            <div class="reply">No edit to this line, and the next answer doesn't mention <code>data-tabs</code>. It stays in the comment bar so you can send it again.</div>
           </div>
         </div>
       </div>
@@ -510,8 +523,10 @@ footer { margin-top: 64px; padding: 26px 0 48px; border-top: 1px solid var(--lin
       </ul>
       <div class="how">
         <b>How it's worked out</b>
+        <div class="tags"><span class="tag c">Computed: screenshots, pixel compare, import chains, CSS matches</span><span class="tag ai">AI, optional: names for unlabelled screen areas, once per component</span></div>
         <p><b style="display:inline;color:var(--ink)">Screenshots:</b> Playwright (a tool that drives a browser from code) opens the address ▶ Run printed, at turn start and turn end, and compares the two images pixel by pixel.</p>
         <p><b style="display:inline;color:var(--ink)">Lit-up app:</b> in development only, a small Vite plugin tags each element on the page with the component file that drew it. Workbench follows the imports from the changed file up to those components and outlines their elements. For CSS it's even simpler: it asks the page which elements the changed selectors match.</p>
+        <p><b style="display:inline;color:var(--ink)">Names for screen areas:</b> taken from the elements' own labels (headings, button and region labels) or a short list per project. Only where neither exists does a small model name the component, once, from its file; the name is kept until that file changes.</p>
       </div>
       <span class="sample">Mockups with sample data. The import chains in the second mockup are Workbench's real ones.</span>
     </div>
@@ -596,6 +611,7 @@ footer { margin-top: 64px; padding: 26px 0 48px; border-top: 1px solid var(--lin
       </ul>
       <div class="how">
         <b>How it's worked out</b>
+        <div class="tags"><span class="tag c">Computed: change kinds, contract changes, flags</span><span class="tag no">AI: none</span></div>
         <p>A parser (tree-sitter, the one many editors use) turns old and new code into their structure and compares that, not the text. This is how the difftastic tool spots renames and moved blocks. Contract changes come from exported names and a short list of contract files per project. Flags are a fixed list of patterns, plus test coverage compared against the changed lines when coverage is available. The reading order can come from <code>git flowdiff</code>: dependencies first.</p>
       </div>
       <span class="sample">Mockup with sample data from an imagined, bigger chat.</span>
@@ -638,19 +654,46 @@ footer { margin-top: 64px; padding: 26px 0 48px; border-top: 1px solid var(--lin
   </div>
 </section>
 
+<section class="plain" id="ai" aria-labelledby="ai-h">
+  <div class="wrap">
+    <h2 id="ai-h">Where a small model is worth it</h2>
+    <p>The Changes panel refreshes after every step the agent takes, which can be dozens or hundreds of times an hour. The computed views can run on every refresh because they cost no tokens. A model only goes where it adds something computing can't, and never on refresh. Here is every place one could go, and the verdict.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Spot</th><th>Without a model</th><th>What a model would add</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td>Title for each request (view 1)</td><td>Your own message</td><td>A tidier title</td><td class="verdict"><b>No</b>Your words are already the best title.</td></tr>
+          <tr><td>The agent's caption (view 1)</td><td>Quoted from the chat</td><td>A summary of the edit</td><td class="verdict"><b>No</b>A quote can't be wrong; a summary can.</td></tr>
+          <tr><td>Did the agent answer my comment? (view 2)</td><td>The line changed, or the next answer mentions what's on it</td><td>Judges whether the answer settles the point</td><td class="verdict"><b>Not now</b>Revisit only as a button you press, and only if the rule misses often.</td></tr>
+          <tr><td>Names for screen areas (view 3b)</td><td>Element labels, or a short list per project</td><td>Names components that have no label</td><td class="verdict"><b>Yes, where labels are missing</b>Once per component, kept until its file changes. A few dozen calls for a whole project, then almost none.</td></tr>
+          <tr><td>"What does this change mean, in words?"</td><td>Nothing</td><td>A plain explanation of the turn</td><td class="verdict"><b>Already exists</b>Learning mode's card does this once per turn. Link to it instead of paying for a second one.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="ai-rules">
+      <li><b>Never on refresh.</b> At most once per finished turn, or only when you click.</li>
+      <li><b>Kept, not repeated.</b> Each answer is stored under a fingerprint (hash) of its input, so the same input is never paid for twice.</li>
+      <li><b>Small input.</b> One component's name and first lines, not the whole diff.</li>
+      <li><b>Smallest model, no tools.</b> The same one-off Haiku call Workbench already uses for suggested replies and the commit message button.</li>
+      <li><b>Off for local-model chats,</b> so their code stays on the machine, as with suggested replies and Learning cards today.</li>
+      <li><b>One switch</b> in settings turns it off.</li>
+    </ul>
+  </div>
+</section>
+
 <section class="plain" aria-labelledby="cost-h">
   <div class="wrap">
     <h2 id="cost-h">What each view costs, and where it breaks</h2>
     <p>Sizes are rough: S is a day or two, M is about a week, L is more than that. "Breaks" means the case where the view can't give a clean answer and has to say so.</p>
     <div class="tbl">
       <table>
-        <thead><tr><th>View</th><th>Built from</th><th>New pieces</th><th>Size</th><th>Where it breaks</th></tr></thead>
+        <thead><tr><th>View</th><th>Built from</th><th>New pieces</th><th>Size</th><th>AI</th><th>Where it breaks</th></tr></thead>
         <tbody>
-          <tr><td>1 · By request</td><td>Edit log, chat-start snapshot, messages</td><td>Edit replay and matching on the server; a grouped layout in the Changes panel</td><td><span class="size">M</span></td><td>Edits that overlap each other; files changed only by shell commands (shown as "unexplained", which is still useful)</td></tr>
-          <tr><td>2 · Since review</td><td>A second snapshot; stored comments</td><td>"Mark reviewed" snapshot, per-hunk seen state, following comments to their lines</td><td><span class="size">S–M</span></td><td>A line rewritten so much it can't be followed; then the comment says "can't tell"</td></tr>
-          <tr><td>3a · Before / after</td><td>Dev server from ▶ Run</td><td>Playwright screenshots at turn start and end; a pixel compare; picking the page</td><td><span class="size">M</span></td><td>Pages that need a login or test data; changes on a page nobody opened; animations and live data</td></tr>
-          <tr><td>3b · Lit-up app</td><td>Import graph; page in dev mode</td><td>Vite plugin to tag elements; import graph; overlay; names for screen areas</td><td><span class="size">L</span></td><td>React + Vite projects first; other stacks need their own tagging. Area names need a short list or the elements' own labels</td></tr>
-          <tr><td>4 · Triage and flags</td><td>The diff itself; coverage when present</td><td>tree-sitter per language; contract-file list; flag patterns</td><td><span class="size">M</span></td><td>Languages without a grammar fall back to text. Flags are hints and can't judge intent</td></tr>
+          <tr><td>1 · By request</td><td>Edit log, chat-start snapshot, messages</td><td>Edit replay and matching on the server; a grouped layout in the Changes panel</td><td><span class="size">M</span></td><td>None</td><td>Edits that overlap each other; files changed only by shell commands (shown as "unexplained", which is still useful)</td></tr>
+          <tr><td>2 · Since review</td><td>A second snapshot; stored comments</td><td>"Mark reviewed" snapshot, per-hunk seen state, following comments to their lines</td><td><span class="size">S–M</span></td><td>None</td><td>A line rewritten so much it can't be followed; then the comment says "can't tell"</td></tr>
+          <tr><td>3a · Before / after</td><td>Dev server from ▶ Run</td><td>Playwright screenshots at turn start and end; a pixel compare; picking the page</td><td><span class="size">M</span></td><td>None</td><td>Pages that need a login or test data; changes on a page nobody opened; animations and live data</td></tr>
+          <tr><td>3b · Lit-up app</td><td>Import graph; page in dev mode</td><td>Vite plugin to tag elements; import graph; overlay; names for screen areas</td><td><span class="size">L</span></td><td>Optional: area names, once per component</td><td>React + Vite projects first; other stacks need their own tagging. Area names need a short list or the elements' own labels</td></tr>
+          <tr><td>4 · Triage and flags</td><td>The diff itself; coverage when present</td><td>tree-sitter per language; contract-file list; flag patterns</td><td><span class="size">M</span></td><td>None</td><td>Languages without a grammar fall back to text. Flags are hints and can't judge intent</td></tr>
         </tbody>
       </table>
     </div>
@@ -661,7 +704,7 @@ footer { margin-top: 64px; padding: 26px 0 48px; border-top: 1px solid var(--lin
   <div class="wrap">
     <h2 id="rec-h">Recommended order</h2>
     <ol class="plan">
-      <li class="first"><div><h3>Views 1 and 2 together: the diff as the story of the chat</h3><p>All the data is already recorded. They need nothing set up in your project, they work for Claude, Codex and local models alike, and an IDE can't copy them because it doesn't have the conversation. Before building the layout, check the edit replay against about ten saved chats to see how often lines end up "unexplained."</p></div></li>
+      <li class="first"><div><h3>Views 1 and 2 together: the diff as the story of the chat</h3><p>All the data is already recorded. They need nothing set up in your project, make no model calls, work for Claude, Codex and local models alike, and an IDE can't copy them because it doesn't have the conversation. Before building the layout, check the edit replay against about ten saved chats to see how often lines end up "unexplained."</p></div></li>
       <li><div><h3>View 3b on Workbench itself</h3><p>The most direct answer to "show me what this diff means," and Workbench is a Vite + React app, so it's the easiest first target. If it holds up there, offer it to other projects.</p></div></li>
       <li><div><h3>Views 3a and 4</h3><p>Screenshots once there's a good way to pick the page and its state. Triage once the first views show how much of a typical agent diff is routine.</p></div></li>
     </ol>
@@ -676,6 +719,7 @@ footer { margin-top: 64px; padding: 26px 0 48px; border-top: 1px solid var(--lin
       <li><div><b>What counts as "reviewed"?</b><p>Only sending comments, or also a separate "Mark reviewed" button with nothing to send?</p></div><span class="owner">Decision: Milton</span></li>
       <li><div><b>Which page do screenshots use?</b><p>The address ▶ Run printed, the last page you opened from it, or a short list of pages per project?</p></div><span class="owner">Decision: Milton</span></li>
       <li><div><b>Projects that aren't React + Vite</b><p>Skip view 3b for them, or fall back to listing affected files and routes without the drawing?</p></div><span class="owner">Decision: Milton</span></li>
+      <li><div><b>Area names with a model: on or off by default?</b><p>The only model use in the proposal (view 3b, unlabelled components). Off by default keeps token use at zero until you choose it.</p></div><span class="owner">Decision: Milton</span></li>
       <li><div><b>Not measured yet: how well edit replay matches the final diff</b><p>Untested on real chats. This is the main risk for view 1 and the first thing to check in a prototype.</p></div><span class="owner">Next step: Claude, in the prototype</span></li>
     </ul>
   </div>
