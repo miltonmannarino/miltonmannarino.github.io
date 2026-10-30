@@ -82,6 +82,9 @@ b.ui { font-weight: 600; font-family: var(--mono); font-size: 14px; background: 
 .auto { margin-top: 10px; padding: 8px 12px; background: var(--code-bg); border-radius: 6px; font-family: var(--mono); font-size: 13px; }
 .auto strong { font-weight: 500; }
 .owner { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-left: 6px; }
+li.resolved::marker { color: var(--done); }
+li.resolved .was { text-decoration: line-through; color: var(--muted); }
+li.resolved .fixed { display: block; color: var(--done); font-size: 14px; }
 .checks { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 18px; margin: 0 0 18px; }
 .checks table { border-collapse: collapse; width: 100%; font-family: var(--mono); font-size: 13px; }
 .checks td { padding: 4px 8px 4px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
@@ -122,7 +125,8 @@ footer.how h2 { font-size: 20px; margin-top: 0; }
 <div id="test-body"></div>
 
 <h2 id="missing">What's missing</h2>
-<p class="section-note">Open decisions, untested paths and follow-ups, with who owns each. Session ids are the Claude sessions on the repo's <code>.claude/active-work.md</code> board; "unowned" means nobody has picked it up.</p>
+<p class="section-note">Open decisions, untested paths and follow-ups, with who owns each. Session ids are the Claude sessions on the repo's <code>.claude/active-work.md</code> board; "unowned" means nobody has picked it up. All sessions on the board have finished, so nothing is being worked on right now. Items that later commits settled stay in place, struck through, with the commit that settled them.</p>
+<div class="checks" id="missing-summary"></div>
 <div id="missing-body"></div>
 
 <footer class="how">
@@ -132,7 +136,9 @@ footer.how h2 { font-size: 20px; margin-top: 0; }
   commits: [{ hash: 'abcdef0', subject: 'feat(...): …' }],
   changed: ['what a user sees, one bullet each'],
   test: { steps: ['Click …', '→ expected …'], automated: ['file.test.ts (n tests) pass'] },
-  missing: [{ text: 'open item', owner: 'session id or unowned' }] }</pre>
+  missing: [{ text: 'open item', owner: 'session id or unowned' }] }
+// When a later commit settles an item, keep it and add:
+//   resolved: { hash: 'abcdef0', note: 'what settled it' }</pre>
 </footer>
 </main>
 
@@ -148,21 +154,74 @@ const AREAS = {
   analysis: 'Analysis: beat grid & phrases',
   library: 'Library & startup',
   engine: 'Engine reliability',
+  platform: 'App runtime & dependencies',
   tooling: 'Testing & tooling',
 };
-const AREA_ORDER = ['pro', 'ui', 'automix', 'analysis', 'library', 'engine', 'tooling'];
+const AREA_ORDER = ['pro', 'ui', 'automix', 'analysis', 'library', 'engine', 'platform', 'tooling'];
 
 const CHECKS = {
-  ranAt: '2026-10-20 12:25 (session 6e8d1284; test:live 12:10)',
+  ranAt: '2026-10-30 22:36 (session 62fae4bc, at 2e71b37; test:live 22:29 at bc8e49a)',
   rows: [
     ['npx tsc --noEmit', 'ok', '0 errors'],
-    ['npm test (vitest)', 'ok', '241 / 241 tests pass, 29 files (one unhandled InvalidStateError from offlineMix.test.ts, flaky, passes alone)'],
-    ['npm run test:live (Playwright, ~2.5 min)', 'ok', '1 passed in 2.4 min: transition 1 a 32-bar loop mix (intro played 3×, deck jumped back 15.0 s and 15.0 s), transition 2 a 16-bar Mix now blend (no jump); stopped decks at −120 dBFS, fades monotone (worst rise −2.4 dB), longest master gap 0.00 s over 141 s'],
-    ['npm run analyze (42-track baseline)', 'ok', '28 tracks changed, phrases only (tempo, grid, key unchanged); baseline updated'],
+    ['npm test (vitest)', 'ok', '241 / 241 tests pass, 29 files. A first full run had one failure in offlineMix.test.ts ("keeps the reported playhead on the audio after a rate change mid-play", expected 1 to be 0.5); that file passes alone 3 of 3 and on the next full run: flaky under load, unowned'],
+    ['npm run test:live (Playwright, ~2.5 min)', 'ok', '1 passed in 2.4 min on Electron 44\'s dependency set: transition 1 a 32-bar loop mix (intro played 3×, deck jumped back 14.9 s twice), transition 2 a 16-bar blend; stopped decks at −120 dBFS, fades monotone (worst rise −3.2 dB / −1.6 dB), longest master gap 0.00 s over 140 s. Run it with NODE_ENV unset: with NODE_ENV=production in the shell Vite serves a production-mode page, the test hook window.__djmix never appears, and the test times out after 8 min (that happened first here)'],
+    ['npm run analyze (42-track baseline)', 'ok', 'last run 2026-10-20: 28 tracks changed, phrases only; baseline updated (not re-run since: no analysis change)'],
   ],
 };
 
 const FEATURES = [
+  {
+    id: 'fx-pads', area: 'pro', title: 'Effects redesigned: lit pads, a beat stepper, a dry/wet knob with a readout', date: '2026-10-30', session: '62fae4bc',
+    commits: [{ hash: '2e71b37', subject: 'feat(mixer): effect pads, a beat stepper and a dry/wet readout' }],
+    changed: [
+      'Each channel\'s effect is chosen with four pads, ECHO, FLANG, PHASE and VERB, instead of a dropdown. A click turns an effect on and the pad lights in the deck\'s colour (blue for A, orange for B). A click on another pad swaps effects; a click on the lit pad turns it off, and an echo or reverb tail rings out as before.',
+      'BEAT is a ‹ 1/2 › stepper instead of a dropdown, over the same lengths (1/4 to 16 beats). It shows — for reverb, which has no beat length.',
+      'The amount knob is now labelled D/W (dry/wet). Beside it a readout says DRY, a percentage, or WET. While its effect runs the knob glows in the deck colour; a double-click returns it to 50 %.',
+      'At rest the section no longer looks switched off: the pads are unlit but clearly buttons, and the beat and dry/wet can be set before an effect is engaged, so it comes in exactly as set. The track sounds unchanged while no effect runs.',
+      'The decks row keeps its height (530.5 px, was 529.5 px, at a 1400 × 900 window).',
+    ],
+    test: {
+      steps: [
+        'Open the app without touching the effects. → Under the FLT knobs each side shows four unlit pads (ECHO, FLANG, PHASE, VERB), BEAT ‹ 1/2 ›, and a dimmed D/W knob reading 50%.',
+        'Play a track on A and click A\'s ECHO pad. → The pad lights blue, the BEAT value and the D/W readout turn blue, the knob glows, and the echo is heard.',
+        'Click › on A\'s BEAT twice. → 3/4, then 1; the echo time follows.',
+        'Click A\'s VERB pad. → ECHO goes dark, VERB lights, BEAT shows —, and its arrows are disabled.',
+        'Click the lit VERB pad. → It goes dark, the reverb tail rings out, and the knob dims again.',
+        'Drag D/W all the way down, then all the way up, then double-click it. → The readout says DRY, then WET, then 50%.',
+        'With no effect on, step BEAT to 2 and set D/W to 80%, then click FLANG. → The flanger comes in at a 2-beat sweep, 80% wet.',
+      ],
+      automated: [
+        'Headless Chromium on a private Vite: every pad, stepper and double-click driven by clicks, store read back through window.__djmix (A: flanger, 3/4 beat, 0.5; B: off after VERB was clicked twice, D/W reset to 0.5); screenshots of idle and lit states; decks row measured against HEAD (529.5 → 530.5 px), no page errors',
+        'npx tsc --noEmit 0 errors; npm test 241 / 241 pass in 29 files (a first full run had one failure in offlineMix.test.ts, the known flaky file; it passes alone 3 of 3 and on the second full run)',
+      ],
+    },
+    missing: [
+      { text: 'Not looked at in the Electron window on your screen, only in headless Chromium at 1400 × 900.', owner: 'Milton' },
+      { text: 'Seen by eye only; no automated UI test guards the pads or the stepper. The live test (npm run test:live) drives automix, not the effects.', owner: 'unowned' },
+      { text: 'Turning an effect on or off has no keyboard shortcut.', owner: 'unowned' },
+      { text: 'The FX settings are not saved across restarts; a fresh launch starts with no effect, 1/2 beat, 50%.', owner: 'unowned' },
+    ],
+  },
+  {
+    id: 'electron-44', area: 'platform', title: 'Electron 44 and refreshed dependencies (security advisories)', date: '2026-10-26', session: 'not recorded',
+    commits: [{ hash: 'bc8e49a', subject: 'fix(deps): bump electron to 44 and refresh deps for security advisories' }],
+    changed: [
+      'The desktop app runs on Electron 44 (44.9.3, was 41). Electron is the shell that wraps the web app into a desktop window; the newer version closes the security advisories reported against 41.',
+      'The other packages were refreshed in package-lock.json for the same advisories. Nothing in the app\'s own code changed, so nothing should look or sound different.',
+    ],
+    test: {
+      steps: [
+        'Run <code>npm install</code>, then <code>npm run dev</code>. → The DJ Mix window opens and the library loads as before.',
+        'Load a track on each deck, press PLAY on A, seek near the end and turn AUTO on. → It mixes into B as before.',
+        'Press AUDIO (top right) and pick another Output while a track plays. → Sound moves to that device at once.',
+        'Press Flag mix in the footer (bottom right) while something plays. → A new folder appears under the app\'s userData/reports (written by the Electron side of the app).',
+      ],
+      automated: ['Run on 2026-10-30 against this commit: npx tsc --noEmit 0 errors; npm test 241 / 241 pass in 29 files; npm run test:live 1 passed in 2.4 min (run with NODE_ENV unset, see the checks table). These run in Node and headless Chromium, not in Electron itself.'],
+    },
+    missing: [
+      { text: 'No check ran inside the Electron 44 window itself; the steps above are the first real try.', owner: 'Milton' },
+    ],
+  },
   {
     id: 'waveform-no-flicker', area: 'ui', title: 'The zoomed waveform scrolls without flicker', date: '2026-10-20', session: '6e8d1284',
     commits: [{ hash: '244de2c', subject: 'fix(ui): the zoomed waveform scrolls without flicker' }],
@@ -379,6 +438,132 @@ const FEATURES = [
     ],
   },
   {
+    id: 'fx-dry-wet', area: 'pro', title: 'The FX amount knob is a dry/wet mix', date: '2026-10-18', session: 'not recorded',
+    commits: [{ hash: 'c5e1649', subject: 'feat(fx): the amount knob is a dry/wet mix' }],
+    changed: [
+      'The AMT knob next to a channel\'s effect now crossfades between the plain signal ("dry") and the effect ("wet"): all the way down is the track only, all the way up is the effect only, the middle is both at −3 dB each. Before, the effect was only added on top and the plain track could never be taken away.',
+      'That makes a full echo-out (only the echo left) and a full flanger possible. The echo\'s feedback still grows as the knob goes up.',
+      'With FX set to OFF the knob is greyed out and the track passes unchanged, whatever position the knob was left in. (Since 2e71b37 the knob is called D/W, dims instead of greying out, and can be preset while off.)',
+    ],
+    test: {
+      steps: [
+        'Play a track on A, click A\'s ECHO pad, set BEAT to 1/2. Turn D/W all the way down. → Only the track, no echo; the readout says DRY.',
+        'Turn D/W all the way up. → Only the echo is left: the track itself is gone, repeats keep coming; the readout says WET.',
+        'Double-click D/W. → It returns to 50%: track and echo together, neither louder than before.',
+        'Click the lit ECHO pad to turn it off with D/W still up. → The track plays normally at full level; the knob dims.',
+      ],
+      automated: ['src/audio/engine/fx.test.ts: new case "amount is a dry/wet mix: full wet leaves only the repeats, half wet takes both down 3 dB"'],
+    },
+    missing: [
+      { text: 'Not checked by ear in the app; the dry/wet law is covered only by the offline tests.', owner: 'Milton' },
+    ],
+  },
+  {
+    id: 'mix-status-overflow', area: 'ui', title: 'A long mix status no longer makes the page wider than the window', date: '2026-10-18', session: 'not recorded',
+    commits: [{ hash: '370c893', subject: 'fix(ui): a long mix status no longer pushes the page wider than the window' }],
+    changed: [
+      'A long text in the top bar\'s mix status used to push the whole app wider than the window, so the page scrolled sideways. The status is now cut off with "…" and the rest of the app stays inside the window.',
+    ],
+    test: {
+      steps: [
+        'Narrow the window to about 1000 px, load two tracks with long titles and turn AUTO on. → The top bar status ends in "…"; there is no horizontal scrollbar and the right edge of the mixer stays visible.',
+      ],
+      automated: ['CSS only (src/styles/index.css); no automated check'],
+    },
+    missing: [
+      { text: 'No test guards it; a wide new element in the top bar could bring the sideways scroll back.', owner: 'unowned' },
+    ],
+  },
+  {
+    id: 'cue-first-quarter', area: 'automix', title: 'The incoming track is never cued past the first quarter of its length', date: '2026-10-18', session: 'not recorded',
+    commits: [{ hash: 'dd198ae', subject: 'feat(mix): the incoming track is never cued past a quarter of its length' }],
+    changed: [
+      'Automix used to be allowed to start the next track as far in as its last drop, so a track with a short first beat section could come in three fifths of the way through. Now the entry point (the cue) is always within the first quarter of the incoming track, for blends and cuts alike.',
+      'Skipping a beatless intro is still allowed. When the planner has to choose, it now makes the blend shorter rather than cueing deeper.',
+    ],
+    test: {
+      steps: [
+        'Turn AUTO on and wait for the next mix to be planned. → The cue mark on the incoming deck\'s waveform sits in its first quarter, on every pair you try.',
+      ],
+      automated: ['src/audio/mix/mixPoints.test.ts: "never cues past a quarter of the incoming track, even when a later drop would blend better", "caps the cue at a quarter for a cut too"', 'The later Loop-style rule (never past the first drop, ad727ce) is applied on top of this limit.'],
+    },
+    missing: [],
+  },
+  {
+    id: 'tempo-tag-octave', area: 'analysis', title: 'A BPM tag in the file settles the tempo octave (analyser v8)', date: '2026-10-18', session: 'ecc91043',
+    commits: [{ hash: 'dd3521f', subject: 'feat(analysis): a tagged tempo settles the octave' }],
+    changed: [
+      'The analyser\'s most common tempo mistake was the octave: reading half-time material at 70 BPM as 140, or slow house at double speed. When the file has a BPM tag, the analyser now takes whichever of half, as measured, or double lies within 6 % of the tag.',
+      'A tag that differs by 3:2 or 4:3 is left alone; that is a different reading of the rhythm, not an octave mistake.',
+      'Analyser version 8, so every track was re-analysed once on the next launch. All 42 tracks of the test set carry a BPM tag.',
+    ],
+    test: {
+      steps: [
+        'Load a half-time or slow track whose file has a BPM tag. → The deck\'s BPM is in the same octave as the tag (for example 70, not 140).',
+      ],
+      automated: ['src/audio/analysis/tempo.test.ts (new cases for the octave hint)', 'Analyze baseline on the 42-track set: 35 tempos equal to the tag, 0 an octave apart, 6 at 3:2 or 4:3'],
+    },
+    missing: [
+      { text: 'Tracks without a BPM tag still depend on the analyser\'s own octave choice (the 85–175 BPM fold).', owner: 'unowned' },
+    ],
+  },
+  {
+    id: 'analyze-harness', area: 'tooling', title: 'Analysis regression check on the real library; the forecast uses the real deck trims', date: '2026-10-18', session: 'ecc91043',
+    commits: [{ hash: '1e7b559', subject: 'feat(analysis): regression harness on the real library; forecast reads the decks\' actual trims' }],
+    changed: [
+      'A developer command compares a fresh analysis of a music folder with a saved baseline: per track, what changed (tempo, grid nudge in ms, bar line, key, phrases), how tempo and key agree with the file tags, and which of the user\'s in-app corrections the analyser still needs. It exits with an error when anything changed, unless told to update the baseline.',
+      'A baseline for the 42-track test set is committed (fixtures/analysis-baseline.json).',
+      'The planner\'s level forecast and its bass-hole check now use the gain each deck really plays at (automatic loudness trim plus the GAIN knob), instead of the automatic trim alone.',
+    ],
+    test: {
+      steps: [
+        'Run <code>npm run analyze -- &lt;music folder&gt; --baseline fixtures/analysis-baseline.json</code>. → A per-track table of changes and tag agreement; exit code 0 when nothing changed.',
+        'Add <code>--library &lt;track-library.json&gt;</code>. → It also lists which saved corrections the analyser now gets right by itself.',
+        'Turn a deck\'s GAIN knob up before Auto plans the next mix. → No visible change in the app: the effect is on which mix points the planner picks.',
+      ],
+      automated: ['scripts/analyzeCheck.test.ts'],
+    },
+    missing: [
+      { text: 'No test covers the forecast reading the GAIN knob; it was checked by reading the code path only.', owner: 'unowned' },
+    ],
+  },
+  {
+    id: 'mixset', area: 'tooling', title: 'mixset: render a whole set offline and get one table of mix metrics', date: '2026-10-18', session: 'ecc91043',
+    commits: [{ hash: '34d5c8c', subject: 'feat(mixlab): mixset renders a whole set and tabulates the metrics' }],
+    changed: [
+      'A developer command renders every neighbouring pair of a music folder offline, through the same audio graph the app uses, and writes one table row per mix: beat alignment, a grid-free timing measure, bass hole, stacking, forecast error, loudness and peak.',
+      'Each row carries flags worth a listen: timing-disagree, half-beat?, hole, stack, cut, lock-abandoned, downbeat?. Results go to report.json and report.md, optionally with WAVs.',
+    ],
+    test: {
+      steps: [
+        'Run <code>npm run mixset -- &lt;music folder&gt; --limit 5 --out /tmp/set</code>. → /tmp/set/report.md has five rows with the metrics and flags.',
+        'Add <code>--wav</code>. → One WAV per pair to listen to; <code>--style loop</code> renders the Loop style.',
+      ],
+      automated: ['None for the command itself; it reuses scripts/mixlabLib.ts'],
+    },
+    missing: [
+      { text: 'Crashes on Sunswell → Pantalón with "InvalidStateError: Error in async function" in OfflineAudioContext.suspend (same error noted on the waveform and Loop entries).', owner: 'unowned' },
+    ],
+  },
+  {
+    id: 'flag-mix', area: 'tooling', title: '"Flag mix" keeps the last 90 seconds of a mix that sounded wrong', date: '2026-10-18', session: 'ecc91043',
+    commits: [{ hash: '6429f8e', subject: 'feat(diagnostics): "Flag mix" saves the last 90 s of the master with the plans' }],
+    changed: [
+      'A Flag mix button at the bottom right of the window. The app always keeps the last 90 seconds of the master output in memory; the button saves them as master.wav, next to a report.json with both decks\' tracks and analyses, the mixer and automix state, and the last four transition plans.',
+      'In the desktop app the files go to a new folder under userData/reports; in a browser they download.',
+    ],
+    test: {
+      steps: [
+        'Let Auto mix two tracks. Right after the blend, press Flag mix (bottom right). → The button shows a short status, and a new folder appears under userData/reports with master.wav (the last 90 s) and report.json.',
+        'Open master.wav. → It is the blend you just heard.',
+      ],
+      automated: ['src/audio/engine/recorder.test.ts: the recorder keeps the last seconds of its input and dumps them in order; the WAV writer\'s header and samples'],
+    },
+    missing: [
+      { text: 'Never pressed in the real app (noted by session ecc91043 when it finished).', owner: 'Milton' },
+    ],
+  },
+  {
     id: 'layout-compact', area: 'ui', title: 'Decks row a little shorter, more room for the playlist', date: '2026-10-18', session: 'a131b68b',
     commits: [{ hash: 'efce872', subject: 'style(layout): back to the stacked mixer, a little tighter' }, { hash: '63467a9', subject: 'style(layout): a shorter decks row, more room for the playlist' }],
     changed: [
@@ -420,7 +605,7 @@ const FEATURES = [
     },
     missing: [
       { text: 'No keyboard shortcuts for loop in/out/size.', owner: 'unowned' },
-      { text: 'Loops are not saved with the track (no hot cues / saved loops yet).', owner: 'cae530b9' },
+      { text: 'Loops are not saved with the track (no hot cues / saved loops yet).', owner: 'unowned' },
       { text: 'No slip mode (playhead keeps running underneath while looping).', owner: 'unowned' },
     ],
   },
@@ -441,7 +626,7 @@ const FEATURES = [
       automated: ['Browser smoke: +3 dB on the knob read back as +3.000 dB on the channel input gain'],
     },
     missing: [
-      { text: 'The planner\'s EQ-balance forecast reads the automatic trim only; a manual GAIN offset is not in its level forecast.', owner: 'ecc91043' },
+      { text: 'The planner\'s EQ-balance forecast reads the automatic trim only; a manual GAIN offset is not in its level forecast.', owner: 'ecc91043', resolved: { hash: '1e7b559', note: 'the forecast and the bass-hole scoring read the trim each deck really plays with (automatic trim plus GAIN).' } },
       { text: 'The knob keeps its position across track loads (like a hardware trim); decide whether it should reset per track.', owner: 'unowned' },
     ],
   },
@@ -456,11 +641,11 @@ const FEATURES = [
     ],
     test: {
       steps: [
-        'Play a track on A. Set A\'s FX select to ECHO, BEAT to 1/2, turn AMT up → repeats on every half beat.',
+        'Play a track on A. Click A\'s ECHO pad, step BEAT to 1/2, turn D/W up → repeats on every half beat.',
         'Pull fader A down → the repeats keep ringing and decay.',
         'Move A\'s pitch fader → the echo time follows the new tempo (no re-selection needed).',
-        'FLANGER or PHASER with BEAT 4 → one sweep per bar. REVERB → room on the channel.',
-        'Set OFF → the running tail decays, nothing new is added.',
+        'FLANG or PHASE with BEAT 4 → one sweep per bar. VERB → room on the channel.',
+        'Click the lit pad again (off) → the running tail decays, nothing new is added.',
       ],
       automated: ['src/audio/engine/fx.test.ts (6 tests): off adds nothing, echo repeats on the beat and decays, echo follows tempo, amount sets tail length, flanger / phaser / reverb change the signal, beat→seconds mapping', 'Browser smoke: echo delay 0.234 s at 128 BPM, 0.223 s after +5 % pitch'],
     },
@@ -511,7 +696,7 @@ const FEATURES = [
       automated: ['src/audio/engine/sync.test.ts (10 tests): shortest phase move, bar and phrase alignment, phrase fallback, never before the track start, next unit on the clock', 'Browser smoke: beat / bar / phrase start within 0.003 beats, re-sync after a manual knock within 0.003 beats, pitched master → follower rate 1.03'],
     },
     missing: [
-      { text: 'Phrase mode falls back to "same distance into the phrase" when no follower phrase is long enough; worth a listen on tracks with very short phrases.', owner: 'cae530b9' },
+      { text: 'Phrase mode falls back to "same distance into the phrase" when no follower phrase is long enough; worth a listen on tracks with very short phrases.', owner: 'Milton' },
       { text: 'No continuous sync lock (SYNC is a one-shot move; drift after a manual nudge is not corrected).', owner: 'unowned' },
       { text: 'A stopped deck starts on SYNC in the phase modes (by design, said in the tooltip); confirm this is wanted versus "align the cue only".', owner: 'Milton' },
     ],
@@ -534,9 +719,9 @@ const FEATURES = [
       automated: ['Browser smoke: panel lists "System default" and the readout in headless Chromium'],
     },
     missing: [
-      { text: 'Sample rate and buffer need a manual restart; a Relaunch button needs an Electron IPC (electron/main.js is in another session\'s hands right now).', owner: 'cae530b9' },
+      { text: 'Sample rate and buffer need a manual restart; a Relaunch button needs an Electron IPC in electron/main.js (free now). Session cae530b9 finished without it.', owner: 'unowned' },
       { text: 'Device labels can come back empty without a media permission (then they show as "Output 1, 2…").', owner: 'unowned' },
-      { text: 'No headphone cue / second output for pre-listening yet; the next pro feature to build.', owner: 'cae530b9' },
+      { text: 'No headphone cue / second output for pre-listening yet; the next pro feature to build.', owner: 'unowned' },
     ],
   },
 
@@ -625,8 +810,10 @@ const FEATURES = [
       automated: ['src/audio/mix/metrics.test.ts, balance.test.ts, mixPoints.test.ts, templates / curves tests (all in the 201 passing)'],
     },
     missing: [
-      { text: 'Tuning from real-pair A/B renders lands in balance.ts; a batch renderer over a folder (scripts/mixset.ts) and a "bad mix" recorder button are in progress.', owner: 'ecc91043' },
-      { text: 'Structure accuracy (section boundaries from self-similarity, tag-BPM octave hint, analyze --check against the library\'s corrections).', owner: 'ecc91043' },
+      { text: 'A batch renderer over a folder (scripts/mixset.ts) and a "bad mix" recorder button are in progress.', owner: 'ecc91043', resolved: { hash: '34d5c8c + 6429f8e', note: '<code>npm run mixset</code> renders a whole set, and the footer\'s Flag mix button saves the last 90 s (see their entries under Testing & tooling).' } },
+      { text: 'Tuning the EQ balance from real-pair A/B renders (lands in balance.ts). Session ecc91043 finished without it.', owner: 'unowned' },
+      { text: 'Structure accuracy: tag-BPM octave hint and analyze --check against the library\'s corrections.', owner: 'ecc91043', resolved: { hash: 'dd3521f + 1e7b559', note: 'a tagged tempo settles the octave; <code>npm run analyze -- --baseline</code> reports changes, tag agreement and the corrections still needed.' } },
+      { text: 'Drop / build section labels in structure.ts. Nothing to check them against yet; the analyze harness is where a change would show.', owner: 'unowned' },
     ],
   },
   {
@@ -645,7 +832,7 @@ const FEATURES = [
       automated: ['src/audio/mix/balance.test.ts'],
     },
     missing: [
-      { text: 'Forecast ignores the manual GAIN offset (see the GAIN entry).', owner: 'ecc91043' },
+      { text: 'Forecast ignores the manual GAIN offset (see the GAIN entry).', owner: 'ecc91043', resolved: { hash: '1e7b559', note: 'the forecast reads both decks\' actual trims, GAIN knob included.' } },
     ],
   },
   {
@@ -722,7 +909,7 @@ const FEATURES = [
       automated: ['src/audio/analysis/analysis.test.ts, dsp.test.ts on synthetic tracks with ground truth'],
     },
     missing: [
-      { text: 'Section boundaries from self-similarity and a tag-BPM octave hint are planned (structure accuracy).', owner: 'ecc91043' },
+      { text: 'Section boundaries from self-similarity and a tag-BPM octave hint are planned (structure accuracy).', owner: 'ecc91043', resolved: { hash: 'dd3521f + 2abf7f6', note: 'the tag settles the tempo octave, and phrase lines follow the music\'s breaks (see "Phrase lines follow the music"). Drop / build labels are still open, listed under Bass handover.' } },
     ],
   },
   {
@@ -809,7 +996,7 @@ const FEATURES = [
       automated: ['See the checks table above for the last run'],
     },
     missing: [
-      { text: 'The live test covers automix only; the loop / FX / sync smoke was a throwaway script and should become a second spec.', owner: 'cae530b9' },
+      { text: 'The live test covers automix only (e2e/automix.spec.ts is still the one spec); the loop / FX / sync smoke was a throwaway script and should become a second spec.', owner: 'unowned' },
     ],
   },
 ];
@@ -817,12 +1004,14 @@ const FEATURES = [
 // ---------------------------------------------------------------------------------------------
 // Rendering.
 // ---------------------------------------------------------------------------------------------
-const TODAY = '2026-10-18';
+const UPDATED = '2026-10-30';
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 // Bullets may carry <code> for commands; everything else is escaped.
 const rich = (s) => esc(s).replace(/&lt;code&gt;/g, '<code>').replace(/&lt;\/code&gt;/g, '</code>');
-const byArea = () => AREA_ORDER.map((key) => ({ key, name: AREAS[key], items: FEATURES.filter((f) => f.area === key) })).filter((g) => g.items.length);
-const dateTag = (f) => `<span class="tag ${f.date === TODAY ? 'today' : ''}">${f.date === TODAY ? 'today' : 'yesterday'}</span>`;
+// Newest first inside each area, whatever the order in FEATURES (sort is stable).
+const byArea = () => AREA_ORDER.map((key) => ({ key, name: AREAS[key], items: FEATURES.filter((f) => f.area === key).sort((a, b) => b.date.localeCompare(a.date)) })).filter((g) => g.items.length);
+const LATEST = FEATURES.map((f) => f.date).sort().pop();
+const dateTag = (f) => f.date === LATEST ? '<span class="tag today">latest</span>' : '';
 const metaLine = (f) => `<div class="entry-meta"><span class="date">${esc(f.date)}</span>${f.commits.map((c) => `<span title="${esc(c.subject)}"><code>${esc(c.hash)}</code></span>`).join('')}<span>session ${esc(f.session)}</span></div>`;
 
 function renderChanged() {
@@ -853,19 +1042,32 @@ function renderTest() {
     </article>`).join('')).join('');
 }
 
+// An item that later work settled keeps its text, struck through, with the commit that settled it:
+// { text, owner, resolved: { hash, note } }.
+const missingItem = (m) => m.resolved
+  ? `<li class="resolved"><span class="was">${rich(m.text)}</span> <span class="fixed">Resolved in <code>${esc(m.resolved.hash)}</code>: ${rich(m.resolved.note)}</span></li>`
+  : `<li>${rich(m.text)}<span class="owner">— ${esc(m.owner)}</span></li>`;
+
 function renderMissing() {
+  const all = FEATURES.flatMap((f) => f.missing);
+  const open = all.filter((m) => !m.resolved);
+  const owners = {};
+  for (const m of open) owners[m.owner] = (owners[m.owner] || 0) + 1;
+  document.getElementById('missing-summary').innerHTML = `<div class="eyebrow">As of ${esc(UPDATED)}</div><table>
+    <tr><td>Open</td><td>${open.length}</td><td>${Object.entries(owners).sort((a, b) => b[1] - a[1]).map(([o, n]) => `${esc(o)} ${n}`).join(' · ')}</td></tr>
+    <tr><td>Resolved</td><td class="ok">${all.length - open.length}</td><td>settled by later commits, kept below struck through</td></tr></table>`;
   const el = document.getElementById('missing-body');
   el.innerHTML = byArea().map((g) => `<h3 class="area">${esc(g.name)}</h3>` + g.items.map((f) => `
     <article class="entry" id="missing-${esc(f.id)}" data-area="${esc(f.area)}" data-date="${esc(f.date)}">
       <div class="entry-head"><h4>${esc(f.title)}</h4>${dateTag(f)}</div>
-      ${f.missing.length ? `<ul>${f.missing.map((m) => `<li>${rich(m.text)}<span class="owner">— ${esc(m.owner)}</span></li>`).join('')}</ul>` : '<p class="jump">Nothing open.</p>'}
+      ${f.missing.length ? `<ul>${f.missing.map(missingItem).join('')}</ul>` : '<p class="jump">Nothing open.</p>'}
     </article>`).join('')).join('');
 }
 
 function renderMeta() {
   const dates = FEATURES.map((f) => f.date).sort();
   document.getElementById('meta').innerHTML = [
-    `updated ${esc(TODAY)}`,
+    `updated ${esc(UPDATED)}`,
     `${esc(dates[0])} → ${esc(dates[dates.length - 1])}`,
     `repo djmix · branch main`,
   ].map((s) => `<span>${s}</span>`).join('');
@@ -887,7 +1089,8 @@ function applyFilter() {
 }
 function renderFilters() {
   const el = document.getElementById('filters');
-  const chips = [['all', 'All'], ...[['date', TODAY, 'Today'], ['date', '2026-10-17', 'Yesterday']], ...AREA_ORDER.map((k) => ['area', k, AREAS[k]])];
+  const dates = [...new Set(FEATURES.map((f) => f.date))].sort().reverse();
+  const chips = [['all', 'All'], ...dates.map((d) => ['date', d, d.slice(5)]), ...AREA_ORDER.map((k) => ['area', k, AREAS[k]])];
   el.innerHTML = chips.map((c) => c[0] === 'all' ? `<button class="chip" data-all="1">All</button>` : `<button class="chip" data-${c[0]}="${esc(c[1])}">${esc(c[2])}</button>`).join('');
   el.addEventListener('click', (e) => {
     const b = e.target.closest('.chip'); if (!b) return;
