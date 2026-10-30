@@ -160,16 +160,47 @@ const AREAS = {
 const AREA_ORDER = ['pro', 'ui', 'automix', 'analysis', 'library', 'engine', 'platform', 'tooling'];
 
 const CHECKS = {
-  ranAt: '2026-10-30 22:36 (session 62fae4bc, at 2e71b37; test:live 22:29 at bc8e49a)',
+  ranAt: '2026-10-30 23:36 (session 62fae4bc, at 060a4c9)',
   rows: [
     ['npx tsc --noEmit', 'ok', '0 errors'],
-    ['npm test (vitest)', 'ok', '241 / 241 tests pass, 29 files. A first full run had one failure in offlineMix.test.ts ("keeps the reported playhead on the audio after a rate change mid-play", expected 1 to be 0.5); that file passes alone 3 of 3 and on the next full run: flaky under load, unowned'],
-    ['npm run test:live (Playwright, ~2.5 min)', 'ok', '1 passed in 2.4 min on Electron 44\'s dependency set: transition 1 a 32-bar loop mix (intro played 3×, deck jumped back 14.9 s twice), transition 2 a 16-bar blend; stopped decks at −120 dBFS, fades monotone (worst rise −3.2 dB / −1.6 dB), longest master gap 0.00 s over 140 s. Run it with NODE_ENV unset: with NODE_ENV=production in the shell Vite serves a production-mode page, the test hook window.__djmix never appears, and the test times out after 8 min (that happened first here)'],
+    ['npm test (vitest)', 'ok', '245 / 245 tests pass, 29 files (offlineMix.test.ts, flaky under load earlier today, passed)'],
+    ['npm run test:live (Playwright, ~2.5 min)', 'ok', '1 passed in 2.4 min: transition 1 a 32-bar loop mix (intro played 3×, deck jumped back 15.0 s twice), transition 2 a 16-bar blend; stopped decks at −120 dBFS, fades monotone (worst rise −1.5 dB / −2.1 dB), longest master gap 0.00 s over 140 s. Run it with NODE_ENV unset: with NODE_ENV=production in the shell Vite serves a production-mode page, the test hook window.__djmix never appears, and the test times out after 8 min'],
     ['npm run analyze (42-track baseline)', 'ok', 'last run 2026-10-20: 28 tracks changed, phrases only; baseline updated (not re-run since: no analysis change)'],
   ],
 };
 
 const FEATURES = [
+  {
+    id: 'loop-seam', area: 'engine', title: 'Loops close cleanly: no click at the seam, no drifting off the beat', date: '2026-10-30', session: '62fae4bc',
+    commits: [{ hash: '060a4c9', subject: 'fix(engine): loop seams no longer click or drift off the beat' }],
+    changed: [
+      'A loop\'s jump back no longer clicks. With KEY off, the end of the loop used to be cut straight onto its start; wherever the two did not meet at the same level you heard a click. The two now crossfade over 5 milliseconds, too short to hear as a fade. With KEY on, the time-stretcher already blended the jump and nothing changes there.',
+      'Loops stay on the beat. Each jump back landed up to 3 ms late (the audio engine only switches at the edge of its next 128-sample block), and the next pass was timed from that late jump, so the lateness added up: a 1-beat loop was 12 ms behind the beat after 15 passes, 34 ms at +4 % tempo, with KEY on or off. Each late jump also let the first moment of the next beat\'s hit through before the loop restarted on its own hit, so a drum hit doubled at the seam. Now every pass starts exactly on the beat.',
+      'Automix loop mixes get the same correction: during a loop, the looping deck\'s kicks sat 1.1–1.6 ms away from the other deck\'s; now under 0.2 ms.',
+      'Pausing a deck in the quarter second before a loop wraps used to let the old audio play on until the wrap. It now stops at once.',
+    ],
+    test: {
+      steps: [
+        'Load a track with a held pad, vocal or bassline on deck A, turn KEY off, press PLAY.',
+        'In the loop row press 1, then ½ twice (LOOP 1/4: one beat). → The loop repeats with no click or tick at the jump, however long you leave it.',
+        'Load a track on deck B, SYNC it to A and play both while A loops for a minute. → A\'s kicks stay on B\'s; they used to slide later and flam within seconds.',
+        'Turn KEY on and repeat. → Same: no click, no drift.',
+        'With a 1-bar loop running, press ❚❚ (pause) just before the jump back. → Silence at once, no last fragment of the loop.',
+        'Set the MIX picker in the top bar to Loop and press MIX NOW (or turn AUTO on) into a track with a sparse intro. → The held intro repeats seamlessly and its kicks stay on the outgoing track\'s.',
+      ],
+      automated: [
+        'Measured before / after, offline (node-web-audio-api) and in real Chromium: click energy at the seam 110–4800× the loop body before, about 1× after (Chromium: 167× → 0.7×); a 1-beat loop 11–12 ms behind the grid after 15 wraps before, within 0.02 ms after; in Chromium the old code produced 31 beat hits in 7.5 s instead of 16 (a doubled hit at every seam)',
+        'New tests: deckPlayer.test.ts (the jump crossfades, stays in step at 44.1 kHz, a pause before a pending jump silences the old source), loop.test.ts (124 BPM at 44.1 kHz stays on the grid over 15 wraps)',
+        'runner.test.ts: the looped-deck checks now read the kick phase grid-free (kickPhaseOffset, under 0.5 ms); the old tempo estimate moved 0.1 BPM for a 1 ms shift. The old code reads 1.1–1.6 ms there and would fail',
+        'npx tsc --noEmit 0 errors; npm test 245 / 245 pass in 29 files; npm run test:live 1 passed in 2.4 min (the loop mix\'s jumps now read exactly 15.0 s, the length of 8 bars at 128 BPM; 14.9 s before)',
+      ],
+    },
+    missing: [
+      { text: 'Not heard by ear yet. Listen to a short loop on a track with a held pad or vocal, KEY off and on.', owner: 'Milton' },
+      { text: 'With KEY on, the seam\'s sound was only measured partly: 4-beat loops measure like the middle of the loop, while the 1-beat measurement came out unusable (offline, the stretcher\'s output varies from pass to pass).', owner: 'unowned' },
+      { text: 'A click on the waveform while playing (a seek, not a loop) still cuts hard and can click; the crossfade is only on loop jumps.', owner: 'unowned' },
+    ],
+  },
   {
     id: 'fx-pads', area: 'pro', title: 'Effects redesigned: lit pads, a beat stepper, a dry/wet knob with a readout', date: '2026-10-30', session: '62fae4bc',
     commits: [{ hash: '2e71b37', subject: 'feat(mixer): effect pads, a beat stepper and a dry/wet readout' }],
