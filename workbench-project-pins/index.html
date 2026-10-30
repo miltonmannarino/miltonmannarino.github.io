@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="project" content="miltonmannarino/workbench">
+<title>Workbench — pinned projects</title>
+<style>
+  :root { color-scheme: dark; --bg:#151412; --panel:#201f1c; --panel-2:#292722; --ink:#eee7d7; --muted:#a79e8f; --faint:#766f65; --line:#39352f; --accent:#e5bb68; --green:#62b686; --blue:#94b8e8; --shadow:0 22px 70px rgba(0,0,0,.32); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; color:var(--ink); background:radial-gradient(circle at 80% -15%, #44351f 0, transparent 30rem), var(--bg); }
+  button { font:inherit; color:inherit; cursor:pointer; }
+  main { width:min(1120px, calc(100% - 40px)); margin:0 auto; padding:clamp(42px, 8vw, 92px) 0 80px; }
+  .eyebrow { color:var(--accent); font-size:12px; font-weight:750; letter-spacing:.12em; text-transform:uppercase; }
+  h1 { max-width:800px; margin:14px 0 16px; font-size:clamp(38px, 6vw, 72px); line-height:.98; letter-spacing:-.055em; }
+  .intro { max-width:630px; margin:0; color:var(--muted); font-size:clamp(17px, 2vw, 21px); line-height:1.55; }
+  .demo { display:grid; grid-template-columns:285px minmax(0,1fr); min-height:535px; margin-top:50px; overflow:hidden; border:1px solid var(--line); border-radius:18px; background:#1b1a17; box-shadow:var(--shadow); }
+  .side { display:flex; flex-direction:column; padding:20px 14px; border-right:1px solid var(--line); background:#1d1c19; }
+  .brand { display:flex; align-items:center; gap:9px; padding:4px 7px 20px; font-size:18px; font-weight:750; }
+  .brand i { width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 4px rgba(229,187,104,.12); }
+  .search { display:flex; gap:8px; align-items:center; padding:9px 10px; border:1px solid var(--line); border-radius:9px; color:var(--faint); font-size:12px; }
+  .group { margin-top:20px; }
+  .group-title { display:flex; align-items:center; gap:8px; padding:0 7px 8px; color:var(--muted); font-size:12px; font-weight:750; letter-spacing:.08em; text-transform:uppercase; }
+  .group-title span { margin-left:auto; color:var(--faint); font:11px ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .project { padding:11px 9px 10px; border-radius:9px; transition:background .2s, opacity .2s; }
+  .project.active { background:var(--panel-2); }
+  .project-head { display:flex; gap:7px; align-items:center; font-weight:700; font-size:14px; }
+  .chev { color:var(--faint); font-size:17px; line-height:1; }
+  .pin-mark { display:inline-grid; place-items:center; width:18px; height:18px; margin-left:auto; color:var(--accent); border-radius:5px; background:rgba(229,187,104,.12); font-size:13px; }
+  .project-count { color:var(--faint); font:11px ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .empty { margin:8px 0 0 24px; color:var(--faint); font-size:12px; }
+  .chat { margin:9px 0 0 24px; color:var(--muted); font-size:12px; line-height:1.35; }
+  .chat b { display:block; color:#d9d0c0; font-size:12px; font-weight:550; }
+  .side-bottom { margin-top:auto; padding:13px 6px 3px; display:grid; gap:3px; }
+  .plain { display:flex; align-items:center; gap:8px; border:0; border-radius:7px; padding:8px; background:transparent; color:var(--muted); text-align:left; font-size:13px; }
+  .plain:hover { background:var(--panel-2); color:var(--ink); }
+  .plain strong { color:var(--accent); font-size:18px; font-weight:500; line-height:0; }
+  .stage { position:relative; display:flex; flex-direction:column; justify-content:center; padding:clamp(28px,5vw,66px); background:linear-gradient(135deg, rgba(255,255,255,.025), transparent 45%); }
+  .step { display:none; max-width:540px; }
+  .step.show { display:block; }
+  .step-number { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:var(--accent); color:#2b210f; font-size:13px; font-weight:800; }
+  h2 { margin:15px 0 10px; font-size:clamp(25px,3.4vw,40px); line-height:1.08; letter-spacing:-.035em; }
+  .copy { margin:0; color:var(--muted); font-size:16px; line-height:1.55; }
+  .picker { display:grid; gap:7px; margin-top:25px; padding:10px; border:1px solid var(--line); border-radius:11px; background:var(--panel); }
+  .picker-head { color:var(--faint); font-size:11px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; padding:2px 5px 7px; }
+  .pick { display:flex; align-items:center; gap:10px; width:100%; padding:10px; border:1px solid transparent; border-radius:8px; background:transparent; text-align:left; }
+  .pick:hover, .pick.selected { border-color:#6a5228; background:#33291a; }
+  .folder { width:27px; height:23px; border-radius:5px; background:#c89f51; position:relative; box-shadow:inset 0 -6px rgba(0,0,0,.12); }
+  .folder:before { content:""; position:absolute; left:2px; top:-3px; width:12px; height:6px; border-radius:3px 3px 0 0; background:#dfbd79; }
+  .pick b { font-size:13px; }
+  .pick small { display:block; color:var(--faint); margin-top:2px; font:11px ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .next { margin-top:23px; padding:10px 14px; border:1px solid #d6a74d; border-radius:8px; background:var(--accent); color:#2a210f; font-size:13px; font-weight:800; }
+  .next:hover { filter:brightness(1.08); }
+  .done { display:flex; align-items:center; gap:9px; margin-top:23px; padding:12px 14px; border:1px solid rgba(98,182,134,.4); border-radius:9px; background:rgba(98,182,134,.1); color:#bde6cd; font-size:13px; }
+  .done i { display:grid; place-items:center; width:18px; height:18px; border-radius:50%; background:var(--green); color:#173520; font-style:normal; font-weight:900; }
+  .notes { display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin-top:18px; }
+  .note { padding:18px; border:1px solid var(--line); border-radius:12px; background:rgba(255,255,255,.025); }
+  .note b { display:block; font-size:14px; }
+  .note p { margin:7px 0 0; color:var(--muted); font-size:13px; line-height:1.45; }
+  .tag { display:inline-flex; align-items:center; gap:5px; margin-top:14px; padding:4px 7px; border-radius:999px; color:var(--blue); background:rgba(148,184,232,.1); font:11px ui-monospace, SFMono-Regular, Menlo, monospace; }
+  @media (max-width:720px) { main { width:min(100% - 24px, 560px); padding-top:36px; } .demo { grid-template-columns:1fr; } .side { min-height:355px; border-right:0; border-bottom:1px solid var(--line); } .stage { min-height:430px; } .notes { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Workbench · sidebar</div>
+  <h1>Keep a project ready before its first chat.</h1>
+  <p class="intro">Pinned projects stay in the sidebar even when they have no conversations. They can be grouped, opened, and used to start a new chat whenever you are ready.</p>
+
+  <section class="demo" aria-label="Pinned project interaction">
+    <aside class="side">
+      <div class="brand"><i></i> workbench</div>
+      <div class="search">⌕&nbsp; Search chats</div>
+      <div class="group">
+        <div class="group-title">Work <span>2</span></div>
+        <div class="project active" data-project="planning-kit">
+          <div class="project-head"><span class="chev">⌄</span><span class="project-title">planning-kit</span><span class="pin-mark" title="Pinned">⌖</span><span class="project-count">0</span></div>
+          <div class="empty">No chats yet</div>
+        </div>
+        <div class="project">
+          <div class="project-head"><span class="chev">⌄</span> platform <span class="project-count">1</span></div>
+          <div class="chat"><b>What’s the status of this?</b>development</div>
+        </div>
+      </div>
+      <div class="side-bottom">
+        <button class="plain" id="pinButton"><strong>＋</strong> Pin project</button>
+        <button class="plain"><strong>＋</strong> New group</button>
+      </div>
+    </aside>
+    <div class="stage">
+      <div class="step show" id="choose">
+        <span class="step-number">1</span>
+        <h2>Choose any known project.</h2>
+        <p class="copy">“Pin project” opens the same folder list used for a new chat. It does not create a chat or change the project folder.</p>
+        <div class="picker" role="listbox" aria-label="Projects to pin">
+          <div class="picker-head">Pin a project</div>
+          <button class="pick selected" data-choice="planning-kit"><span class="folder"></span><span><b>planning-kit</b><small>~/Documents/code/planning-kit</small></span></button>
+          <button class="pick" data-choice="research-notes"><span class="folder"></span><span><b>research-notes</b><small>~/Documents/code/research-notes</small></span></button>
+        </div>
+        <button class="next" id="confirm">Pin planning-kit</button>
+      </div>
+      <div class="step" id="pinned">
+        <span class="step-number">2</span>
+        <h2>It stays visible with zero chats.</h2>
+        <p class="copy">The sidebar shows the pinned project, its group controls, and a New chat action. A pin indicator makes its persistent state clear.</p>
+        <div class="done"><i>✓</i><span><b>planning-kit is pinned.</b> It will remain here after reloads and after its chats are deleted.</span></div>
+        <div class="notes">
+          <div class="note"><b>Start when ready</b><p>Use the project’s plus button to begin a new chat directly in that folder.</p><span class="tag">new chat</span></div>
+          <div class="note"><b>Organize first</b><p>Move a pinned project into any sidebar group before it has activity.</p><span class="tag">groups</span></div>
+          <div class="note"><b>Easy to undo</b><p>The pin control on the project header changes to Unpin. Existing chats stay put.</p><span class="tag">unpin</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+  const choose = document.querySelector('#choose');
+  const pinned = document.querySelector('#pinned');
+  const pinButton = document.querySelector('#pinButton');
+  const confirm = document.querySelector('#confirm');
+  let selected = 'planning-kit';
+  document.querySelectorAll('.pick').forEach((button) => button.addEventListener('click', () => {
+    selected = button.dataset.choice;
+    document.querySelectorAll('.pick').forEach((item) => item.classList.toggle('selected', item === button));
+    confirm.textContent = `Pin ${selected}`;
+  }));
+  function showPinned() {
+    const name = selected;
+    document.querySelector('.project-title').textContent = name;
+    document.querySelector('.done span').innerHTML = `<b>${name} is pinned.</b> It will remain here after reloads and after its chats are deleted.`;
+    choose.classList.remove('show'); pinned.classList.add('show');
+  }
+  pinButton.addEventListener('click', () => { choose.classList.add('show'); pinned.classList.remove('show'); });
+  confirm.addEventListener('click', showPinned);
+</script>
+</body>
+</html>
