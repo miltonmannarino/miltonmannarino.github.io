@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="project" content="miltonmannarino/workbench">
+<meta name="robots" content="noindex, nofollow">
+<title>Workbench Soft-fact: done is proven, not claimed</title>
+<meta name="description" content="Soft-fact, a Workbench checklist item: the agent writes a spec and tests first, you sign them off in Workbench, and Workbench runs the signed-off checks itself after every answer.">
+<style>
+:root {
+  --bg: #f8f7f3; --panel: #f2f0ea; --surface: #fffefb; --ink: #1f1e1b; --ink2: #3d3b36;
+  --muted: #6e6a61; --faint: #a29e94; --line: #e4e0d6; --line2: #d6d1c4;
+  --accent: #c15f3c; --accent-soft: #f6e3da; --accent-ink: #ffffff;
+  --code-bg: #f1eee6; --ok: #2f8a4c; --ok-soft: #e3f1e6; --warn: #9a6110; --bad: #b42a1f;
+  --agent: #4f6fa8; --agent-soft: #e4eaf5; --you: #c15f3c; --you-soft: #f6e3da; --wb: #2f8a4c; --wb-soft: #e3f1e6;
+  --shadow: 0 1px 2px rgba(30,25,15,.06), 0 8px 24px rgba(30,25,15,.07);
+  --sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --serif: Charter, 'Iowan Old Style', 'Source Serif 4', Georgia, serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b1a18; --panel: #211f1c; --surface: #282623; --ink: #eceae3; --ink2: #d3d0c7;
+    --muted: #a7a398; --faint: #76726a; --line: #34312c; --line2: #45413a;
+    --accent: #e27d58; --accent-soft: #3b2a22; --accent-ink: #1b1a18;
+    --code-bg: #24221f; --ok: #6fcf8b; --ok-soft: #1f3326; --warn: #e2b25c; --bad: #f08a7e;
+    --agent: #8fb0e8; --agent-soft: #232c3b; --you: #e27d58; --you-soft: #3b2a22; --wb: #6fcf8b; --wb-soft: #1f3326;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+code, kbd, pre { font-family: var(--mono); font-variant-ligatures: none; }
+code { font-size: .86em; }
+p code, li code, td code, dd code { background: var(--code-bg); padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+
+header.top { padding: 60px 0 26px; }
+.kicker { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.kicker b { color: var(--accent); font-weight: 600; }
+h1 { font: 400 50px/1.08 var(--serif); letter-spacing: -.015em; margin: 14px 0 18px; max-width: 20ch; }
+.lead { font: 400 21px/1.6 var(--serif); color: var(--ink2); max-width: 64ch; margin: 0; }
+.status { font-size: 14px; color: var(--muted); max-width: 72ch; border-left: 3px solid var(--line2); padding: 2px 0 2px 12px; margin: 22px 0 0; }
+nav.toc { margin: 32px 0 0; border-top: 1px solid var(--line2); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+nav.toc a { display: block; padding: 14px 16px 16px 0; text-decoration: none; color: var(--ink); border-right: 1px solid var(--line); margin-right: 16px; }
+nav.toc a:last-child { border-right: 0; }
+nav.toc .n { font: 600 12px var(--mono); color: var(--accent); }
+nav.toc .q { display: block; font: 400 18px/1.3 var(--serif); margin-top: 4px; }
+
+h2 { font: 400 34px/1.2 var(--serif); margin: 0 0 6px; letter-spacing: -.01em; }
+h3 { font: 600 19px/1.3 var(--sans); margin: 0 0 6px; }
+.part { padding: 56px 0 8px; }
+.sub { color: var(--muted); margin: 0 0 26px; max-width: 68ch; }
+p { max-width: 70ch; }
+ul.plain { padding-left: 20px; margin: 8px 0; }
+ul.plain li { margin: 4px 0; }
+
+/* the assembly line: who owns each station */
+.line { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; margin: 28px 0 12px; position: relative; }
+.station { position: relative; padding: 0 14px 0 0; }
+.station .rail { height: 6px; border-radius: 3px; margin: 0 0 14px; }
+.station.agent .rail { background: var(--agent); }
+.station.you .rail { background: var(--you); }
+.station.wb .rail { background: var(--wb); }
+.station .num { font: 600 12px var(--mono); color: var(--muted); }
+.station h4 { font: 400 20px/1.25 var(--serif); margin: 2px 0 6px; }
+.who { display: inline-block; font-size: 12px; font-weight: 600; border-radius: 99px; padding: 1px 9px; margin-bottom: 8px; }
+.agent .who { background: var(--agent-soft); color: var(--agent); }
+.you .who { background: var(--you-soft); color: var(--you); }
+.wb .who { background: var(--wb-soft); color: var(--wb); }
+.station p { font-size: 14px; color: var(--ink2); margin: 0; }
+.loopnote { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+
+/* comparison table */
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px 10px 0; border-top: 1px solid var(--line); }
+th { font-size: 13px; color: var(--muted); font-weight: 600; border-top: 0; }
+td:first-child { font-weight: 600; width: 26%; }
+.tablebox { overflow-x: auto; margin: 10px 0 8px; }
+
+dl.words { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 8px 22px; margin: 18px 0 0; font-size: 15px; }
+dl.words dt { font-weight: 600; }
+dl.words dd { margin: 0; color: var(--ink2); }
+
+/* one area: words left, a drawn piece of the app right */
+.feat { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 40px; padding: 30px 0; border-top: 1px solid var(--line); align-items: start; }
+.feat p, .feat li { font-size: 15.5px; }
+.feat .files { font-size: 13px; color: var(--muted); margin-top: 10px; }
+
+/* drawn Workbench pieces */
+.app { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); }
+.app .cap { font-size: 12px; color: var(--muted); margin: 0 0 6px 2px; }
+.app .cap + .bar { margin-top: 0; }
+.bar { display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 13px; color: var(--ink2); margin: 0 0 12px; }
+.bar > svg { width: 15px; height: 15px; flex: none; color: var(--accent); }
+.bar.bad > svg { color: var(--warn); }
+.bar.ok > svg { color: var(--ok); }
+.bar .t { flex: 1; min-width: 0; line-height: 1.4; }
+.bar code { font-size: 12px; }
+.btn { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border: 1px solid var(--line2); border-radius: 8px; background: var(--surface); font: 500 12px var(--sans); color: var(--ink); white-space: nowrap; }
+.btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.panel { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 4px 12px 10px; font-size: 13px; color: var(--ink2); margin: -8px 0 12px; }
+.panel h5 { margin: 10px 0 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; padding: 3px 0; }
+.row > svg { width: 14px; height: 14px; flex: none; align-self: center; color: var(--faint); }
+.row.ok > svg { color: var(--ok); }
+.row.bad > svg { color: var(--bad); }
+.row b { font-weight: 500; color: var(--ink); }
+.tag { font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 0 7px; }
+.meta { margin-left: auto; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cmd { display: block; margin: 0 0 4px 22px; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.out { margin: 2px 0 8px 22px; padding: 6px 10px; background: var(--code-bg); border-radius: 6px; font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.note { margin: 8px 0 0; color: var(--muted); }
+.panel .note { font-size: 13px; }
+.foot { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.foot .n { margin-right: auto; font-size: 11.5px; color: var(--faint); }
+.checkrow { display: flex; gap: 10px; align-items: flex-start; padding: 8px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); font-size: 13px; }
+.box { width: 16px; height: 16px; border-radius: 4px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; flex: none; margin-top: 2px; }
+.box svg { width: 12px; height: 12px; }
+.checkrow small { display: block; color: var(--muted); font-size: 12px; line-height: 1.45; margin-top: 2px; }
+
+pre.code { background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-size: 12.5px; line-height: 1.55; overflow-x: auto; margin: 8px 0; }
+ol.steps { padding-left: 22px; margin: 10px 0; max-width: 74ch; }
+ol.steps li { margin: 10px 0; }
+ol.steps .see { display: block; color: var(--muted); font-size: 14.5px; }
+.evidence { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border-top: 1px solid var(--line2); margin: 18px 0 0; }
+.evidence > div { padding: 14px 18px 4px 0; margin-right: 18px; border-right: 1px solid var(--line); }
+.evidence > div:last-child { border-right: 0; margin-right: 0; }
+.evidence .big { font: 400 34px/1 var(--serif); color: var(--ok); }
+.evidence p { font-size: 14px; color: var(--ink2); margin: 8px 0 10px; }
+.owner { display: inline-block; font-size: 12px; font-weight: 600; border-radius: 99px; padding: 1px 9px; white-space: nowrap; }
+.owner.m { background: var(--you-soft); color: var(--you); }
+.owner.n { background: var(--agent-soft); color: var(--agent); }
+footer { margin: 64px 0 0; padding: 22px 0 48px; border-top: 1px solid var(--line2); font-size: 13px; color: var(--muted); }
+svg.i { stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+@media (prefers-reduced-motion: no-preference) { .spin { animation: spin 1s linear infinite; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media print { .app { box-shadow: none; } nav.toc { display: none; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7"/></symbol>
+  <symbol id="i-x" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></symbol>
+  <symbol id="i-spin" viewBox="0 0 16 16"><path d="M8 2a6 6 0 1 0 6 6"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 1.8l5 2v4c0 3.2-2.2 5.3-5 6.4-2.8-1.1-5-3.2-5-6.4v-4z"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 16 16"><rect x="3.5" y="7" width="9" height="6.5" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 16 16"><path d="M8 2l6.5 11.5h-13z"/><path d="M8 6.5v3M8 11.5v.01"/></symbol>
+  <symbol id="i-play" viewBox="0 0 16 16"><path d="M5 3.5v9l7.5-4.5z" fill="currentColor"/></symbol>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <div class="kicker"><b>Workbench</b><span>miltonmannarino/workbench</span><span>31 October 2026</span><span>Not committed yet</span></div>
+    <h1>Soft-fact: done is proven, not claimed</h1>
+    <p class="lead">A new checklist item that turns a chat into a small software factory. The agent writes a spec and its tests first. You sign them off in Workbench. From then on Workbench, not the agent, runs the signed-off checks after every answer. Done means every check passes on a commit and nothing locked was touched.</p>
+    <p class="status">As of 31 October 2026: built in the working copy and tested, but not committed. Type check and all 164 tests pass. It was tried end to end in a private Workbench with the stand-in Claude, but not yet with a real model.</p>
+    <nav class="toc" aria-label="Sections">
+      <a href="#idea"><span class="n">01</span><span class="q">Why it exists</span></a>
+      <a href="#changed"><span class="n">02</span><span class="q">What changed</span></a>
+      <a href="#test"><span class="n">03</span><span class="q">How to test</span></a>
+      <a href="#missing"><span class="n">04</span><span class="q">What’s missing</span></a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="part" id="idea">
+  <div class="wrap">
+    <h2>Why it exists</h2>
+    <p class="sub">When an agent says “done, looks right”, nobody can check that claim without redoing the work. A measurement that runs the same way every time can be checked. Soft-fact moves the judging from the agent to Workbench.</p>
+
+    <h3>Before and after</h3>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th scope="col">Question</th><th scope="col">Before</th><th scope="col">With Soft-fact on</th></tr></thead>
+        <tbody>
+          <tr><td>Who says it’s done?</td><td>The agent. The Checks chip added text to its prompt, and it ended with a line like “did E2E, skipped Docs”. Nothing checked that line.</td><td>Workbench. It runs the checks you signed off and shows the result itself.</td></tr>
+          <tr><td>What is it checked against?</td><td>Nothing fixed in advance.</td><td>A spec of concrete examples and rules, with tests, written and signed off <em>before</em> any code.</td></tr>
+          <tr><td>Can the tests be weakened?</td><td>Yes, silently.</td><td>The spec and tests are locked at sign-off. Any edit shows as “Locked since sign-off, but changed”.</td></tr>
+          <tr><td>Do the tests test anything?</td><td>Unknown.</td><td>Tests marked “fails first” must fail at sign-off. One that already passes is refused.</td></tr>
+          <tr><td>Ticket “done?” bar</td><td>Counted commits.</td><td>Unchanged for now. The Soft-fact bar shows Done on a specific commit (connecting the two is listed under what’s missing).</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:30px">The assembly line</h3>
+    <p>Five stations. The colour shows who owns each one: the agent, you, or Workbench itself.</p>
+    <div class="line" role="list">
+      <div class="station agent" role="listitem"><div class="rail"></div><span class="num">1</span><h4>Sort</h4><span class="who">Agent</span><p>Decides the kind of task (feature, change, port, algorithm), its size, and what to compare against. It asks you only what it can’t find out.</p></div>
+      <div class="station agent" role="listitem"><div class="rail"></div><span class="num">2</span><h4>Spec and tests</h4><span class="who">Agent</span><p>Writes the examples, rules and “not doing” list, then the tests and <code>factory.json</code>. It commits them and stops.</p></div>
+      <div class="station you" role="listitem"><div class="rail"></div><span class="num">3</span><h4>Sign-off</h4><span class="who">You, in Workbench</span><p>You see the exact commands and locked files. Workbench checks that the new tests fail first, then locks everything.</p></div>
+      <div class="station agent" role="listitem"><div class="rail"></div><span class="num">4</span><h4>Build loop</h4><span class="who">Agent</span><p>Runs the receipt itself, fixes the biggest failure, keeps or reverts the change, and notes surprises in <code>traps.md</code>.</p></div>
+      <div class="station wb" role="listitem"><div class="rail"></div><span class="num">5</span><h4>Receipt</h4><span class="who">Workbench</span><p>After every answer, it runs the signed-off checks and says whether the work is done, failing, uncommitted, or tampered with.</p></div>
+    </div>
+    <p class="loopnote">Stations 4 and 5 repeat until the receipt says Done. “Send to agent” hands the failures back.</p>
+
+    <h3 style="margin-top:30px">Where the design came from</h3>
+    <p>The OBJ→roof work on the platform improved fastest once an outside measurement replaced the agent’s own judgement. Four properties made that grader trustworthy, and Soft-fact builds each one in:</p>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th scope="col">Roof grader property</th><th scope="col">In Soft-fact</th></tr></thead>
+        <tbody>
+          <tr><td>Measured against reality</td><td>The reference is fixed before the code exists: examples you approve, old code for ports, or real data for algorithms.</td></tr>
+          <tr><td>Explained its errors</td><td>A grader check lists its biggest errors by cause. Failing tests show the end of their output.</td></tr>
+          <tr><td>Couldn’t be fooled by dropping things</td><td>A score may not improve by leaving more out on purpose, and locked tests can’t be edited.</td></tr>
+          <tr><td>Cheap to run</td><td>Plain commands with no browser required. They run after every answer, so they should stay fast.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>It is opt-in per chat, not a default mode. Most work is new features, where no old code exists to compare against. There, the reference is the examples you approve before any code is written.</p>
+
+    <h3 style="margin-top:30px">Words used here</h3>
+    <dl class="words">
+      <dt>Spec</dt><dd>A short file of concrete examples (“a run with 2 failed jobs → exactly one re-run request”), rules that always hold, and what won’t be done.</dd>
+      <dt>Sign-off</dt><dd>You approving the spec and checks in Workbench. It locks them and records exactly which commands may run.</dd>
+      <dt>Fails first</dt><dd>A new test must fail before the feature exists; otherwise it isn’t testing the new work. (Elsewhere this is called “red first”.)</dd>
+      <dt>Lock</dt><dd>A fingerprint (a hash) of each signed-off file. Any later change shows up.</dd>
+      <dt>Receipt</dt><dd>The result of running the signed-off checks: each check’s pass or fail, scores, locks, and a verdict.</dd>
+      <dt>Damage check</dt><dd>“Everything else still works as before”: usually the project’s existing tests and type check.</dd>
+      <dt>Grader</dt><dd>A check that prints a score instead of pass or fail, with errors broken down by cause, as the roof grader does.</dd>
+      <dt>Ratchet</dt><dd>A grader’s score may not get worse than the best committed score so far.</dd>
+      <dt>Held-back data</dt><dd>Cases kept in a folder outside the repository. Workbench runs them, but the agent never sees their output, which catches work tuned only to the visible cases.</dd>
+    </dl>
+  </div>
+</section>
+
+<section class="part" id="changed">
+  <div class="wrap">
+    <h2>What changed</h2>
+    <p class="sub">Grouped by what you see in the app, then the skill that agents follow, then the safety rule.</p>
+
+    <div class="feat">
+      <div>
+        <h3>A Soft-fact item in the Checks menu</h3>
+        <p>The checklist menu (the list icon next to the paperclip) has a new built-in item, <b>Soft-fact</b>, off by default. Switched on, it tells the agent to follow the shared <code>soft-fact</code> skill and to stop for your sign-off instead of signing off itself.</p>
+        <p>Like the other checks, it can be part of a project’s defaults. It works the same for Claude and Codex.</p>
+        <p class="files">server/checks.ts · shared/protocol.ts</p>
+      </div>
+      <div class="app" aria-label="Drawing: the checklist menu with Soft-fact switched on">
+        <p class="cap">Checks menu</p>
+        <div class="checkrow">
+          <span class="box"><svg class="i"><use href="#i-check"/></svg></span>
+          <span><b>Soft-fact</b><small>Follow the shared soft-fact skill. It takes several turns: read .factory/&lt;name&gt;/state.json and carry on from its phase. Workbench does the sign-off…</small></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="feat">
+      <div>
+        <h3>The Soft-fact bar above the message box</h3>
+        <p>While the item is on, a bar shows where the work stands. It changes as the chat moves along:</p>
+        <ul class="plain">
+          <li><b>No spec yet:</b> the agent writes one first.</li>
+          <li><b>Spec ready:</b> it names the title, how many checks, and how many locked paths.</li>
+          <li><b>Signing off / checking:</b> shown while Workbench runs commands.</li>
+          <li><b>Failing:</b> how many checks fail, and which ones.</li>
+          <li><b>All pass, not committed:</b> done only counts for a commit.</li>
+          <li><b>Done:</b> every check passes on a named commit, and the locked files are unchanged.</li>
+          <li><b>Locked files changed:</b> someone edited what was signed off.</li>
+        </ul>
+        <p class="files">web/src/FactoryBar.tsx · web/src/styles.css · one line in web/src/App.tsx</p>
+      </div>
+      <div class="app" aria-label="Drawing: the Soft-fact bar in its main states">
+        <p class="cap">No spec yet</p>
+        <div class="bar"><svg class="i"><use href="#i-shield"/></svg><span class="t">Soft-fact is on. The agent writes the spec and its checks in <code>.factory/</code> first, then asks you to sign off here.</span></div>
+        <p class="cap">Spec ready</p>
+        <div class="bar"><svg class="i"><use href="#i-shield"/></svg><span class="t">Spec ready to sign off: “Add a feature.txt file”, 2 checks, 2 locked paths.</span><span class="btn">Review and sign off</span></div>
+        <p class="cap">After an answer, checks failing</p>
+        <div class="bar bad"><svg class="i"><use href="#i-warn"/></svg><span class="t">1 of 2 failing: Example 1.</span><span class="btn">Details</span><span class="btn">Send to agent</span><span class="btn">Check again</span></div>
+        <p class="cap">Built and committed</p>
+        <div class="bar ok"><svg class="i"><use href="#i-check"/></svg><span class="t">Done: 2/2 checks pass on <code>3fc1c24</code>, locked files unchanged.</span><span class="btn">Details</span><span class="btn">Check again</span></div>
+        <p class="cap">A locked test was edited</p>
+        <div class="bar bad" style="margin-bottom:0"><svg class="i"><use href="#i-warn"/></svg><span class="t">Locked since sign-off, but changed: test/examples.sh</span><span class="btn">Details</span><span class="btn">Send to agent</span></div>
+      </div>
+    </div>
+
+    <div class="feat">
+      <div>
+        <h3>Sign-off: you see the commands, then Workbench locks them</h3>
+        <ul class="plain">
+          <li><b>Review and sign off</b> lists every command Workbench will run in this folder, which checks must fail first, the locked files, any held-back folder, and what isn’t measured.</li>
+          <li><b>Sign off and build</b> refuses if the spec or tests aren’t committed, or if a test marked “fails first” already passes.</li>
+          <li>Workbench keeps the record, with each locked file’s fingerprint, in <code>data/factory/&lt;chat&gt;/</code>, outside the repository. A copy goes to <code>.factory/&lt;name&gt;/signoff.json</code> for the repository’s history. Editing that copy is flagged.</li>
+          <li>The agent is then sent “I signed off the soft-fact spec in Workbench. Build it now.”</li>
+          <li>When the checks or a locked file change later, Details offers <b>Sign off again</b>. Until then, Workbench keeps running the checks you signed off.</li>
+        </ul>
+        <p class="files">server/factory.ts · server/chats.ts · server/index.ts</p>
+      </div>
+      <div class="app" aria-label="Drawing: the review panel before sign-off">
+        <div class="bar"><svg class="i"><use href="#i-shield"/></svg><span class="t">Spec ready to sign off: “Add a feature.txt file”, 2 checks, 2 locked paths.</span><span class="btn">Close</span></div>
+        <div class="panel" style="margin-bottom:0">
+          <h5>“Add a feature.txt file”: Workbench will run these commands in this folder after every answer</h5>
+          <div class="row"><svg class="i"><use href="#i-play"/></svg><b>Example 1</b><span class="tag">Examples</span><span class="tag">fails first</span></div>
+          <code class="cmd">sh test/examples.sh</code>
+          <div class="row"><svg class="i"><use href="#i-play"/></svg><b>Everything else as before</b><span class="tag">Damage</span></div>
+          <code class="cmd">git ls-files | grep -q .</code>
+          <h5>Locked at sign-off</h5>
+          <div class="cmd" style="margin-left:0"><code>.factory/feature-file/spec.md</code><br><code>test/examples.sh</code></div>
+          <p class="note">Not measured: Whether the file is useful.</p>
+          <div class="foot"><span class="n">Checks marked “fails first” must fail now, or sign-off refuses them.</span><span class="btn">Not yet</span><span class="btn primary">Sign off and build</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feat">
+      <div>
+        <h3>The receipt after every answer</h3>
+        <p>After each answer that finished normally, Workbench runs the signed-off checks itself. Details shows each one:</p>
+        <ul class="plain">
+          <li>Pass or fail, the exit code, the time, and the end of the output for failures.</li>
+          <li><b>Graders</b> show their score, its limit and the best committed score. A grader fails if its score is over the limit, got worse than the best, or improved by leaving more out on purpose. The score history is kept with the record, outside the repository.</li>
+          <li><b>Held-back data</b> is run too, but only its pass or fail and its score are kept, never its output.</li>
+          <li><b>Send to agent</b> sends the failures and their output as your next message. <b>Check again</b> runs everything now.</li>
+        </ul>
+        <p>Checks don’t run after a stopped or failed answer, or while a queued message goes out next, so they never test a folder the agent is still changing.</p>
+      </div>
+      <div class="app" aria-label="Drawing: receipt details with one failing check">
+        <div class="bar bad"><svg class="i"><use href="#i-warn"/></svg><span class="t">1 of 2 failing: Example 1.</span><span class="btn">Close</span><span class="btn">Send to agent</span></div>
+        <div class="panel" style="margin-bottom:0">
+          <h5>Workbench’s receipt, 31/10/2026, 00:42, on cd92002 with uncommitted changes</h5>
+          <div class="row bad"><svg class="i"><use href="#i-x"/></svg><b>Example 1</b><span class="tag">Examples</span><span class="meta">exit 2 · 0.0 s</span></div>
+          <div class="out">grep: feature.txt: No such file or directory</div>
+          <div class="row ok"><svg class="i"><use href="#i-check"/></svg><b>Everything else as before</b><span class="tag">Damage</span><span class="meta">0.0 s</span></div>
+          <div class="row ok"><svg class="i"><use href="#i-lock"/></svg><b>Locked files</b><span>unchanged since sign-off (2)</span></div>
+          <div class="row ok"><svg class="i"><use href="#i-check"/></svg><b>Area error</b><span class="tag">Measured</span><span>score 0.04 (limit 0.05), best 0.04</span><span class="meta">1.2 s</span></div>
+          <p class="note">Signed off 31/10/2026, 00:42 on cd92002. Failed first, as they should: Example 1.</p>
+          <p class="note" style="font-size:11.5px">The “Area error” grader row is an illustration; the run shown had the other three rows.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="feat">
+      <div>
+        <h3>Auto-merge waits for a green receipt</h3>
+        <p>A worktree chat set to <b>Merge automatically</b> no longer merges after every finished answer while Soft-fact is on. It merges once the receipt passes. Until then, the merge bar says why it didn’t merge: “Not merged: the soft-fact checks aren’t green yet.” The manual <b>Merge into …</b> button still works.</p>
+        <p class="files">server/chats.ts</p>
+      </div>
+      <div class="app" aria-label="Drawing: the merge bar holding a merge">
+        <div class="bar bad" style="margin-bottom:0"><svg class="i"><use href="#i-warn"/></svg><span class="t">Not merged: the soft-fact checks aren’t green yet.</span><span class="btn">Try again</span></div>
+      </div>
+    </div>
+
+    <div class="feat">
+      <div>
+        <h3>The skill agents follow, in any repository</h3>
+        <p><code>skills/soft-fact/</code> is linked into <code>~/.claude/skills</code> and <code>~/.codex/skills</code>, like <code>artifact-page</code>, so it works in every repository, including the platform repository with the roof work.</p>
+        <ul class="plain">
+          <li><code>SKILL.md</code>: the phases, the files in <code>.factory/&lt;name&gt;/</code>, how to write examples, the grader output format, and the rules (never edit locked files, never write “looks good”, quote the receipt).</li>
+          <li><code>scripts/receipt.mjs</code>: plain Node with no dependencies. <code>plan</code> checks <code>factory.json</code>, <code>signoff</code> locks and enforces fails-first, and <code>run</code> prints the receipt. The agent and Workbench run the same script, so they judge the same way.</li>
+          <li>A <code>state.json</code> keeps the phase between turns, since the method takes several turns.</li>
+        </ul>
+      </div>
+      <div>
+        <p class="cap" style="font-size:12px;color:var(--muted);margin:0 0 4px">A small <code>factory.json</code></p>
+<pre class="code">{
+  "title": "Re-run failed CI jobs",
+  "kind": "feature",
+  "locked": ["test/ci-rerun.test.ts"],
+  "checks": [
+    {
+      "id": "examples",
+      "label": "Examples 1–5",
+      "kind": "examples",
+      "run": "node --test test/ci-rerun.test.ts",
+      "redFirst": true
+    },
+    {
+      "id": "damage",
+      "label": "Everything else as before",
+      "kind": "damage",
+      "run": "pnpm typecheck &amp;&amp; pnpm test",
+      "timeout": 900
+    }
+  ],
+  "heldBack": {
+    "dir": "~/factory-held-back/ci-rerun",
+    "run": "node grade.mjs \"$HELD_BACK\""
+  },
+  "notMeasured": ["Feel while GitHub is slow"]
+}</pre>
+      </div>
+    </div>
+
+    <div class="feat">
+      <div>
+        <h3>Safety: only commands you signed off ever run</h3>
+        <p>Workbench runs the checks itself, outside the agent’s permission prompts, so it is strict about what runs. Commands come from Workbench’s own record, not from <code>factory.json</code>, which the agent can edit. If the commands change, nothing new runs until you’ve seen them and signed off again. Like any test run, they execute the project’s code in the chat’s folder, as if you ran them yourself. The README’s security section says so.</p>
+      </div>
+      <div class="app">
+        <p class="cap">Where things live</p>
+        <div class="tablebox" style="margin:0">
+          <table style="font-size:13px">
+            <tbody>
+              <tr><td>Spec, tests, <code>factory.json</code></td><td>The repository, written by the agent.</td></tr>
+              <tr><td>Sign-off record, score history</td><td><code>data/factory/&lt;chat&gt;/</code> in Workbench, outside the repository.</td></tr>
+              <tr><td>Copy of the record</td><td><code>.factory/&lt;name&gt;/signoff.json</code>; editing it is flagged.</td></tr>
+              <tr><td>Held-back data</td><td>A folder outside the repository; only its outcome is kept.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="part" id="test">
+  <div class="wrap">
+    <h2>How to test</h2>
+    <p class="sub">In the real app first, then the automated checks that ran on 31 October 2026.</p>
+
+    <h3>In Workbench</h3>
+    <ol class="steps">
+      <li>Start a new chat in a repository. Open the Checks menu (the list icon next to the paperclip), switch on <b>Soft-fact</b>, and ask for a small feature.
+        <span class="see">Expected: the bar reads “Soft-fact is on. The agent writes the spec and its checks in .factory/ first…”. The agent writes <code>.factory/&lt;name&gt;/</code>, commits, and stops.</span></li>
+      <li>After its answer, the bar reads “Spec ready to sign off”. Click <b>Review and sign off</b>.
+        <span class="see">Expected: every command, the “fails first” tags, the locked files and the not-measured list.</span></li>
+      <li>Click <b>Sign off and build</b>.
+        <span class="see">Expected: a short “Signing off…”, then your message “I signed off the soft-fact spec in Workbench. Build it now…” goes to the agent. After its answer, the bar shows Workbench’s receipt.</span></li>
+      <li>If something fails, open <b>Details</b>, then try <b>Send to agent</b>.
+        <span class="see">Expected: each failing check with its output, and the agent receiving them as one message.</span></li>
+      <li>Once the agent commits a green build:
+        <span class="see">Expected: “Done: N/N checks pass on &lt;commit&gt;, locked files unchanged.”</span></li>
+      <li>To see the guard work, edit a locked test yourself (for example, make it always pass), commit, and click <b>Check again</b>.
+        <span class="see">Expected: “Locked since sign-off, but changed: &lt;file&gt;”, never Done.</span></li>
+    </ol>
+
+    <h3 style="margin-top:28px">What ran</h3>
+    <div class="evidence">
+      <div><span class="big">164 / 164</span><p><code>pnpm test</code> passes, with 7 new tests in <code>test/factory.test.ts</code>. They cover plan errors, sign-off refusals, fails-first, the four verdicts, a weakened locked test, grader limits, the ratchet, leaving more out on purpose, held-back output never leaking, and Workbench’s own record overriding an edited repo copy.</p></div>
+      <div><span class="big">Pass</span><p><code>pnpm typecheck</code> passes for the server, the page and the tests.</p></div>
+      <div><span class="big">All states</span><p>A private Workbench (the <code>workbench-try</code> skill, with the stand-in Claude) was clicked through: no spec, spec ready, review, signed off and failing, Send to agent, Done, and locked file changed. Screenshots were checked, and no page errors appeared.</p></div>
+    </div>
+    <p style="margin-top:18px">The script can also be run by hand from any repository: <code>node skills/soft-fact/scripts/receipt.mjs plan</code>, then <code>signoff</code>, then <code>run</code>.</p>
+  </div>
+</section>
+
+<section class="part" id="missing">
+  <div class="wrap">
+    <h2>What’s missing</h2>
+    <p class="sub">Open decisions, untested paths and follow-ups. <span class="owner m">Milton</span> marks a decision or step for Milton; <span class="owner n">Next session</span> marks building work for a later Workbench session.</p>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th scope="col">Item</th><th scope="col">Why it matters</th><th scope="col">Owner</th></tr></thead>
+        <tbody>
+          <tr><td>Try it with a real model</td><td>Only the stand-in Claude has driven it so far, so it’s unknown how well Claude follows the skill. The CI tab’s Re-run button would be a good first feature.</td><td><span class="owner m">Milton</span></td></tr>
+          <tr><td>Commit the work</td><td>Nothing is committed yet. Another session has uncommitted auto-scroll edits in <code>web/src/App.tsx</code> and <code>web/src/Thread.tsx</code>. Soft-fact adds only two lines to <code>App.tsx</code>, so stage carefully to keep the two apart.</td><td><span class="owner m">Milton</span></td></tr>
+          <tr><td>Keep the name?</td><td>“Soft-fact” can read as “soft fact”, the opposite of what it does. “Factory” is the alternative. Renaming touches the check id and label, plus the skill folder.</td><td><span class="owner m">Milton</span></td></tr>
+          <tr><td>Block the held-back folder for Claude</td><td>Today it is out of sight, not locked: same Mac, same user. A deny rule in Claude Code’s settings would block reading it.</td><td><span class="owner m">Milton</span></td></tr>
+          <tr><td>Automatic loop</td><td>Failures go back to the agent only when you press Send to agent. An opt-in, capped automatic loop would let it run unattended.</td><td><span class="owner n">Next session</span></td></tr>
+          <tr><td>Ticket “done?” bar and Send to Work Hub</td><td>Both still ignore the receipt. They should say “done on this commit” and attach the receipt as evidence.</td><td><span class="owner n">Next session</span></td></tr>
+          <tr><td>Spec drafted from a Work Hub ticket</td><td>“Add context” already gathers the material; turning it into examples would save the first step.</td><td><span class="owner n">Next session</span></td></tr>
+          <tr><td>Ready-made damage checks</td><td><code>diff-cli</code> and <code>diff-http</code>, which run old and new code on the same inputs, would make “everything else unchanged” a one-line check.</td><td><span class="owner n">Next session</span></td></tr>
+          <tr><td>Mutation testing at the finish</td><td>It plants small bugs and checks that the tests catch them, proving the tests are strong enough.</td><td><span class="owner n">Next session</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Known limits that stay: a check only proves what it checks, so a case nobody wrote down has no guarantee. Slow test suites slow the feedback, because checks run after every answer. Tolerances (why 10 cm counts as close enough) are a human decision made at sign-off.</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">Workbench · <code>miltonmannarino/workbench</code> · Soft-fact, 31 October 2026. Main files: <code>skills/soft-fact/</code>, <code>server/factory.ts</code>, <code>web/src/FactoryBar.tsx</code>, <code>test/factory.test.ts</code>.</div>
+</footer>
+</body>
+</html>
