@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="project" content="miltonmannarino/workbench">
+<meta name="robots" content="noindex, nofollow">
+<title>Workbench: safer by default, ⌘K, Night shift and CI auto-fix</title>
+<meta name="description" content="What changed in Workbench on 31 October 2026: the data folder out of agents' reach, secrets masked, one-time login links, safe Restart, a ⌘K palette, Night shift and CI auto-fix that never spends an organisation's CI minutes.">
+<style>
+
+:root {
+  --bg: #f8f7f3; --panel: #f2f0ea; --surface: #fffefb; --ink: #1f1e1b; --ink2: #3d3b36;
+  --muted: #6e6a61; --faint: #a29e94; --line: #e4e0d6; --line2: #d6d1c4;
+  --accent: #c15f3c; --accent-soft: #f6e3da; --accent-ink: #ffffff;
+  --code-bg: #f1eee6; --ok: #2f8a4c; --warn: #9a6110;
+  --shadow: 0 1px 2px rgba(30,25,15,.06), 0 8px 24px rgba(30,25,15,.07);
+  --sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --serif: Charter, 'Iowan Old Style', 'Source Serif 4', Georgia, serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b1a18; --panel: #211f1c; --surface: #282623; --ink: #eceae3; --ink2: #d3d0c7;
+    --muted: #a7a398; --faint: #76726a; --line: #34312c; --line2: #45413a;
+    --accent: #e27d58; --accent-soft: #3b2a22; --accent-ink: #1b1a18;
+    --code-bg: #24221f; --ok: #6fcf8b; --warn: #e2b25c;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+code, kbd { font-family: var(--mono); font-size: .86em; font-variant-ligatures: none; }
+p code, li code, td code { background: var(--code-bg); padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
+kbd { border: 1px solid var(--line2); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; background: var(--surface); }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+header.top { padding: 56px 0 24px; }
+.kicker { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.kicker b { color: var(--accent); font-weight: 600; }
+h1 { font: 400 clamp(34px, 5vw, 50px)/1.08 var(--serif); letter-spacing: -.015em; margin: 14px 0 18px; max-width: 18ch; }
+.lead { font: 400 clamp(18px, 2vw, 21px)/1.6 var(--serif); color: var(--ink2); max-width: 64ch; margin: 0; }
+.status { font-size: 14px; color: var(--muted); max-width: 70ch; border-left: 3px solid var(--line2); padding: 2px 0 2px 12px; margin: 22px 0 0; }
+
+nav.toc { margin: 30px 0 0; border-top: 1px solid var(--line2); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+nav.toc a { display: block; padding: 14px 16px 16px 0; text-decoration: none; color: var(--ink); border-right: 1px solid var(--line); margin-right: 16px; }
+nav.toc a:last-child { border-right: 0; }
+nav.toc .n { font: 600 12px var(--mono); color: var(--accent); }
+nav.toc .q { display: block; font: 400 18px/1.3 var(--serif); margin-top: 4px; }
+
+h2 { font: 400 clamp(26px, 3.4vw, 34px)/1.2 var(--serif); margin: 0 0 6px; letter-spacing: -.01em; }
+.part { padding: 52px 0 8px; }
+.part > .wrap > .sub { color: var(--muted); margin: 0 0 26px; max-width: 66ch; }
+
+/* one feature: words left, a drawn piece of the app right */
+.feat { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 34px; padding: 30px 0; border-top: 1px solid var(--line); align-items: start; }
+.feat h3 { font: 600 19px/1.3 var(--sans); margin: 0 0 4px; }
+.feat h3 .n { font: 600 13px var(--mono); color: var(--accent); margin-right: 8px; }
+.feat .why { color: var(--muted); margin: 0 0 12px; }
+.feat p { margin: 0 0 12px; max-width: 62ch; }
+.feat ul { margin: 0 0 12px; padding-left: 20px; }
+.feat li { margin: 4px 0; }
+.files { font-size: 13px; color: var(--muted); }
+.files code { font-size: 12px; }
+
+/* the drawn app pieces */
+.mock { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; box-shadow: var(--shadow); font-size: 13px; overflow-x: auto; }
+.mock .cap { font: 500 11px var(--mono); color: var(--faint); margin: 0 0 10px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line2); border-radius: 999px; padding: 4px 11px; background: var(--surface); color: var(--ink2); white-space: nowrap; }
+.chip.on { border-color: var(--accent); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.arrow { color: var(--faint); font-family: var(--mono); }
+.box { background: var(--surface); border: 1px solid var(--line2); border-radius: 12px; padding: 10px 12px; }
+.box .ph { color: var(--faint); }
+.box .typed { color: var(--ink); }
+.tabs { display: flex; gap: 4px; margin-bottom: -1px; position: relative; }
+.tabs span { border: 1px solid var(--line2); border-bottom-color: var(--line2); border-radius: 8px 8px 0 0; padding: 4px 10px; background: var(--panel); color: var(--muted); }
+.tabs span.cur { background: var(--surface); border-bottom-color: var(--surface); color: var(--ink); font-weight: 500; }
+.answer { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.answer .fold { color: var(--faint); font-size: 12px; border-left: 2px solid var(--line2); padding-left: 8px; margin-bottom: 8px; }
+.answer .fold.said { text-decoration: line-through; text-decoration-color: var(--line2); }
+.answer .final { color: var(--ink); background: var(--accent-soft); border-radius: 6px; padding: 4px 6px; margin: 0 -6px; }
+.foot { display: flex; gap: 12px; align-items: center; margin-top: 10px; color: var(--muted); font-size: 12px; }
+.foot .b { border-radius: 6px; padding: 2px 7px; }
+.foot .b.live { color: var(--accent); background: var(--accent-soft); font-weight: 500; }
+.tray { background: var(--surface); border: 1px solid var(--line2); border-bottom: 0; border-radius: 12px 12px 0 0; margin: 0 12px; padding: 4px 8px 4px 12px; }
+.qi { display: flex; align-items: center; gap: 8px; min-height: 30px; }
+.qi .tag { font: 600 11px var(--sans); color: var(--accent); flex: none; }
+.qi .tag.held { color: var(--warn); }
+.qi .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink2); }
+.qi .a { flex: none; font-size: 12px; color: var(--muted); padding: 2px 6px; border-radius: 6px; }
+.qi .a.hot { color: var(--accent); background: var(--accent-soft); font-weight: 500; }
+.composer { background: var(--surface); border: 1px solid var(--line2); border-radius: 14px; padding: 10px 12px; }
+.crow { display: flex; justify-content: flex-end; gap: 6px; margin-top: 10px; }
+.sq { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-size: 13px; }
+.sq.out { color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); }
+.sq.fill { background: var(--accent); color: var(--accent-ink); }
+.timeline { list-style: none; padding: 0; margin: 14px 0 0; font-size: 12.5px; }
+.timeline li { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 8px; padding: 3px 0; border-top: 1px dashed var(--line); }
+.timeline li:first-child { border-top: 0; }
+.timeline b { font: 600 11px var(--mono); color: var(--muted); }
+
+/* how to test */
+.steps { counter-reset: s; list-style: none; padding: 0; margin: 0; }
+.steps > li { counter-increment: s; position: relative; padding: 14px 0 14px 44px; border-top: 1px solid var(--line); }
+.steps > li::before { content: counter(s); position: absolute; left: 0; top: 14px; width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font: 600 13px var(--mono); display: grid; place-items: center; }
+.steps b { display: block; margin-bottom: 2px; }
+.steps .exp { color: var(--muted); }
+.checks { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 18px; }
+.checks th, .checks td { text-align: left; padding: 9px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+.checks th { font-weight: 600; color: var(--muted); font-size: 12px; border-top: 0; }
+.ok { color: var(--ok); font-weight: 600; white-space: nowrap; }
+.warn { color: var(--warn); font-weight: 600; white-space: nowrap; }
+.tablewrap { overflow-x: auto; }
+
+/* what's missing */
+.gaps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 34px; }
+.gap { padding: 14px 0; border-top: 1px solid var(--line); }
+.gap h4 { margin: 0 0 4px; font-size: 15px; }
+.gap p { margin: 0; color: var(--ink2); font-size: 14.5px; }
+.gap .who { display: inline-block; font: 600 11px var(--mono); color: var(--accent); margin-top: 6px; }
+
+footer { padding: 46px 0 60px; color: var(--muted); font-size: 13px; }
+
+@media print {
+  .mock { box-shadow: none; }
+}
+
+.skip { position: absolute; left: -999px; top: 8px; background: var(--surface); padding: 6px 10px; border-radius: 6px; }
+.skip:focus { left: 8px; }
+h3.band { font: 600 13px var(--mono); letter-spacing: .04em; color: var(--accent); margin: 44px 0 0; padding-top: 18px; border-top: 2px solid var(--line2); }
+h3.band:first-of-type { margin-top: 10px; }
+h3.band + .feat { border-top: 0; }
+.steps > li > b:not(:first-child) { display: inline; margin: 0; }
+.muted { color: var(--muted); }
+.sm { font-size: 12px; margin: 6px 0; }
+.pill { font: 600 10.5px var(--sans); border-radius: 999px; padding: 1px 7px; margin-left: 6px; white-space: nowrap; }
+.pill.bad { background: #f7dcd4; color: #9b3a1c; }
+.pill.ok { background: #dcefe1; color: #23683a; }
+@media (prefers-color-scheme: dark) { .pill.bad { background: #4a2a20; color: #f0a084; } .pill.ok { background: #1f3a28; color: #8fd8a6; } }
+.tree { display: grid; gap: 8px; font: 12px var(--mono); color: var(--ink2); margin-bottom: 12px; overflow-wrap: anywhere; }
+.tdim { display: inline-block; width: 52px; color: var(--faint); }
+pre.code { margin: 0; background: var(--code-bg); border-radius: 10px; padding: 10px 12px; font: 12px/1.55 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink2); }
+pre.code .del { color: #a5442a; text-decoration: line-through; text-decoration-color: rgba(165,68,42,.4); }
+pre.code .add { color: var(--ok); }
+.box.set { display: grid; gap: 6px; }
+.chip.fill { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.chip.bad { color: #a5442a; }
+ol.flow { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; counter-reset: f; }
+ol.flow li { counter-increment: f; background: var(--surface); border: 1px solid var(--line2); border-radius: 10px; padding: 8px 12px 8px 40px; position: relative; }
+ol.flow li::before { content: counter(f); position: absolute; left: 12px; top: 9px; font: 600 12px var(--mono); color: var(--accent); }
+ol.flow b { display: block; font-weight: 600; }
+ol.flow span { color: var(--muted); font: 12px var(--mono); }
+.pal { background: var(--surface); border: 1px solid var(--line2); border-radius: 12px; overflow: hidden; }
+.pal-in { display: flex; gap: 8px; align-items: center; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+.pal-in .typed { flex: 1; }
+.kb { font: 10.5px var(--mono); color: var(--faint); border: 1px solid var(--line2); border-radius: 4px; padding: 0 5px; }
+.pal-it { display: flex; gap: 8px; padding: 7px 12px; color: var(--ink2); }
+.pal-it .muted { margin-left: auto; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pal-it.on { background: var(--accent-soft); color: var(--ink); }
+.pal-ft { border-top: 1px solid var(--line); padding: 6px 12px; color: var(--faint); font-size: 11.5px; }
+.ns { display: grid; gap: 0; }
+.ns-st { background: var(--surface); border-radius: 8px; padding: 6px 10px; color: var(--ink2); margin-bottom: 6px; }
+.ns-t { display: flex; gap: 10px; align-items: flex-start; padding: 8px 2px; border-top: 1px solid var(--line); }
+.ns-t > div { flex: 1; min-width: 0; display: grid; }
+.ns-t small { color: var(--faint); font-size: 11.5px; }
+.ns-t .okc { color: var(--ok); }
+.ns-t .ic { color: var(--muted); }
+.ns-t.done .ic { color: var(--ok); }
+.box.sw { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 8px; }
+.box.sw.off { opacity: .7; }
+.box.sw small { display: block; color: var(--muted); font-size: 12px; }
+.tog { flex: none; width: 30px; height: 18px; border-radius: 999px; background: var(--line2); position: relative; margin-top: 2px; }
+.tog::after { content: ''; position: absolute; left: 2px; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--surface); }
+.tog.on { background: var(--accent); }
+.tog.on::after { left: 14px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#changed">Skip to what changed</a>
+<header class="top">
+  <div class="wrap">
+    <div class="kicker"><b>miltonmannarino/workbench</b><span>Work from 31 October 2026</span><span>Commit <code>34221f6</code> on <code>main</code>, not pushed</span></div>
+    <h1>Safer by default, a ⌘K for everything, and work that runs while you sleep</h1>
+    <p class="lead">Six fixes that close the gaps an agent or a broken edit could slip through, plus three new tools: a command palette, a <b>Night shift</b> that runs queued requests while you’re away, and <b>CI auto-fix</b>, which sends a failed GitHub build back to the chat that pushed it. It never spends an organisation’s CI minutes.</p>
+    <p class="status">Status: committed locally as <code>34221f6</code>, not pushed. 27 new automated tests for this work pass. The palette, Night shift and the Privacy settings were also clicked through in a private copy of Workbench in a hidden Chrome window. Your own Workbench picks it all up after one <b>Restart Workbench</b>. That first start moves your chats from <code>./data</code> to <code>~/.workbench</code>.</p>
+    <nav class="toc" aria-label="Sections">
+      <a href="#safety"><span class="n">01–06</span><span class="q">Security and robustness</span></a>
+      <a href="#palette"><span class="n">07</span><span class="q">⌘K palette</span></a>
+      <a href="#night"><span class="n">08</span><span class="q">Night shift</span></a>
+      <a href="#cifix"><span class="n">09</span><span class="q">CI auto-fix</span></a>
+    </nav>
+  </div>
+</header>
+<main>
+<section class="part" aria-labelledby="changed">
+  <div class="wrap">
+    <h2 id="changed">What changed</h2>
+    <p class="sub">Grouped by what you see or rely on. The drawings are mock-ups, not screenshots.</p>
+
+    <h3 class="band" id="safety">Security and robustness</h3>
+
+    <article class="feat">
+      <div>
+        <h3><span class="n">01</span>Your login and chats moved out of agents’ reach</h3>
+        <p class="why">Before: Workbench kept its <em>data folder</em> (the login token, every chat, settings) in <code>workbench/data/</code>, inside the repository. When you used Workbench to work on Workbench, an agent could read the token there without asking. With the token, a script can do anything the page can: approve its own permission cards, or start a “custom” server command, which runs any shell command.</p>
+        <p>Now the data lives in <code>~/.workbench</code>, outside every project. The old folder moves there by itself on the first start, unless another Workbench is still using it; a <code>MOVED.txt</code> note stays behind. Each Claude process also gets <em>deny rules</em>, Claude Code’s own “never allowed” list: it can’t read the token, chats, settings or Soft-fact records, and can’t write anything in that folder. Attachments stay readable, because the agent gets them by path.</p>
+        <p class="files">Checked with the real <code>claude</code> CLI: without the rule it read a test file, with the rule it refused. <code>server/config.ts</code>, <code>server/claude.ts</code>, <code>scripts/service.mjs</code>.</p>
+      </div>
+      <div class="mock" role="img" aria-label="Drawing: before, the token sits inside the repository next to the agent's files. Now it sits in a home folder with a deny rule in front of it.">
+        <p class="cap">where the login token lives</p>
+        <div class="tree">
+          <div class="tline"><span class="tdim">before</span> ~/Documents/code/workbench/<span class="hl">data/.ui-token</span> <span class="pill bad">agent can read</span></div>
+          <div class="tline"><span class="tdim">now</span> ~/.workbench/.ui-token <span class="pill ok">denied to Claude</span></div>
+        </div>
+        <pre class="code">--settings {"permissions":{"deny":[
+  "Read(//Users/you/.workbench/.ui-token)",
+  "Read(//Users/you/.workbench/chats/**)",
+  …,
+  "Edit(//Users/you/.workbench/**)"]}}</pre>
+      </div>
+    </article>
+
+    <article class="feat">
+      <div>
+        <h3><span class="n">02</span>Secrets are hidden in saved chats</h3>
+        <p class="why">Before: every tool output was stored word for word. If an agent ran <code>cat .env</code>, the keys stayed in the chat file and turned up in search.</p>
+        <p>Now values that look like secrets are replaced by their prefix and <code>•••</code> in everything a chat keeps: tool output, commands, approval previews, titles and your own messages. That covers provider keys (<code>ghp_</code>, <code>sk-ant-</code>, <code>AKIA</code>…), private key blocks, login tokens (JWTs), <code>Authorization</code> headers, passwords in URLs, and <code>SECRET=</code>/<code>TOKEN=</code>/<code>PASSWORD=</code> style settings. The agent still gets exactly what was sent. Chats saved before this are cleaned the first time they load.</p>
+        <p class="files"><code>server/secrets.ts</code>, used by <code>server/chats.ts</code>.</p>
+      </div>
+      <div class="mock" role="img" aria-label="Drawing: a tool output line before and after masking.">
+        <p class="cap">a tool result, as the chat stores it</p>
+        <pre class="code"><span class="del">ANTHROPIC_API_KEY=sk-ant-api03-Xk29…</span>
+<span class="add">ANTHROPIC_API_KEY=sk-ant-api03-•••</span>
+<span class="del">curl -H "Authorization: Bearer eyJhbGciOi…"</span>
+<span class="add">curl -H "Authorization: Bearer •••"</span></pre>
+      </div>
+    </article>
+
+    <article class="feat">
+      <div>
+        <h3><span class="n">03</span>One-time login links, and Sign out everywhere</h3>
+        <p class="why">Before: the Workbench app had the login link, token included, baked into it. Every time it opened Workbench, that link went into the browser’s history, and the token never changed.</p>
+        <p>Now the app and <code>pnpm service open</code> ask the running server for a one-time code. It works once and expires after 2 minutes, so only a dead code reaches the history. <b>Settings → System → Sign out everywhere</b> makes a new token: every other browser and old link stops working, and the page you clicked it in stays signed in.</p>
+        <p class="files"><code>server/index.ts</code> (<code>/login-code</code>, <code>/signout-all</code>), <code>web/src/ws.ts</code>. Run <code>pnpm service app</code> once to replace the old app.</p>
+      </div>
+      <div class="mock" role="img" aria-label="Drawing: the Privacy section of Settings, System tab.">
+        <p class="cap">Settings → System</p>
+        <div class="box set">
+          <b>Privacy</b>
+          <div class="muted sm">Keep chats</div>
+          <div class="row"><span class="chip">Forever</span><span class="chip">1 year</span><span class="chip on">90 days</span><span class="chip">30 days</span></div>
+          <div class="muted sm">Chats not used for 90 days are deleted… Secret-looking values are always hidden in saved chats.</div>
+          <div class="row"><span class="chip">🔒 Sign out everywhere</span></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="feat">
+      <div>
+        <h3><span class="n">04</span>Keep chats, and no leftovers</h3>
+        <p>In the same section, <b>Keep chats</b> can delete chats you haven’t used for 1 year, 90 or 30 days, with their attachments and screenshots. It never deletes a chat that’s working or whose worktree isn’t merged yet. It is <b>Forever</b> by default, so nothing changes until you pick something. Files left behind by deleted chats are always cleaned up, once a day.</p>
+        <p class="files"><code>server/retention.ts</code>.</p>
+      </div>
+      <div></div>
+    </article>
+
+    <article class="feat">
+      <div>
+        <h3><span class="n">05</span>Restart checks the new code first</h3>
+        <p class="why">Before: <b>Restart Workbench</b> rebuilt only the page, then exited and let launchd (the macOS service starter) run the server code as it was on disk. A syntax error left by an agent meant a crash every 10 seconds, and no Workbench to fix it from.</p>
+        <p>Now Restart, and <code>pnpm service restart</code>, first run the type checker. Then they start a test copy of the new code, with an empty data folder and no agents, and it must answer within 40 seconds. If either fails, the running Workbench stays as it was and shows why. It takes about 5 seconds.</p>
+        <p class="files">Tried on a throwaway copy of the repo: a type error and a crash on start were both caught. <code>scripts/check-boot.mjs</code>.</p>
+      </div>
+      <div class="mock" role="img" aria-label="Drawing: the three steps of Restart.">
+        <p class="cap">Restart Workbench</p>
+        <ol class="flow"><li><b>Type check</b><span>tsc --noEmit</span></li><li><b>Test copy starts</b><span>own port, empty data</span></li><li><b>Build page, swap</b><span>only if both passed</span></li></ol>
+      </div>
+    </article>
+
+    <article class="feat">
+      <div>
+        <h3><span class="n">06</span>Safer note writes, cheap tests on GitHub, newer packages wait a day</h3>
+        <ul>
+          <li><b>Reminders.md</b>: Done and Snooze now write the whole note or nothing, through a hidden temp file that Obsidian ignores. The note keeps its permissions and its symlink. If an edit synced in from your phone while it was writing, it starts again from the new text.</li>
+          <li><b>A test workflow</b> (<code>.github/workflows/test.yml</code>) runs the type check and tests on pushes to main and on pull requests. To keep cost low, it uses a Linux runner (macOS minutes count 10× on private repos), skips docs-only changes, cancels a run when a newer push arrives, and stops after 10 minutes.</li>
+          <li><b>Who pays:</b> this repository belongs to your personal account <code>miltonmannarino</code> (checked with GitHub’s API), so its minutes come from your own allowance, never Lumoview’s. It has had no runs yet.</li>
+          <li><b>pnpm</b> no longer installs package versions published less than a day ago (<code>minimumReleaseAge: 1440</code>), because most malicious releases are pulled within hours.</li>
+        </ul>
+      </div>
+      <div></div>
+    </article>
+
+    <h3 class="band" id="palette">New: ⌘K palette</h3>
+    <article class="feat">
+      <div>
+        <h3><span class="n">07</span>One box for everything</h3>
+        <p>Press <kbd>⌘K</kbd> anywhere and type a few letters, in order, gaps allowed: “nsh” finds Night shift. It jumps to any chat (newest first, with what each is doing), starts a new chat in any folder, or runs an action: Run, Changes, CI, Pages, view modes, Settings, Work Hub. When the open chat waits on an approval, its three answers come first, including <b>Allow for this chat</b>, which had no shortcut before. <kbd>Enter</kbd> and <kbd>Esc</kbd> already answer an approval when you aren’t typing.</p>
+        <p class="files"><code>web/src/CommandPalette.tsx</code>; the list is built in <code>web/src/App.tsx</code>.</p>
+      </div>
+      <div class="mock" role="img" aria-label="Drawing: the palette with 'nigh' typed, showing Night shift first.">
+        <p class="cap">⌘K, then “nigh”</p>
+        <div class="pal">
+          <div class="pal-in">🔍 <span class="typed">nigh</span><span class="kb">esc</span></div>
+          <div class="pal-it on">☾ Night shift… <span class="muted">0 queued</span></div>
+          <div class="pal-it">▢ scratch <span class="muted">~/Documents/code/scratch</span></div>
+          <div class="pal-ft">↑↓ pick · ↵ run · ⌘K open or close</div>
+        </div>
+      </div>
+    </article>
+
+    <h3 class="band" id="night">New: Night shift</h3>
+    <article class="feat">
+      <div>
+        <h3><span class="n">08</span>Queue it tonight, read the report tomorrow</h3>
+        <p>Open <b>Night shift</b> at the bottom of the sidebar (or from ⌘K). Add requests: a folder, what to do, Claude or Codex, <b>Auto</b> or <b>Accept edits</b>, and an optional check command such as <code>pnpm test</code>. Then start it now, at a time, or when Claude’s 5-hour window resets, so a full allowance is there.</p>
+        <ul>
+          <li>Tasks run one at a time, each as a chat in a <em>new worktree</em> (its own copy of the repo on a new branch), so your checkout stays as it is. The agent is told nobody can answer tonight: decide, list the choices, commit in the worktree, never push.</li>
+          <li>A task that waits on an approval or a question for 10 minutes is stopped and marked <b>needs you</b>. One still running after an hour is stopped. A usage limit pauses the shift until the window resets, then the same chat carries on.</li>
+          <li>The panel is the morning report: what finished, how long it took, commits not merged yet, and the check result with its output, plus <b>Merge</b> and <b>Open chat</b> for each.</li>
+          <li>While it runs, <code>caffeinate</code> keeps the Mac from idle-sleeping. A closed lid on battery still sleeps.</li>
+        </ul>
+        <p class="files"><code>server/nightshift.ts</code>, <code>web/src/NightShift.tsx</code>. Each task is one agent conversation; the shift makes no model calls of its own.</p>
+      </div>
+      <div class="mock" role="img" aria-label="Drawing: the Night shift panel with one finished task and two queued.">
+        <p class="cap">the morning report</p>
+        <div class="ns">
+          <div class="ns-st">✓ Finished: 1 task done.</div>
+          <div class="ns-t done"><span class="ic">✓</span><div><b>Tidy the README headings</b><small>scratch · Claude · Auto · check: pnpm test · done after 4 min</small><small class="okc">▸ Check passed</small></div><span class="chip">Open chat</span></div>
+          <div class="ns-t"><span class="ic">○</span><div><b>First task</b><small>scratch · Claude · Auto</small></div><span class="muted">˄ ˅ ×</span></div>
+          <div class="ns-t"><span class="ic">○</span><div><b>Second task</b><small>scratch · Claude · Auto</small></div><span class="muted">˄ ˅ ×</span></div>
+          <div class="row" style="margin-top:10px"><span class="chip">When Claude resets</span><span class="chip on">At</span><span class="chip">Now</span><span class="chip">23:30</span><span class="chip fill">☾ Start night shift (2 tasks)</span></div>
+        </div>
+      </div>
+    </article>
+
+    <h3 class="band" id="cifix">New: CI auto-fix</h3>
+    <article class="feat">
+      <div>
+        <h3><span class="n">09</span>A failed build goes back to the chat that pushed it</h3>
+        <p>Turn on <b>Fix CI failures</b> in the CI tab, once per repository. From then on, when a chat there pushes (the agent itself, or Commit &amp; sync), Workbench checks GitHub every 30 seconds for that commit’s results. No AI runs while it waits. If the checks fail, the failing step of up to two jobs goes back to the same chat as a message: find the cause, fix it, check locally, commit and push. That push is watched the same way. After two fixes in a row, a note hands over to you. Notes in the chat say what it’s doing, for example “Watching CI for a1b2c3d…” or “CI passed after 1 fix”.</p>
+        <p><b>It never spends an organisation’s CI minutes.</b> Each fix costs one agent turn and one more CI run, so the switch is refused for any repository an organisation owns, such as Lumoview’s. There, <b>Send to chat</b> on a failed job hands the failure over by hand, asking for a fix and a commit but no push.</p>
+        <p class="files"><code>server/cifix.ts</code>, the CI tab in <code>web/src/CiPanel.tsx</code>.</p>
+      </div>
+      <div class="mock" role="img" aria-label="Drawing: the CI tab's switch for a personal repository, and the same switch greyed out for an organisation's repository.">
+        <p class="cap">CI tab</p>
+        <div class="box sw"><span class="tog on"></span><div><b>Fix CI failures</b><small>On: after a chat here pushes, a failure goes back to that chat to fix and push again, at most twice in a row.</small></div></div>
+        <div class="box sw off"><span class="tog"></span><div><b>Fix CI failures</b><small>Off for Lumoview-Building-Analytics-GmbH’s repositories: their CI minutes are theirs.</small></div></div>
+        <div class="row" style="margin-top:10px"><span class="chip bad">✕ test</span><span class="chip">Log</span><span class="chip">Send to chat</span></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="part" aria-labelledby="test">
+  <div class="wrap">
+    <h2 id="test">How to test</h2>
+    <p class="sub">In your own Workbench, after <b>Settings → System → Restart Workbench</b>.</p>
+    <ol class="steps">
+      <li><b>Restart and check the move.</b> Restart Workbench. <span class="exp">You should see the toast “Checking the new code…”, then the restart. Afterwards your chats are all there, <code>~/.workbench</code> exists, and <code>workbench/data/</code> holds only <code>MOVED.txt</code>. Then run <code>pnpm service app</code> once, and open Workbench from the Dock: it should log you in.</span></li>
+      <li><b>⌘K.</b> Press <kbd>⌘K</kbd>, type part of a chat’s title, then press <kbd>Enter</kbd>. <span class="exp">That chat opens. Try “zen”, “ci” and “night”.</span></li>
+      <li><b>An approval from the palette.</b> In a chat in Ask mode, ask for something that needs a command. While the card waits, press <kbd>⌘K</kbd>. <span class="exp">Allow once, Allow for this chat and Deny are at the top.</span></li>
+      <li><b>Night shift, now.</b> Sidebar → <b>Night shift</b>. Add one small request in a scratch repo, with the check <code>git status</code>, pick <b>Now</b>, and start. <span class="exp">A chat named “Night shift: …” appears in a worktree, runs, and the report shows Done with the check result.</span></li>
+      <li><b>CI auto-fix, refused for Lumoview.</b> Open a Lumoview repository’s CI tab. <span class="exp">The switch is greyed out and says why. In a personal repository it switches on.</span></li>
+      <li><b>Sign out everywhere.</b> Settings → System → Sign out everywhere, then click again to confirm. <span class="exp">This tab reloads and stays signed in. Another browser showing Workbench drops to the login message.</span></li>
+    </ol>
+    <div class="tablewrap">
+      <table class="checks">
+        <thead><tr><th>Automated check</th><th>What it shows</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td><code>test/hardening.test.ts</code> (21 tests)</td><td>Data folder move and lock; deny rules; masking (8 secret kinds, 9 harmless lookalikes left alone); Keep chats; leftovers; note writes keep mode and symlink; login codes work once; Sign out everywhere, using the real server</td><td class="ok">pass</td></tr>
+          <tr><td><code>test/cifix.test.ts</code> (4)</td><td>Refused for an organisation; failure sent with the failing log; the fix watched until green; two fixes at most; stops when GitHub moves on. Uses a stand-in <code>gh</code> and fake GitHub answers.</td><td class="ok">pass</td></tr>
+          <tr><td><code>test/nightshift.test.ts</code> (2)</td><td>Start times; two tasks in order, each in a worktree in Auto mode with the night note; failing check reported; Stop; Clear</td><td class="ok">pass</td></tr>
+          <tr><td>Type check</td><td>Whole project, on exactly what was committed</td><td class="ok">pass</td></tr>
+          <tr><td>Full suite, on exactly what was committed</td><td>230 of 233. The 3 failures also happen on the commit before this one: older tests that don’t expect the browser-use note added to every message.</td><td class="warn">3 old failures</td></tr>
+          <tr><td>Private Workbench in headless Chrome</td><td>⌘K, filtering, Night shift add, reorder, run and report; Keep chats; Sign out everywhere</td><td class="ok">looked right</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="part" aria-labelledby="missing">
+  <div class="wrap">
+    <h2 id="missing">What’s missing</h2>
+    <div class="gaps">
+      <div class="gap"><h4>First CI run will be red</h4><p>Three old tests still expect messages without the browser-use note. Another session is fixing them (one is already fixed in its uncommitted work). Push after that lands, or the first run fails.</p><span class="who">Milton · other session</span></div>
+      <div class="gap"><h4>Linux run not tried yet</h4><p>The workflow uses a Linux runner, but Docker wasn’t running here, so it wasn’t rehearsed. A scan found nothing Mac-only in the tests. The first push will tell.</p><span class="who">Milton</span></div>
+      <div class="gap"><h4>“Needs you” and the usage pause, untested</h4><p>The stand-in Claude can’t ask for approvals or hit a limit. The stop uses the same path as Stop, which is tested. Worth one real night with a small task.</p><span class="who">Milton</span></div>
+      <div class="gap"><h4>Shell commands can still read the token</h4><p>Deny rules cover Claude’s file tools, not a <code>cat</code> through Bash. In Ask mode that needs your approval; in Auto mode, Claude’s own judgement. Closing it fully means turning on Claude Code’s sandbox. Codex has no rules either; its sandbox has no network, so it can’t reach Workbench.</p><span class="who">Decision: Milton</span></div>
+      <div class="gap"><h4>The CI switch wasn’t seen live</h4><p>The private Workbench has no GitHub, so the switch was tested with fake GitHub answers, not on screen. Step 5 above covers it.</p><span class="who">Milton</span></div>
+      <div class="gap"><h4>Watches end with a restart</h4><p>CI watches live in memory: a Restart while one runs drops it. Night shift notes the task it interrupted and carries on with the rest.</p><span class="who">Later, if it matters</span></div>
+      <div class="gap"><h4>Soft-fact isn’t used at night</h4><p>Soft-fact needs your sign-off halfway through, so unattended tasks use a plain check command instead.</p><span class="who">Open decision</span></div>
+      <div class="gap"><h4>Replace the Workbench app once</h4><p>The old app still has the token inside. Run <code>pnpm service app</code>. Until then it keeps working, but stops after Sign out everywhere.</p><span class="who">Milton</span></div>
+    </div>
+  </div>
+</section>
+</main>
+<footer><div class="wrap">Workbench · commit <code>34221f6</code> · 31 October 2026. Page for <code>miltonmannarino/workbench</code>.</div></footer>
+</body>
+</html>
