@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="project" content="miltonmannarino/workbench">
+<meta name="robots" content="noindex, nofollow">
+<title>Workbench auto-heal: a weekly check that only wakes an agent when something broke</title>
+<meta name="description" content="Auto-heal for Workbench and any JavaScript repo: a computed weekly check (tests, types, security audit, fallow complexity, a Claude/Codex CLI contract), run by Night shift; an agent starts only when the check fails.">
+<style>
+:root {
+  --bg: #f8f7f3; --panel: #f2f0ea; --surface: #fffefb; --ink: #1f1e1b; --ink2: #3d3b36;
+  --muted: #6e6a61; --faint: #a29e94; --line: #e4e0d6; --line2: #d6d1c4;
+  --accent: #c15f3c; --accent-soft: #f6e3da; --accent-ink: #ffffff;
+  --code-bg: #f1eee6; --ok: #2f8a4c; --ok-soft: #e3f1e6; --warn: #9a6110; --warn-soft: #f5ead6; --bad: #b42a1f;
+  --agent: #4f6fa8; --agent-soft: #e4eaf5; --you: #c15f3c; --you-soft: #f6e3da;
+  --shadow: 0 1px 2px rgba(30,25,15,.06), 0 8px 24px rgba(30,25,15,.07);
+  --sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --serif: Charter, 'Iowan Old Style', 'Source Serif 4', Georgia, serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b1a18; --panel: #211f1c; --surface: #282623; --ink: #eceae3; --ink2: #d3d0c7;
+    --muted: #a7a398; --faint: #76726a; --line: #34312c; --line2: #45413a;
+    --accent: #e27d58; --accent-soft: #3b2a22; --accent-ink: #1b1a18;
+    --code-bg: #24221f; --ok: #6fcf8b; --ok-soft: #1f3326; --warn: #e2b25c; --warn-soft: #3a3020; --bad: #f08a7e;
+    --agent: #8fb0e8; --agent-soft: #232c3b; --you: #e27d58; --you-soft: #3b2a22;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+code, kbd, pre { font-family: var(--mono); font-variant-ligatures: none; }
+code { font-size: .86em; }
+p code, li code, td code, dd code { background: var(--code-bg); padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+
+header.top { padding: 60px 0 26px; }
+.kicker { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.kicker b { color: var(--accent); font-weight: 600; }
+h1 { font: 400 50px/1.08 var(--serif); letter-spacing: -.015em; margin: 14px 0 18px; max-width: 21ch; }
+.lead { font: 400 21px/1.6 var(--serif); color: var(--ink2); max-width: 64ch; margin: 0; }
+.status { font-size: 14px; color: var(--muted); max-width: 74ch; border-left: 3px solid var(--line2); padding: 2px 0 2px 12px; margin: 22px 0 0; }
+nav.toc { margin: 32px 0 0; border-top: 1px solid var(--line2); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+nav.toc a { display: block; padding: 14px 16px 16px 0; text-decoration: none; color: var(--ink); border-right: 1px solid var(--line); margin-right: 16px; }
+nav.toc a:last-child { border-right: 0; }
+nav.toc .n { font: 600 12px var(--mono); color: var(--accent); }
+nav.toc .q { display: block; font: 400 18px/1.3 var(--serif); margin-top: 4px; }
+
+h2 { font: 400 34px/1.2 var(--serif); margin: 0 0 6px; letter-spacing: -.01em; }
+h3 { font: 600 19px/1.3 var(--sans); margin: 0 0 6px; }
+.part { padding: 56px 0 8px; }
+.sub { color: var(--muted); margin: 0 0 26px; max-width: 68ch; }
+p { max-width: 70ch; }
+ul.plain { padding-left: 20px; margin: 8px 0; }
+ul.plain li { margin: 5px 0; }
+
+/* the week's fork: one computed check, two outcomes */
+.fork { display: grid; grid-template-columns: 170px 34px 230px 34px minmax(0, 1fr); align-items: center; margin: 30px 0 14px; }
+.node { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow); }
+.node .k { font: 600 11.5px var(--mono); color: var(--muted); }
+.node h4 { font: 400 19px/1.25 var(--serif); margin: 2px 0 4px; }
+.node p { font-size: 13.5px; color: var(--ink2); margin: 0; }
+.node.check { border-color: var(--line2); }
+.arrow { height: 2px; background: var(--line2); position: relative; }
+.arrow::after { content: ''; position: absolute; right: -1px; top: -4px; border: 5px solid transparent; border-left: 7px solid var(--line2); border-right: 0; }
+.branches { display: grid; gap: 14px; position: relative; }
+.branch { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; align-items: start; border-radius: 12px; padding: 12px 14px; border: 1px solid var(--line); }
+.branch.green { background: var(--ok-soft); border-color: transparent; }
+.branch.orange { background: var(--warn-soft); border-color: transparent; }
+.branch .when { font: 600 12px var(--mono); }
+.branch.green .when { color: var(--ok); }
+.branch.orange .when { color: var(--warn); }
+.branch h4 { font: 400 18px/1.3 var(--serif); margin: 0 0 3px; }
+.branch p { font-size: 13.5px; color: var(--ink2); margin: 0; }
+.cost { display: inline-block; font: 600 11.5px var(--sans); border-radius: 99px; padding: 1px 8px; margin-top: 6px; }
+.green .cost { background: var(--surface); color: var(--ok); }
+.orange .cost { background: var(--surface); color: var(--warn); }
+.forknote { font-size: 13.5px; color: var(--muted); margin: 0 0 6px; }
+
+/* one area: words left, a drawn piece right */
+.feat { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 40px; padding: 30px 0; border-top: 1px solid var(--line); align-items: start; }
+.feat p, .feat li { font-size: 15.5px; }
+.feat .files { font-size: 13px; color: var(--muted); margin-top: 10px; }
+.app { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); }
+.app .cap { font-size: 12px; color: var(--muted); margin: 0 0 8px 2px; }
+pre.code { background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-size: 12.5px; line-height: 1.55; overflow-x: auto; margin: 8px 0; white-space: pre; }
+.report { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--ink2); }
+.report .h { font: 600 14px var(--sans); color: var(--ink); }
+.report .s { font-size: 12px; color: var(--muted); margin: 2px 0 8px; }
+.report h5 { font-size: 12px; color: var(--muted); font-weight: 600; margin: 10px 0 4px; }
+.rrow { display: flex; gap: 8px; align-items: baseline; padding: 2px 0; }
+.rrow .m { width: 14px; flex: none; font: 600 13px var(--mono); }
+.rrow.fail .m { color: var(--bad); }
+.rrow.read .m { color: var(--muted); }
+.rrow.pass .m { color: var(--ok); }
+.rrow b { font-weight: 600; color: var(--ink); }
+table.mini { border-collapse: collapse; width: 100%; font-size: 12.5px; margin: 4px 0 2px; font-variant-numeric: tabular-nums; }
+table.mini td { padding: 2px 10px 2px 0; border-top: 1px solid var(--line); }
+table.mini td:first-child { color: var(--ink2); }
+table.mini td.worse { color: var(--warn); }
+
+/* drawn Night shift panel */
+.ns { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+.ns .lab { font: 600 11px var(--sans); letter-spacing: .04em; color: var(--muted); margin: 4px 0 6px; }
+.ns .task { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-top: 1px solid var(--line); }
+.ns .task:first-of-type { border-top: 0; }
+.ns .task svg { width: 15px; height: 15px; flex: none; margin-top: 3px; color: var(--muted); }
+.ns .task.ok svg { color: var(--ok); }
+.ns .t { flex: 1; min-width: 0; }
+.ns .t b { font-weight: 500; color: var(--ink); }
+.ns small { display: block; color: var(--faint); font-size: 11.5px; line-height: 1.45; overflow-wrap: anywhere; }
+.ns small.g { color: var(--ok); }
+.btn { display: inline-flex; align-items: center; height: 26px; padding: 0 9px; border: 1px solid var(--line2); border-radius: 7px; background: var(--surface); font: 500 12px var(--sans); color: var(--ink); white-space: nowrap; }
+.form { margin-top: 10px; display: grid; gap: 6px; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+.form .r { display: flex; gap: 6px; }
+.form .f { flex: 1; min-width: 0; border: 1px solid var(--line2); border-radius: 6px; background: var(--surface); padding: 4px 8px; font-size: 12px; color: var(--ink2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.form .f.hi { border-color: var(--accent); }
+.form .f.narrow { flex: none; width: 70px; }
+
+/* fix vs report */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 1px solid var(--line2); margin: 18px 0 0; }
+.split > div { padding: 16px 22px 6px 0; }
+.split > div + div { padding-left: 22px; border-left: 1px solid var(--line); }
+.split h3 { font: 400 22px/1.3 var(--serif); }
+.split .tagline { font-size: 13.5px; color: var(--muted); margin: 0 0 8px; }
+
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px 10px 0; border-top: 1px solid var(--line); }
+th { font-size: 13px; color: var(--muted); font-weight: 600; border-top: 0; }
+.tablebox { overflow-x: auto; margin: 10px 0 8px; }
+.costs td:first-child { width: 30%; font-weight: 600; }
+.costs td:nth-child(2) { width: 22%; font-variant-numeric: tabular-nums; }
+.missing td:first-child { width: 30%; font-weight: 600; }
+.missing td:last-child { width: 120px; }
+ol.steps { padding-left: 22px; margin: 10px 0; max-width: 76ch; }
+ol.steps li { margin: 10px 0; }
+ol.steps .see { display: block; color: var(--muted); font-size: 14.5px; }
+.evidence { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line2); margin: 22px 0 0; }
+.evidence > div { padding: 14px 18px 4px 0; margin-right: 18px; border-right: 1px solid var(--line); }
+.evidence > div:last-child { border-right: 0; margin-right: 0; }
+.evidence .big { font: 400 34px/1 var(--serif); color: var(--ok); }
+.evidence p { font-size: 14px; color: var(--ink2); margin: 8px 0 10px; }
+.owner { display: inline-block; font-size: 12px; font-weight: 600; border-radius: 99px; padding: 1px 9px; white-space: nowrap; }
+.owner.m { background: var(--you-soft); color: var(--you); }
+.owner.n { background: var(--agent-soft); color: var(--agent); }
+dl.words { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 8px 22px; margin: 18px 0 0; font-size: 15px; }
+dl.words dt { font-weight: 600; }
+dl.words dd { margin: 0; color: var(--ink2); }
+footer { margin: 64px 0 0; padding: 22px 0 48px; border-top: 1px solid var(--line2); font-size: 13px; color: var(--muted); }
+svg.i { stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+@media print { .app, .node { box-shadow: none; } nav.toc { display: none; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.2"/><path d="M5.3 8.2l1.9 1.9 3.6-4"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 16 16"><path d="M2.5 8a5.5 5.5 0 1 0 1.7-4"/><path d="M2.5 2.5v3h3"/></symbol>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <div class="kicker"><b>Workbench</b><span>miltonmannarino/workbench</span><span>2 November 2026</span><span>Not committed yet</span></div>
+    <h1>Auto-heal: a weekly check that only wakes an agent when something broke</h1>
+    <p class="lead">Once a week, Workbench runs a computed health check on a repository: tests, types, a security audit, code complexity, and a check that the Claude and Codex command-line tools still behave the way Workbench reads them. If everything passes, nothing else happens and no model is used. If something fails, an agent gets the report, fixes only that, and leaves commits for you to merge in the morning.</p>
+    <p class="status">As of 2 November 2026: built in the working copy and tested, not committed. Type check and all 250 tests pass. The new Night shift controls were tried in a private Workbench with the stand-in Claude. The contract check's live turns ran against the real Claude Code 2.1.312 and Codex 0.163.0 and passed. A real weekly run, with a real agent fixing something, hasn't happened yet.</p>
+    <nav class="toc" aria-label="Sections">
+      <a href="#idea"><span class="n">01</span><span class="q">How a week goes</span></a>
+      <a href="#changed"><span class="n">02</span><span class="q">What changed</span></a>
+      <a href="#test"><span class="n">03</span><span class="q">How to test</span></a>
+      <a href="#missing"><span class="n">04</span><span class="q">What’s missing</span></a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="part" id="idea">
+  <div class="wrap">
+    <h2>How a week goes</h2>
+    <p class="sub">The problem: when the Claude or Codex CLI changes the shape of its output, Workbench chats break, and you find out by using them. The same goes for a test that quietly started failing or a dependency with a new security advisory. Auto-heal looks once a week, cheaply, and only spends a model when there is something to fix.</p>
+
+    <div class="fork" role="img" aria-label="Sunday 03:00, Night shift runs the check in a fresh worktree. If it passes: all clear, no agent, the worktree is removed. If it fails: the agent gets the report, fixes, commits, and the morning report lists the commits to merge.">
+      <div class="node">
+        <div class="k">SUN 03:00</div>
+        <h4>Night shift</h4>
+        <p>The weekly task queues itself and makes a fresh worktree.</p>
+      </div>
+      <div class="arrow"></div>
+      <div class="node check">
+        <div class="k">CHECK · NO MODEL</div>
+        <h4>check.mjs</h4>
+        <p>Install, typecheck, tests, audit, outdated, fallow, CLI contract.</p>
+      </div>
+      <div class="arrow"></div>
+      <div class="branches">
+        <div class="branch green">
+          <div class="when">exit 0</div>
+          <div>
+            <h4>All clear</h4>
+            <p>The agent never starts. The task is marked done, the empty worktree is removed.</p>
+            <span class="cost">no model usage</span>
+          </div>
+        </div>
+        <div class="branch orange">
+          <div class="when">exit 1</div>
+          <div>
+            <h4>Something to fix</h4>
+            <p>The agent starts with the report as “What the check found”, fixes only that, one commit per kind of fix, never pushes. Merge in the morning.</p>
+            <span class="cost">one agent turn</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="forknote">The same check runs by hand in any repo: <code>node skills/auto-heal/scripts/check.mjs</code>.</p>
+
+    <dl class="words">
+      <dt>Worktree</dt><dd>A second checkout of the same repository in its own folder (<code>.worktrees/…</code>), on its own branch. Night shift runs every task in a new one, so your own checkout is never touched.</dd>
+      <dt>fallow</dt><dd>A code analyser for TypeScript and JavaScript. It reports functions over complexity limits, unused files and exports, import cycles (A imports B, which imports A) and duplicated code.</dd>
+      <dt>CLI contract</dt><dd>The list of flags, event names and fields Workbench relies on when it drives the <code>claude</code> and <code>codex</code> tools, checked against the installed versions.</dd>
+      <dt>Security advisory</dt><dd>A published warning that a package version has a known vulnerability, with the version that fixes it. <code>pnpm audit</code> lists them.</dd>
+    </dl>
+  </div>
+</section>
+
+<section class="part" id="changed">
+  <div class="wrap">
+    <h2>What changed</h2>
+    <p class="sub">Three pieces: a skill any repository can use, a contract check specific to Workbench, and two new options in Night shift that make it run weekly and cheaply.</p>
+
+    <div class="feat">
+      <div>
+        <h3>The auto-heal skill</h3>
+        <p>A skill is a folder of instructions and scripts that Claude Code and Codex load on request. This one lives in <code>skills/auto-heal/</code> and is linked into <code>~/.claude/skills</code> and <code>~/.codex/skills</code>, so it works in every repository on this Mac.</p>
+        <ul class="plain">
+          <li><b>The check</b> (<code>scripts/check.mjs</code>) has no model call. It finds the package manager, installs packages when the folder has none, runs the repo’s own <code>typecheck</code>, <code>lint</code> and <code>test</code> scripts, then <code>pnpm audit</code>, <code>pnpm outdated</code>, fallow, and any extra checks listed in <code>.auto-heal.json</code>.</li>
+          <li><b>Exit code</b>: 0 nothing to fix, 1 something to fix, 2 the check itself broke. The report is saved to <code>.git/auto-heal/report.md</code>, shared by all worktrees of the repo.</li>
+          <li><b>Trend, not just totals</b>: fallow’s numbers are compared with the run from about a week ago, so “3 more import cycles than last week” stands out.</li>
+          <li><b>Pinned</b>: fallow runs as <code>fallow@3.38.1</code>, so an unattended run never fetches whatever was published last night.</li>
+          <li><b>The rules</b> (<code>SKILL.md</code>): fix only what is under “To fix”, in order: install, typecheck/lint/tests, the repo’s own checks, then security advisories of high severity or worse, upgraded within the same major version only. One commit per kind of fix. Never push, never edit the check to make it pass.</li>
+        </ul>
+        <p class="files">skills/auto-heal/SKILL.md · scripts/check.mjs · agents/openai.yaml</p>
+      </div>
+      <div class="app">
+        <p class="cap">The report from this repository today (shortened)</p>
+        <div class="report">
+          <div class="h">Auto-heal check: workbench</div>
+          <div class="s">pnpm · <b>1 to fix</b>, 2 to read · 32 s</div>
+          <h5>To fix</h5>
+          <div class="rrow fail"><span class="m">✗</span><span><b>Security audit</b>: 4 critical, 20 high, 19 moderate, 2 low (fix high and above). Almost all in WorkHub’s dependencies.</span></div>
+          <h5>Report only (don’t change these)</h5>
+          <div class="rrow read"><span class="m">•</span><span><b>Outdated packages</b>: 14 behind, 5 of them a major version.</span></div>
+          <div class="rrow read"><span class="m">•</span><span><b>Complexity and tangles</b>: 364 complex functions, 13 import cycles, 9 unused files, 1.3% duplicated.</span></div>
+          <table class="mini" aria-label="fallow numbers">
+            <tr><td>functions over the complexity limits</td><td>364</td><td></td></tr>
+            <tr><td>import cycles</td><td>13</td><td></td></tr>
+            <tr><td>unused exports</td><td>36</td><td></td></tr>
+            <tr><td>% duplicated lines</td><td>1.3</td><td></td></tr>
+            <tr><td colspan="3" style="color:var(--muted)">The “since last week” column fills in from the next weekly run.</td></tr>
+          </table>
+          <h5>Passed</h5>
+          <div class="rrow pass"><span class="m">✓</span><span>Install · typecheck · tests · Claude and Codex CLI contract</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feat">
+      <div>
+        <h3>The Claude and Codex contract check</h3>
+        <p>Workbench drives <code>claude</code> by reading its stream of JSON events, and <code>codex</code> through its app-server protocol. The unit tests use a stand-in Claude that prints the old shapes, so they stay green when a real CLI update renames something. <code>scripts/cli-contract.mjs</code> checks the real ones, in two layers:</p>
+        <ul class="plain">
+          <li><b>Every run, free, about a second.</b> <code>claude --help</code> must list every flag Workbench passes. Flags hidden from help are tried with no input: an unknown one fails at once, before any model call. Codex prints its own protocol as a JSON Schema (<code>codex app-server generate-json-schema</code>); every method, item type, status and field Workbench uses must be in it.</li>
+          <li><b>Only when a CLI version is new to it.</b> One tiny real turn each (Haiku; the smallest Codex model on a temporary thread), and the events are checked against what <code>server/claude.ts</code> and <code>server/codex.ts</code> read. A few cents, about once per CLI update. A usage limit makes it a warning, tried again next week.</li>
+          <li><b>A guard test</b> scans the server code: a new flag or Codex method there fails the tests until it is added to the contract, so the contract can’t fall behind.</li>
+        </ul>
+        <p>It reuses Workbench’s own Codex config handling (<code>server/codexConfig.ts</code>). Without it, the live turn went to a local Ollama server set in the Codex config, and timed out.</p>
+        <p class="files">scripts/cli-contract.mjs · .auto-heal.json · test/autoheal.test.ts</p>
+      </div>
+      <div class="app">
+        <p class="cap">What it prints, and what a break would look like</p>
+<pre class="code">$ node --import tsx scripts/cli-contract.mjs
+claude 2.1.312 (Claude Code) · codex codex-cli 0.163.0
+As expected: flags and protocol; live turns passed
+on these versions.</pre>
+        <p class="cap" style="margin-top:14px">If a future version renamed a field:</p>
+<pre class="code">1 thing Workbench relies on changed:
+- claude 2.2.0 live turn: `result.duration_ms` is
+  missing.
+
+Update server/claude.ts or server/codex.ts (and
+test/fixtures/fake-claude.mjs) to the new shape,
+then this script's lists.</pre>
+      </div>
+    </div>
+
+    <div class="feat">
+      <div>
+        <h3>Night shift: weekly tasks and “Only if this fails”</h3>
+        <p>Night shift already ran queued requests one by one in new worktrees while you’re away. Two options make it a weekly, cheap scheduler:</p>
+        <ul class="plain">
+          <li><b>Repeat: Every &lt;day&gt;</b> with a time. The task stays under <b>Every week</b>; at that time it queues a copy of itself and starts the shift if it isn’t running. One missed while Workbench was off runs when Workbench starts again. <b>Run now</b> queues it at once; <b>×</b> stops it repeating.</li>
+          <li><b>Only if this fails</b>: a command run first in the new worktree. If it passes, the agent isn’t started, the task says “All clear”, and the empty worktree goes. If it fails, its output goes to the agent with the request. Stop ends it mid-check.</li>
+          <li>The one-hour limit for an agent starts when the agent starts, not when the check does.</li>
+        </ul>
+        <p class="files">server/nightshift.ts · web/src/NightShift.tsx · shared/protocol.ts · server/index.ts · test/nightshift.test.ts</p>
+      </div>
+      <div class="app">
+        <p class="cap">The panel after Run now, when the check passed (drawn from the screenshot)</p>
+        <div class="ns">
+          <div class="task ok">
+            <svg class="i" aria-hidden="true"><use href="#i-check"/></svg>
+            <div class="t"><b>Use the auto-heal skill: fix what the check found, then report.</b>
+              <small>workbench · Claude · Auto · weekly · only if this fails: node ~/.claude/skills/auto-heal/scripts/check.mjs · done after under a minute</small>
+              <small class="g">All clear: the check passed, so the agent didn’t start.</small>
+              <small class="g">▸ Checked first: all clear</small>
+            </div>
+          </div>
+          <div class="lab">EVERY WEEK</div>
+          <div class="task">
+            <svg class="i" aria-hidden="true"><use href="#i-repeat"/></svg>
+            <div class="t"><b>Use the auto-heal skill: fix what the check found, then report.</b>
+              <small>workbench · every Sunday at 03:00 · Claude · only if this fails: node ~/.claude/skills/auto-heal/scripts/check.mjs</small>
+              <small>Next Sun 03:00 · last queued Mon 2 Nov</small>
+            </div>
+            <span class="btn">Run now</span>
+          </div>
+          <div class="form" aria-hidden="true">
+            <div class="r"><span class="f hi">Only if this fails, e.g. a check script</span><span class="f">Check afterwards, e.g. pnpm test</span></div>
+            <div class="r"><span class="f">Every Sunday</span><span class="f narrow">03:00</span><span class="btn">+ Add weekly</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="split">
+      <div>
+        <h3>The agent fixes</h3>
+        <p class="tagline">Things that are broken, with a clear right answer.</p>
+        <ul class="plain">
+          <li>Failed install, type errors, lint errors, failing tests (the code, not the test, unless the test is wrong, said why)</li>
+          <li>A failing repo check, such as the CLI contract: update the code to the new shape</li>
+          <li>Security advisories of high severity or worse, within the same major version; a major upgrade is reported instead</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Report only, for now</h3>
+        <p class="tagline">Your decision on 2 November: reported with the weekly trend, not changed.</p>
+        <ul class="plain">
+          <li>Complexity and refactoring targets</li>
+          <li>Import cycles, unused files and exports, duplication (fallow’s “unused” can be wrong: some files are started by name)</li>
+          <li>Outdated packages</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tablebox" style="margin-top:34px">
+      <table class="costs">
+        <caption style="text-align:left;font:400 22px/1.3 var(--serif);padding-bottom:6px">What it costs</caption>
+        <thead><tr><th>When</th><th>Model usage</th><th>What runs</th></tr></thead>
+        <tbody>
+          <tr><td>Every week, all green</td><td>none</td><td>The check: about 30–40 seconds on this repo, more on the first run in a fresh worktree (it installs packages).</td></tr>
+          <tr><td>After a Claude or Codex update</td><td>a few cents</td><td>One tiny live turn per updated CLI, once.</td></tr>
+          <tr><td>A week where something fails</td><td>one agent task</td><td>A normal Night shift task with the report attached, up to the existing one-hour limit.</td></tr>
+          <tr><td>GitHub Actions</td><td>none</td><td>Nothing runs in CI: no Actions minutes, personal or company.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="part" id="test">
+  <div class="wrap">
+    <h2>How to test</h2>
+    <p class="sub">The running Workbench serves the last build, so it doesn’t show the new controls yet.</p>
+    <ol class="steps">
+      <li>Run <code>pnpm build</code>, then <b>Restart</b> Workbench.<span class="see">The Night shift panel’s add form now has “Only if this fails”, “Check afterwards” and a Repeat picker.</span></li>
+      <li>Open <b>Night shift</b> (bottom of the sidebar, or ⌘K). Pick <code>workbench</code>, Claude, Auto.</li>
+      <li>Write: “Use the auto-heal skill: fix what the check found, then report.”</li>
+      <li>Set <b>Only if this fails</b> to <code>node ~/.claude/skills/auto-heal/scripts/check.mjs</code>.</li>
+      <li>Pick <b>Every Sunday</b> and 03:00, then <b>Add weekly</b>.<span class="see">It appears under <b>Every week</b> with its next time.</span></li>
+      <li>Click <b>Run now</b>.<span class="see">Today it should find the security advisories and start the agent with them as “What the check found”. On a week where the check passes, the task shows “All clear” in green and no chat is made.</span></li>
+      <li>By hand, in any repo: <code>node ~/.claude/skills/auto-heal/scripts/check.mjs</code><span class="see">Prints the report and exits 0 or 1. Add <code>.auto-heal.json</code> for repo-specific checks.</span></li>
+    </ol>
+
+    <div class="evidence">
+      <div><div class="big">250</div><p>tests pass, type check clean. 13 of them new: contract coverage and event checks, the check’s parsers, the check end to end on a scratch repo, weekly scheduling and “only if” both ways.</p></div>
+      <div><div class="big">2/2</div><p>live contract turns passed: Claude Code 2.1.312 and Codex 0.163.0. The second run, with no version change, took 1.2 s and used no model.</p></div>
+      <div><div class="big">32 s</div><p>full check on this repo. In a fresh clone with a clean install: 42 s (the first try hung once in an unrelated WorkHub test; see below).</p></div>
+      <div><div class="big">4</div><p>screenshots in a private Workbench (stand-in Claude): the form, the weekly list, Run now with a passing check, “All clear” in green.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="part" id="missing">
+  <div class="wrap">
+    <h2>What’s missing</h2>
+    <p class="sub">Open decisions, untested paths and follow-ups.</p>
+    <div class="tablebox">
+      <table class="missing">
+        <thead><tr><th>Item</th><th>Why it matters</th><th>Owner</th></tr></thead>
+        <tbody>
+          <tr><td>Commit</td><td>Everything is in the working copy only. Another session has unrelated edits in <code>workhub/</code> in the same checkout; they aren’t part of this work.</td><td><span class="owner m">Milton</span></td></tr>
+          <tr><td>Set up the weekly task</td><td>The feature is there but no weekly task exists yet in your own Workbench. Needs <code>pnpm build</code> and Restart first.</td><td><span class="owner m">Milton</span></td></tr>
+          <tr><td>WorkHub security advisories</td><td>The first check found a critical advisory in WorkHub’s web framework, fixed in a patch release of the same major version, plus high ones in its dependencies. The first weekly run would try this; it can also be done by hand now.</td><td><span class="owner m">Milton</span></td></tr>
+          <tr><td>A real agent fixing something</td><td>Untested end to end: the tests and screenshots use the stand-in Claude. The first real failing week is the real test of the skill’s rules.</td><td><span class="owner n">Next run</span></td></tr>
+          <tr><td>A WorkHub test that hung once</td><td><code>test/workhub-build.test.ts</code> hung in a fresh clone under the full parallel suite, then passed alone and on a rerun. If it hangs in a weekly run, the check stops it after 15 minutes and it lands under “To fix”.</td><td><span class="owner n">Next session</span></td></tr>
+          <tr><td>Complexity stays report-only</td><td>Your choice for now. Letting the agent refactor would be a deliberate change to section 3 of <code>SKILL.md</code>.</td><td><span class="owner m">Milton</span></td></tr>
+          <tr><td>Outdated packages aren’t upgraded</td><td>Patch and minor updates could be applied automatically; today they are only listed.</td><td><span class="owner m">Milton</span></td></tr>
+          <tr><td>Only while Workbench runs</td><td>A weekly task fires from the running server. If the Mac is asleep or Workbench is off at that time, it runs when Workbench next starts.</td><td><span class="owner n">Known limit</span></td></tr>
+          <tr><td>Other package managers and repos</td><td>Audit and outdated work with pnpm and npm; yarn and bun skip them. A repo without <code>package.json</code> gets only its own <code>.auto-heal.json</code> checks.</td><td><span class="owner n">Known limit</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">Workbench · miltonmannarino/workbench · auto-heal, 2 November 2026.</div>
+</footer>
+</body>
+</html>
