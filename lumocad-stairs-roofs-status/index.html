@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="project" content="Lumoview-Building-Analytics-GmbH/platform">
+  <title>Stairs &amp; roofs: current state | LumoCad</title>
+  <style>
+    :root { color-scheme: light dark; --ink:#19212a; --muted:#5b6874; --paper:#f6f4ef; --line:#d8d5ce; --panel:#fffdfa; --roof:#9b4530; --stair:#246879; --good:#1e7650; --watch:#9a5a00; --soft-roof:#f5e4dd; --soft-stair:#ddedf0; }
+    * { box-sizing:border-box; }
+    html { background:var(--paper); }
+    body { margin:0; color:var(--ink); background:var(--paper); font:16px/1.55 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    a { color:#075b80; text-underline-offset:3px; }
+    a:focus-visible { outline:3px solid #e39828; outline-offset:3px; border-radius:2px; }
+    .wrap { width:min(1180px, calc(100% - 96px)); margin:0 auto; }
+    header { padding:74px 0 52px; border-bottom:1px solid var(--line); }
+    .eyebrow { margin:0 0 16px; color:var(--muted); font-size:.78rem; font-weight:750; letter-spacing:.08em; text-transform:uppercase; }
+    h1,h2,h3 { font-family:Georgia, "Times New Roman", serif; letter-spacing:-.025em; }
+    h1 { max-width:880px; margin:0; font-size:clamp(3.1rem, 6vw, 5.6rem); line-height:.98; font-weight:500; }
+    .lede { max-width:750px; margin:27px 0 0; font-size:1.23rem; color:#3d4852; }
+    .meta { display:flex; gap:26px; margin-top:33px; color:var(--muted); font-size:.9rem; }
+    main { padding:46px 0 78px; }
+    .answer { display:grid; grid-template-columns:1.15fr .85fr; gap:34px; align-items:stretch; margin-bottom:58px; }
+    .answer-copy { padding:10px 6px 0 0; }
+    h2 { margin:0 0 14px; font-size:2.05rem; font-weight:500; }
+    h3 { margin:0; font-size:1.35rem; font-weight:600; }
+    .answer-copy p { max-width:690px; margin:0; font-size:1.08rem; }
+    .key { border:1px solid var(--line); border-left:5px solid var(--good); padding:23px 25px; background:var(--panel); box-shadow:0 10px 28px #1b2a3410; }
+    .key p { margin:8px 0 0; color:var(--muted); }
+    .key strong { color:var(--ink); }
+    .legend { display:flex; gap:20px; flex-wrap:wrap; margin-top:22px; font-size:.9rem; color:var(--muted); }
+    .dot { display:inline-block; width:10px; height:10px; margin-right:7px; border-radius:50%; }
+    .green { background:var(--good); }.amber { background:var(--watch); }.gray { background:#78828a; }
+    .journey { margin:0 0 56px; padding:30px 31px; background:#e9e6df; border:1px solid var(--line); }
+    .journey h2 { margin-bottom:23px; }
+    .steps { display:grid; grid-template-columns:repeat(4,1fr); gap:0; overflow:hidden; border:1px solid #c9c5bd; background:var(--panel); }
+    .step { min-height:142px; padding:19px 20px; border-right:1px solid #d8d5ce; }
+    .step:last-child { border-right:0; }
+    .step b { display:block; margin-bottom:7px; font-size:.78rem; letter-spacing:.075em; text-transform:uppercase; color:var(--muted); }
+    .step span { font-family:Georgia, serif; font-size:1.16rem; line-height:1.25; }
+    .step small { display:block; margin-top:8px; color:var(--muted); }
+    .section-head { display:flex; align-items:baseline; justify-content:space-between; gap:24px; margin:0 0 18px; }
+    .section-head p { margin:0; color:var(--muted); }
+    .feature { display:grid; grid-template-columns:1fr 1fr; gap:28px; margin-bottom:48px; }
+    .feature-title { padding:27px 29px; color:#fff; }
+    .feature-title.roof { background:var(--roof); }.feature-title.stair { background:var(--stair); }
+    .feature-title h2 { font-size:2.35rem; }.feature-title p { margin:9px 0 0; max-width:460px; opacity:.9; }
+    .feature-body { border:1px solid var(--line); background:var(--panel); }
+    .row { padding:20px 23px; border-bottom:1px solid var(--line); }
+    .row:last-child { border-bottom:0; }.row p { margin:6px 0 0; color:var(--muted); }.row b { font-size:1rem; }
+    .tag { display:inline-block; margin-left:8px; padding:2px 7px; border-radius:99px; vertical-align:1px; font-size:.72rem; font-weight:750; letter-spacing:.035em; }
+    .tag.ready { background:#d9eee2; color:#155b3d; }.tag.partial { background:#f5e5bd; color:#754700; }
+    .missing { margin-top:8px; border-top:4px solid #c98a20; padding:35px 0 4px; }
+    .missing-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+    .gap { min-height:210px; padding:23px; border:1px solid var(--line); background:var(--panel); }
+    .gap h3 { font-size:1.23rem; }.gap p { margin:10px 0 0; color:var(--muted); }.gap .scope { display:block; margin-bottom:9px; color:var(--watch); font-size:.75rem; font-weight:750; letter-spacing:.075em; text-transform:uppercase; }
+    .note { margin-top:35px; padding:23px 26px; background:#edf3f4; border-left:4px solid var(--stair); }
+    .note p { margin:0; }.note strong { color:#174d5a; }
+    .confidence { margin-top:52px; padding-top:25px; border-top:1px solid var(--line); color:var(--muted); font-size:.9rem; }
+    footer { padding:24px 0 45px; color:var(--muted); font-size:.88rem; border-top:1px solid var(--line); }
+    @media (prefers-color-scheme: dark) { :root { --ink:#ebedf0; --muted:#b7c0c6; --paper:#171a1d; --line:#40474c; --panel:#202428; --soft-roof:#482c27; --soft-stair:#1f3d43; } html,body { background:var(--paper); } .lede { color:#c7ced3; } .journey { background:#25292c; } .key { box-shadow:none; } .steps { background:var(--panel); border-color:var(--line); } .step { border-color:var(--line); } .tag.ready { background:#17482f; color:#d4f5df; }.tag.partial { background:#66460e; color:#ffe8b2; }.note { background:#1d3035; }.note strong { color:#b8e5ee; } a { color:#7ac9e7; } }
+    @media print { body { background:#fff; color:#111; } .wrap { width:92%; } header { padding-top:30px; } .feature-title { color:#111; background:#eee !important; } .key,.feature-body,.gap,.steps { box-shadow:none; background:#fff; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <p class="eyebrow">LumoCad feature status · product view</p>
+      <h1>Stairs and roofs are real features — with different kinds of unfinished work.</h1>
+      <p class="lede">This is a plain-English read of what the application can do today, where the rough edges are, and why “missing” means something different inside LumoCad than it does when sending the model to Revit.</p>
+      <div class="meta"><span>As of 3 November 2026</span><span>Based on the platform source, feature manuals, tests and integration backlog</span></div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="answer" aria-labelledby="answer-title">
+      <div class="answer-copy">
+        <h2 id="answer-title">The short answer</h2>
+        <p><strong>Both features are well beyond a prototype in LumoCad.</strong> A user can create, edit, save, reopen, view and export stair and roof geometry. Roofs have the broader modelling vocabulary; stairs have the more mature “connect it safely to floors” workflow. The biggest delivery gap is not ordinary in-app modelling: it is faithful import into Revit.</p>
+        <div class="legend" aria-label="Status legend"><span><i class="dot green"></i>available in LumoCad</span><span><i class="dot amber"></i>available, with a known limit</span><span><i class="dot gray"></i>planned outside LumoCad</span></div>
+      </div>
+      <aside class="key" aria-label="Key distinction"><strong>Important distinction</strong><p>The web app and its Revit extension are separate products. “Roof import is missing” means a roof made in LumoCad is not yet rebuilt faithfully by the Revit extension. It does <em>not</em> mean LumoCad cannot model roofs.</p></aside>
+    </section>
+
+    <section class="journey" aria-labelledby="journey-title">
+      <h2 id="journey-title">What “done” means in practice</h2>
+      <div class="steps">
+        <div class="step"><b>1 · Make it</b><span>Draw or place the element</span><small>Both features: available</small></div>
+        <div class="step"><b>2 · Refine it</b><span>Change dimensions and shape</span><small>Both features: available</small></div>
+        <div class="step"><b>3 · Trust it</b><span>Save, reopen, undo and show it in views</span><small>Both features: available</small></div>
+        <div class="step"><b>4 · Reuse it elsewhere</b><span>Bring it into Revit faithfully</span><small>Stairs: partial · Roofs: not started</small></div>
+      </div>
+    </section>
+
+    <div class="section-head"><h2>What works today</h2><p>“Available” describes the LumoCad application itself.</p></div>
+    <section class="feature" aria-labelledby="roof-title">
+      <div class="feature-title roof"><h2 id="roof-title">Roofs</h2><p>Flexible roof modelling, from familiar shapes to hand-shaped surfaces.</p></div>
+      <div class="feature-body">
+        <div class="row"><b>Start from a footprint <span class="tag ready">Available</span></b><p>Draw a roof outline, trace suitable existing lines, or use the drone-model outline. The outline can be edited later and can snap to building geometry.</p></div>
+        <div class="row"><b>Use common roof forms <span class="tag ready">Available</span></b><p>Flat, gable, hip, shed and Dutch-gable start as one-click forms. Saltbox and butterfly are available as editable surface forms; further reshape helpers cover forms such as mansard, gambrel, jerkinhead and M roofs.</p></div>
+        <div class="row"><b>Control real roof behaviour <span class="tag ready">Available</span></b><p>Users can set overhangs, edge slopes, split a roof into regions, raise a region, join several roof segments, and control how they meet.</p></div>
+        <div class="row"><b>Add roof features <span class="tag ready">Available</span></b><p>Skylights/openings, dormers, chimneys or equipment boxes, and parapets are modelled as roof-aware features rather than simple flat symbols.</p></div>
+        <div class="row"><b>Freeform work <span class="tag ready">Available</span></b><p>Freeform roofs support differently high eaves, interior surface points and fold lines. The system also has drone-derived roof heights and mesh round-trip checks.</p></div>
+      </div>
+    </section>
+
+    <section class="feature" aria-labelledby="stair-title">
+      <div class="feature-title stair"><h2 id="stair-title">Stairs</h2><p>Structured stair modelling with strong floor and opening coordination.</p></div>
+      <div class="feature-body">
+        <div class="row"><b>Place useful stair families <span class="tag ready">Available</span></b><p>Straight, double-straight, quarter-, half-, two-quarter- and three-quarter-turn stairs are supported, as are equivalent winding variants. Custom sequences of turns can be reopened and edited.</p></div>
+        <div class="row"><b>Connect stairs to real floor slabs <span class="tag ready">Available</span></b><p>The stair can attach between selected floor slabs, across several levels, or remain detached. Its start, end and rise are calculated from those selections and offsets.</p></div>
+        <div class="row"><b>Edit detailed geometry <span class="tag ready">Available</span></b><p>Users can adjust width, tread/riser values, turn position and direction, landings, terminal landing alignment, construction style, and movement/snapping.</p></div>
+        <div class="row"><b>Keep floors and stairs consistent <span class="tag ready">Available</span></b><p>Openings through affected slabs are created and updated with the stair in one save/undo operation. The system validates unsafe overlaps before saving.</p></div>
+        <div class="row"><b>See it in the right context <span class="tag ready">Available</span></b><p>There are top-plan, dedicated stair-elevation and 3D views, plus IFC export. Plans distinguish the cut portion from the part above the viewing height.</p></div>
+      </div>
+    </section>
+
+    <section class="missing" aria-labelledby="missing-title">
+      <div class="section-head"><h2 id="missing-title">What is still missing or needs care</h2><p>Ordered by impact, not by implementation difficulty.</p></div>
+      <div class="missing-grid">
+        <article class="gap"><span class="scope">Cross-product · highest impact</span><h3>Revit hand-off is incomplete</h3><p>The extension currently has only partial stair support and no roof-import phase. Winding stairs, exact slab-based stair heights, terminal landings and complete validation still need work. Roof segments, joins, freeform surfaces and roof features have not yet been implemented for Revit import.</p></article>
+        <article class="gap"><span class="scope">LumoCad · known product limit</span><h3>Not every stair shape is offered</h3><p>Spiral, curved and double-return stairs are not supported. “Custom turns” can preserve unusual combinations already made, but it is not offered as a fresh placement preset.</p></article>
+        <article class="gap"><span class="scope">LumoCad · known product limit</span><h3>One floor-update path remains unfinished</h3><p>When a stair changes, its own generated slab openings are managed together with it. Refreshing <em>space-boundary</em> openings is explicitly not implemented yet, so that related boundary view can need separate attention.</p></article>
+        <article class="gap"><span class="scope">LumoCad · interaction gap</span><h3>Toolbar deletion for stairs is disabled</h3><p>Selected stairs can be deleted from the sidebar or with Delete/Backspace. The toolbar’s delete control is currently disabled, which is an inconsistent route rather than missing deletion itself.</p></article>
+        <article class="gap"><span class="scope">LumoCad · durability gap</span><h3>Roof material layers are not a durable contract</h3><p>A roof remembers its total assembly thickness and a type ID, but full material-layer detail is not guaranteed after reload. That limits reliable material/type mapping into another system.</p></article>
+        <article class="gap"><span class="scope">Evidence · what has not been claimed</span><h3>No blanket “production-complete” claim</h3><p>The codebase contains focused tests for geometry, saving, loading, undo, plan output and many roof/stair interactions. This review did not run a live user acceptance session or a full Revit round-trip, so those outcomes remain unverified here.</p></article>
+      </div>
+      <div class="note"><p><strong>Practical reading:</strong> for work inside LumoCad, roofs and stairs are usable authoring systems. For a workflow that depends on opening the same result in Revit, treat stairs as a controlled pilot and roofs as a planned integration delivery until the named Revit backlog items are completed.</p></div>
+    </section>
+
+    <section class="confidence" aria-labelledby="evidence-title">
+      <h2 id="evidence-title">How this was assessed</h2>
+      <p>Evidence reviewed: the current LumoCad stair manual; current stair and roof source modules, tests and feature controls; source history through 30 October 2026; and the explicit Revit geometry-update backlog. “Available” means supported by the present source and documented workflow. “Missing” is limited to documented gaps; it is not a guess about future product priorities.</p>
+    </section>
+  </main>
+  <footer><div class="wrap">LumoCad · stairs &amp; roofs status snapshot · 3 November 2026</div></footer>
+</body>
+</html>
