@@ -234,7 +234,7 @@
   <p class="eyebrow">LumoPlan · post-processing board · as of 4 November 2026</p>
   <h1>Assign people. They log what they worked.</h1>
   <p class="lead">Hours no longer stop anyone being assigned on the board. The board says who works where and when. The hours people log say how long it really took.</p>
-  <p class="status"><strong>Built, not live.</strong> The code is uncommitted on the <code>development</code> branch, so it isn't on the dev or production site yet. The type check and unit tests pass, but nobody has seen it on the real board yet.</p>
+  <p class="status"><strong>Live in production since 4 November 2026</strong> (PR #65). The automated checks and deploys passed, but the browser tests haven't run and nobody has clicked through it on the real board yet.</p>
 
   <h2 id="changed">What changed</h2>
 
@@ -324,7 +324,7 @@
 
   <h2 id="test">How to test</h2>
   <div class="setup">
-    <p><strong>Setup.</strong> This only runs on a local checkout for now. Start <code>pnpm dev</code>, open <code>localhost:3000/postprocessing</code>, and set the top-bar toggle to <em>Planning</em>. Assign one person to a stage for full days, so those days are full. You need a second and third stage on the same days, and a day when that person is on holiday.</p>
+    <p><strong>Setup.</strong> Use the dev site, because these steps create real bookings. Open <code>plan.lumodev.cloud/postprocessing</code> and set the top-bar toggle to <em>Planning</em>. Assign one person to a stage for full days, so those days are full. You need a second and third stage on the same days, and a day when that person is on holiday.</p>
   </div>
   <div class="tablewrap">
     <table>
@@ -342,13 +342,15 @@
     </table>
   </div>
 
-  <h3>Automated checks, run 4 November 2026</h3>
+  <h3>Checks, run 4 November 2026</h3>
   <div class="tablewrap">
     <table>
       <thead><tr><th scope="col" style="width:38%">Check</th><th scope="col" style="width:16%">Result</th><th scope="col">Detail</th></tr></thead>
       <tbody>
         <tr><td>Type check (<code>npx tsc --noEmit</code>)</td><td><span class="tag pass">Passed</span></td><td>0 errors</td></tr>
         <tr><td>Unit tests (<code>npm run test:ci</code>)</td><td><span class="tag pass">Passed</span></td><td>2,216 tests in 226 files. They cover the stage-move rule, the block labels and the hover text. The assign and brush code has no unit tests.</td></tr>
+        <tr><td>Production build (<code>npm run build</code>)</td><td><span class="tag pass">Passed</span></td><td>Run before shipping</td></tr>
+        <tr><td>Deploys to dev and production</td><td><span class="tag pass">Passed</span></td><td>Tests and deploy were green on both. <code>plan.lumoview.com</code> returns 200, and the production files no longer contain <em>Cleanup Overbooking</em>. This shows the new code is live, not that the new behaviour works.</td></tr>
         <tr><td>Browser tests (<code>app</code>, <code>postprocessing-layout</code>, <code>stage-completion</code>)</td><td><span class="tag open">Not run</span></td><td>Not run on this code. An earlier attempt stopped at the login page because the saved test login had expired.</td></tr>
         <tr><td>Clicking through the real board</td><td><span class="tag open">Not done</span></td><td>The steps above haven't been run by anyone yet.</td></tr>
       </tbody>
@@ -360,20 +362,21 @@
     <table>
       <thead><tr><th scope="col" style="width:28%">Item</th><th scope="col">What is needed</th><th scope="col" style="width:13%">Owner</th></tr></thead>
       <tbody>
-        <tr><th scope="row">Browser tests and a look at the board</th><td>A fresh test login, copied from a logged-in browser tab. Then run the browser tests and check the board.</td><td>Milton, then Claude</td></tr>
+        <tr><th scope="row">Browser tests and a look at the board</th><td>This shipped without them, on Milton's go. It needs a fresh test login, copied from a logged-in browser tab, and then the browser tests and the steps above.</td><td>Milton, then Claude</td></tr>
         <tr><th scope="row">Decision: should the hour log open blank?</th><td><em>Record hours</em> still pre-fills the planned number, and there is a <em>Use planned</em> button. That number is now only a rough figure. Blank is recommended, and it's what the October proposal said.</td><td>Milton</td></tr>
         <tr><th scope="row">Decision: the Personio limit on logging</th><td>Logging has its own stop. The dialog refuses hours above the day's Personio total, and <em>Finish day</em> needs that total fully allocated. This wasn't changed, because it checks logged hours rather than the plan. Someone should decide whether it fits "they record what they worked".</td><td>Milton, Rio</td></tr>
-        <tr><th scope="row">Commit and ship</th><td>21 uncommitted files (+187, −1,303 lines). They get a local commit after the browser tests. Pushing and going live wait for Milton's go.</td><td>Milton</td></tr>
-        <tr><th scope="row">Tell Rio and the coordinators</th><td>Rio asked for the numbers to go. Removing the blocks and <em>Cleanup Overbooking</em> goes further, and the team's answers to the October questions were never recorded.</td><td>Milton</td></tr>
-        <tr><th scope="row">Internal docs</th><td>The user guide is updated, but the plan tracker, the status doc and the October brief aren't. The README still says production is gated by a protected GitHub environment, which is wrong: merging into <code>main</code> deploys with no approval step.</td><td>Claude at commit; README: Milton</td></tr>
+        <tr><th scope="row">Tell Rio and the coordinators</th><td>It's live, so people will notice. Rio asked for the numbers to go. Removing the blocks and <em>Cleanup Overbooking</em> goes further, and the team's answers to the October questions were never recorded.</td><td>Milton</td></tr>
+        <tr><th scope="row">Internal docs</th><td>The user guide, plan tracker, status doc and October brief are updated. The README still says production is gated by a protected GitHub environment, which is wrong: merging into <code>main</code> deploys with no approval step.</td><td>Milton</td></tr>
         <tr><th scope="row">Leftover code</th><td>Three helpers are now used only by their own tests: <code>distributeConcurrentBookings</code>, <code>findFullyBookedAssignmentConflicts</code> and <code>getActualHoursForBuildingStage</code>. They can be deleted on request.</td><td>Milton</td></tr>
         <tr><th scope="row">Outside this change</th><td>The measurement planner's move dialog still flags overbooking when a measurement moves. The red "0h free" hint in the stage menu is also still there, though it blocks nothing. Say if either should go too.</td><td>Milton</td></tr>
       </tbody>
     </table>
   </div>
 
+  <p class="note" style="margin-top:16px">To undo: revert PR #65. No data was migrated, but overlapping bookings made while it was live would stay.</p>
+
   <footer>
-    <p>Project: Lumoview-Building-Analytics-GmbH/lumoplan. Branch <code>development</code>, on top of commit <code>2c94109</code>, with uncommitted changes.</p>
+    <p>Project: Lumoview-Building-Analytics-GmbH/lumoplan. Live on <code>main</code> at commit <code>f89f607</code>, <a href="https://github.com/Lumoview-Building-Analytics-GmbH/lumoplan/pull/65">PR #65</a>.</p>
     <p>Sources: the code diff, the 28 October review with Rio, and Milton's instruction of 4 November.</p>
   </footer>
 </main>
