@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="project" content="Lumoview-Building-Analytics-GmbH/platform">
+<title>Airteam drone models find their building</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --paper: #f6f5f0; --surface: #fff; --ink: #1c2830; --muted: #566570; --line: #d9d7ce;
+    --teal: #0d6b63; --teal-soft: #d9ece9; --amber: #a4520c; --amber-soft: #f6e6d3;
+    --slate: #5d6f7c; --slate-soft: #e5e9ec; --stone: #b9b6aa; --stone-soft: #eceae3; --chip: #eceae3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14191d; --surface: #1c2329; --ink: #e9ecec; --muted: #a2adb4; --line: #333d44;
+      --teal: #57c2b6; --teal-soft: #17363a; --amber: #e9a765; --amber-soft: #3b2a18;
+      --slate: #9db0bd; --slate-soft: #27323a; --stone: #6d7479; --stone-soft: #262c30; --chip: #2b3339;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.6 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+  main { max-width: 1040px; margin: 0 auto; padding: 56px 32px 96px; }
+  h1, h2 { font-family: Georgia, "Times New Roman", serif; font-weight: 400; letter-spacing: -0.01em; }
+  h1 { font-size: 44px; line-height: 1.12; margin: 0 0 18px; max-width: 18em; }
+  h2 { font-size: 30px; margin: 64px 0 8px; padding-top: 24px; border-top: 2px solid var(--ink); }
+  h3 { font-size: 18px; margin: 36px 0 6px; }
+  p { margin: 0 0 14px; max-width: 46em; }
+  li { max-width: 46em; }
+  a { color: var(--teal); }
+  a:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; border-radius: 2px; }
+  code { font: 0.9em ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+  .lead { font-size: 19px; line-height: 1.5; }
+  .status { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin: 28px 0 0; border-block: 1px solid var(--line); }
+  .status div { padding: 14px 20px 14px 0; }
+  .status div + div { padding-left: 20px; border-left: 1px solid var(--line); }
+  .status dt { font-size: 13px; color: var(--muted); }
+  .status dd { margin: 2px 0 0; font-weight: 600; }
+
+  .bar { display: flex; height: 44px; margin: 22px 0 10px; border-radius: 3px; overflow: hidden; }
+  .bar span { display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 15px; }
+  .bar .a { background: #0d6b63; } .bar .b { background: #3d948a; } .bar .c { background: #b7670f; } .bar .d { background: #8d9398; }
+  .ladder { list-style: none; padding: 0; margin: 18px 0 8px; }
+  .ladder li { display: grid; grid-template-columns: 74px 1fr; gap: 18px; padding: 14px 0; border-top: 1px solid var(--line); max-width: none; }
+  .ladder b { display: block; margin-bottom: 2px; }
+  .ladder .n { font: 34px/1 Georgia, serif; text-align: right; color: var(--teal); padding-top: 2px; }
+  .ladder .rev .n { color: var(--amber); }
+  .ladder .none .n { color: var(--muted); }
+  .note { font-size: 14px; color: var(--muted); }
+
+  .mock { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 22px; margin: 20px 0 6px; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 14px; font-size: 14px; font-weight: 600; color: var(--muted); }
+  .tabs span { padding: 3px 12px; border-radius: 12px; } .tabs .on { background: var(--chip); color: var(--ink); }
+  .row { border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
+  .row + .row { margin-top: 12px; }
+  .top { display: flex; justify-content: space-between; gap: 16px; }
+  .id { color: var(--muted); font-size: 14px; font-weight: 600; margin-right: 8px; }
+  .why { margin: 6px 0 0; font-size: 14px; color: var(--amber); }
+  .how { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+  .option { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 8px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; }
+  .option.linked { background: var(--chip); border-color: transparent; font-weight: 600; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+  .chips span { background: var(--chip); border-radius: 3px; padding: 1px 6px; font-size: 12px; color: var(--muted); font-weight: 400; }
+  .btns { display: flex; gap: 6px; flex-shrink: 0; align-items: flex-start; }
+  .btn { border: 1px solid var(--line); border-radius: 4px; padding: 3px 10px; font-size: 13px; background: var(--surface); white-space: nowrap; font-weight: 400; }
+
+  ol.steps { padding-left: 22px; }
+  ol.steps li { margin-bottom: 10px; }
+  .expect { display: block; color: var(--muted); font-size: 15px; }
+  .tablewrap { overflow-x: auto; margin: 14px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th { text-align: left; font-weight: 600; font-size: 14px; color: var(--muted); border-bottom: 2px solid var(--line); padding: 6px 16px 6px 0; }
+  td { border-bottom: 1px solid var(--line); padding: 9px 16px 9px 0; vertical-align: top; }
+  td.who { white-space: nowrap; color: var(--muted); }
+  .pass { color: var(--teal); font-weight: 600; white-space: nowrap; }
+  footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  @media print { main { max-width: none; padding: 0; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Airteam drone models now find their building</h1>
+  <p class="lead">When Airteam delivers a drone survey, its 3D model (an OBJ file) reaches the right building in LumoCad without anyone uploading it. Projects that clearly match a building link themselves. The rest wait in a review list, where a person picks the building or corrects an automatic link.</p>
+  <dl class="status">
+    <div><dt>State on 4 November 2026</dt><dd>Built, local commits only, not deployed</dd></div>
+    <div><dt>Receipt</dt><dd>10 of 10 checks pass, verdict done</dd></div>
+    <div><dt>Repos</dt><dd><code>api</code> and <code>platform</code>, on <code>development</code></dd></div>
+  </dl>
+
+  <h2>What changed</h2>
+
+  <h3>Drone models arrive by themselves</h3>
+  <p>A background process in the API asks Airteam for delivered projects every hour in production, and copies each matched project's OBJ into its building's Model files. The copy is needed because Airteam's download links expire after 24 hours. The bar shows where the 185 delivered projects with an OBJ landed in a read-only trial against production data.</p>
+  <div class="bar" role="img" aria-label="Of 185 projects: 29 link by exact address, 47 by building name, 33 get suggestions, 76 find no building.">
+    <span class="a" style="width:15.7%">29</span><span class="b" style="width:25.4%">47</span><span class="c" style="width:17.8%">33</span><span class="d" style="width:41.1%">76</span>
+  </div>
+  <ol class="ladder">
+    <li><span class="n">29</span><div><b>Exact address links itself.</b> Exactly one building has the same postcode, street and house number, and its stored location is not more than 100 m away. Spelling doesn't matter: "An d. Kirche" equals "An Der Kirche" and "Goethepl." equals "Goetheplatz". The number does: no. 28 never links to no. 30.</div></li>
+    <li><span class="n">47</span><div><b>A strong building name links itself.</b> The name holds the street and exact number, like "Musterhausen Parkstraße 1", and the city, postcode or a location within 100 m confirms it. Only one building may hold that name. A building that already holds a person's upload named <code>&lt;project id&gt;.obj</code> also links directly.</div></li>
+    <li class="rev"><span class="n">33</span><div><b>Weaker clues become suggestions.</b> Shared words and numbers, or a building within 100 m, put a building on the project's candidate list for a person to accept. So do several buildings or several projects sharing one address.</div></li>
+    <li class="none"><span class="n">76</span><div><b>Nothing to go on.</b> The project waits in the review list until someone creates a matching building, which then links on the next run, or picks one by hand. 49 of the 76 were delivered in 2024 or earlier, or have no delivery date.</div></li>
+  </ol>
+  <p class="note">Trial numbers are evidence, not a guarantee. The trial used a slightly looser name test than the final one. Of 27 projects delivered in 2026, 22 linked themselves. Hidden, <code>[delete]</code> and test buildings are never linked or suggested.</p>
+
+  <h3>A review list for everything else</h3>
+  <p>The new <b>Airteam</b> tab under Admin (<code>/admin/airteam</code>, <code>admin</code> role only) lists every project by state. People can assign a building, replace or add one on an automatic link, remove one, or mark a project as having no building. Sync never overrides those decisions, and it never links back a building someone removed. The rows below show invented data.</p>
+  <div class="mock" role="img" aria-label="Two sample rows from the review list: a project needing review with two suggested buildings, and an automatically linked project with buttons to confirm, remove, replace or add a building.">
+    <div class="tabs"><span class="on">Needs review 38</span><span>Auto-linked 76</span><span>Confirmed 4</span><span>Dismissed 7</span></div>
+    <div class="row">
+      <div class="top"><div><span class="id">#900002</span>Musterstraße 21, 10115 Beispielstadt, Deutschland<p class="why">No building matches this address</p></div><div class="btns"><span class="btn">No building</span></div></div>
+      <div class="option"><div>Beispielstadt Musterstraße<div class="chips"><span>street: musterstrasse</span><span>city: beispielstadt</span></div></div><div class="btns"><span class="btn">Assign</span></div></div>
+      <div class="option"><div>Pflegeheim Beispielstadt<div class="chips"><span>city: beispielstadt</span></div></div><div class="btns"><span class="btn">Assign</span></div></div>
+    </div>
+    <div class="row">
+      <div class="top"><div><span class="id">#900001</span>Parkstraße 1, 06000 Musterhausen, Deutschland<p class="how">Linked by building name</p></div><div class="btns"><span class="btn">Confirm</span></div></div>
+      <div class="option linked"><div>Musterhausen Parkstraße 1</div><div class="btns"><span class="btn">Remove</span></div></div>
+      <div class="option"><div>Musterhausen Parkstraße 3<div class="chips"><span>street: parkstrasse</span><span>city: musterhausen</span></div></div><div class="btns"><span class="btn">Replace</span><span class="btn">Also add</span></div></div>
+    </div>
+  </div>
+  <p class="note">Every row also has a "Find a building" box for picking any building by name or address. The top of the screen has search and a <b>Sync now</b> button.</p>
+
+  <h3>The OBJ replaces the FastFusion link</h3>
+  <p>FastFusion is Airteam's own 3D viewer, opened from a link stored on the building. In the trial, 26 of 51 stored links redirected to a 404 page, and the rest carry tokens that expire. Once a building has an OBJ, the link is ignored:</p>
+  <ul>
+    <li>The <b>Drone Model</b> card in LumoCad opens Orbit with the top slice, never the FastFusion view.</li>
+    <li>The LumoCad FastFusion view and the building page's FastFusion tab show "Drone model available" with a way to open it.</li>
+    <li>Without an OBJ, the link works as it did.</li>
+    <li>If a building has several OBJs, such as a Revit export too, the Airteam file opens first.</li>
+  </ul>
+
+  <h3>Details that protect existing work</h3>
+  <ul>
+    <li><b>Saved alignment survives a redelivery.</b> Alignment is saved per file, so a redelivered model updates the same file. Browsers now notice the newer file and download it again instead of showing their cached copy.</li>
+    <li><b>Nothing a person uploaded gets deleted.</b> Reassigning removes only the file the sync created. The new building starts unaligned.</li>
+    <li><b>Rework is safe.</b> Airteam can list no files during rework, and that removes nothing here.</li>
+    <li><b>The API key goes only to Airteam,</b> never to download links, logs or responses.</li>
+  </ul>
+
+  <h2>How to test</h2>
+  <h3>In the real app, once deployed to dev</h3>
+  <p>The hourly timer runs only in production, so on dev each run starts from the button. A run handles at most 40 projects, so seeing all of them takes about five presses.</p>
+  <ol class="steps">
+    <li>As an admin, open <b>Admin → Airteam</b> and press <b>Sync now</b>.<span class="expect">A message says "Sync queued. New models arrive within a few minutes." Reload after a few minutes: rows and counts appear.</span></li>
+    <li>Open <b>Auto-linked</b> and pick a row saying "Linked by address". Open that building in LumoCad and choose <b>Drone Model</b> on the first screen.<span class="expect">Orbit opens with the model and Top View shows its slice, without any upload. It sits near the scene centre and still needs aligning.</span></li>
+    <li>Find a building that also has a FastFusion link. Open the FastFusion view in LumoCad, then the FastFusion tab on the building page.<span class="expect">Both show "Drone model available" instead of the Airteam page. "Open drone model" opens Orbit; "Open in LumoCad" opens the building.</span></li>
+    <li>On an auto-linked row, press <b>Replace</b> on a candidate or use <b>Find a building</b>.<span class="expect">The row moves to <b>Confirmed</b>. The Airteam file leaves the old building's Model files and appears on the new one. <b>Sync now</b> changes nothing about it.</span></li>
+    <li>Under <b>Needs review</b>, press <b>Assign</b> on one row and <b>No building</b> on another, then <b>Restore</b> that one under <b>Dismissed</b>.<span class="expect">The first moves to Confirmed with a new file. The second leaves the list and comes back when restored.</span></li>
+    <li>Log in without the <code>admin</code> role.<span class="expect">No Airteam tab, and <code>/admin/airteam</code> doesn't open.</span></li>
+  </ol>
+
+  <h3>Automated checks</h3>
+  <p>The method here was soft-fact: a spec of 37 examples and a set of rules signed off first, with tests that had to fail before the work existed and were locked after that. One locked test needed a typing-only fix, which was approved and signed off again.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Check</th><th>Covers</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>Matching</td><td>Examples 1–9: address, name, candidates, exclusions</td><td class="pass">Pass</td></tr>
+      <tr><td>Sync</td><td>Examples 10–19: import, repeat runs, redelivery, rework, failures, batches, timer</td><td class="pass">Pass</td></tr>
+      <tr><td>Review API</td><td>Examples 20–27: list, reassign, dismiss, errors, permissions</td><td class="pass">Pass</td></tr>
+      <tr><td>Review screen</td><td>Examples 28–33: tab access, every button</td><td class="pass">Pass</td></tr>
+      <tr><td>OBJ replaces the link</td><td>Examples 34–37: card, both FastFusion views, file order</td><td class="pass">Pass</td></tr>
+      <tr><td>Rules</td><td>Key safety, generated addresses, decisions survive, repeat runs, deploy wiring</td><td class="pass">Pass</td></tr>
+      <tr><td>Nothing else broke, platform</td><td>Type check and 1223 nearby tests</td><td class="pass">Pass</td></tr>
+      <tr><td>Nothing else broke, API</td><td>No new type errors, and all 628 tests</td><td class="pass">Pass</td></tr>
+      <tr><td>Lock checks</td><td>API tests unchanged, API work committed</td><td class="pass">Pass</td></tr>
+    </tbody>
+  </table></div>
+  <p>Two things were also checked by hand. One real run against Airteam's API, with a temporary database and fake storage, listed 187 delivered projects, read 186 addresses and imported 3 real OBJs. The review screen was rendered in a headless browser with sample data.</p>
+
+  <h2>What's missing</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Item</th><th>Why it matters</th><th>Owner</th></tr></thead>
+    <tbody>
+      <tr><td><b>Deploy</b></td><td>Add <code>AIRTEAM_API_KEY</code> to the API's Kubernetes secrets in dev and prod, push both repos, deploy the API, then run <code>deploy-worker.yml</code>. A normal deploy doesn't restart the worker.</td><td class="who">Milton</td></tr>
+      <tr><td><b>Real production run</b></td><td>Never run end to end on real buildings. Real match rate, upload and rate limits are unmeasured, and so is the app on real data in a browser.</td><td class="who">Milton</td></tr>
+      <tr><td><b>Who reviews</b></td><td>The screen needs the <code>admin</code> role and the API needs <code>building:*</code>. Whoever works the list needs both.</td><td class="who">Milton, Rio</td></tr>
+      <tr><td><b>Wrong name links</b></td><td>Name links were a deliberate call with thin evidence: only 2 known pairs to check, 1 right and 1 a different house number on the same street. Expect some reassigning.</td><td class="who">Reviewers</td></tr>
+      <tr><td><b>Alignment</b></td><td>The model arrives, but placing it is still by hand. Models sit near the origin, with the lowest point up to about 1.6 m off zero.</td><td class="who">Open</td></tr>
+      <tr><td><b>Missing addresses</b></td><td>Only 172 of 487 usable buildings had an address in the trial, which is why so many projects need a person. Left to the customer team on purpose.</td><td class="who">Customer team</td></tr>
+      <tr><td><b>Webhook</b></td><td>Not built. Airteam's signature scheme isn't in their public spec, so a public endpoint couldn't verify the caller. The hourly run and <b>Sync now</b> cover it.</td><td class="who">Milton, with Airteam</td></tr>
+      <tr><td><b>Questions for Airteam</b></td><td>Their <code>has_roof_measurements</code> flag said yes while the data returned 404 on 8 of 24 requests. Other questions are in the internal plan.</td><td class="who">Milton</td></tr>
+      <tr><td><b>Roof measurement data</b></td><td>Airteam labels roof surfaces and edges in a separate JSON, which could feed roof generation. Not imported.</td><td class="who">Open</td></tr>
+    </tbody>
+  </table></div>
+
+  <footer>Spec, tests and receipt: <code>.factory/airteam-sync/</code> in <code>platform</code>. How the API side works and deploys: <code>docs/airteam-sync.md</code> in <code>api</code>. Page written 4 November 2026.</footer>
+</main>
+</body>
+</html>
