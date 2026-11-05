@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="project" content="Lumoview-Building-Analytics-GmbH/platform">
+<meta name="description" content="Audit of 5 November 2026: ten places to improve the path from sorted point clouds to a finished 2D floor plan in LumoCad, with Marvin as the operator.">
+<title>Ten places to improve: from point cloud to 2D plan</title>
+<style>
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --fg:#18202c; --muted:#566173; --line:#d3d9e2; --soft:#e9edf3;
+  --accent:#2453c0; --accent-soft:#e6ecfa; --ok:#1d7a46; --ok-soft:#e3f3ea; --warn:#9a5b00; --warn-soft:#fbf0dc;
+  --block:#b0322b; --block-soft:#fae6e4; --part:#6a4bb0; --part-soft:#efe9fa; --none:#5b6474; --none-soft:#eceff3;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif; --body:"Source Sans 3","Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0f141b; --surface:#171e28; --fg:#e7ecf3; --muted:#9aa6b8; --line:#2b3544; --soft:#1f2834;
+    --accent:#7ea3ff; --accent-soft:#1a2644; --ok:#58c98a; --ok-soft:#14301f; --warn:#e6a94f; --warn-soft:#33260f;
+    --block:#ff8a80; --block-soft:#3a1a18; --part:#b79cf5; --part-soft:#2a2144; --none:#9aa6b8; --none-soft:#1f2834;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.58}
+a{color:var(--accent)}
+a:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:3px}
+code{font-family:var(--mono);font-size:.84em;background:var(--soft);padding:.08em .38em;border-radius:4px;overflow-wrap:anywhere}
+.wrap{max-width:1120px;margin:0 auto;padding:0 32px}
+.topnav{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.topnav .wrap{display:flex;gap:24px;align-items:center;height:50px;font-family:var(--display);font-size:14px}
+.topnav a{color:var(--muted);text-decoration:none;padding:4px 0;border-bottom:2px solid transparent;white-space:nowrap}
+.topnav a:hover{color:var(--fg);border-bottom-color:var(--accent)}
+.topnav .asof{margin-left:auto;color:var(--muted)}
+.hero{padding:56px 0 36px}
+.eyebrow{font-family:var(--display);font-size:14px;color:var(--muted);margin:0 0 10px}
+h1{font-family:var(--display);font-weight:800;font-size:52px;line-height:1.05;letter-spacing:-.02em;margin:0 0 18px;max-width:900px}
+.lede{font-size:21px;line-height:1.5;max-width:880px;margin:0 0 28px}
+.state{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 24px}
+.panel h3{font-family:var(--display);font-size:14px;margin:0 0 10px;color:var(--muted);font-weight:700}
+.panel p,.panel li{margin:0 0 8px;font-size:16px}
+.panel ul{margin:0;padding-left:18px}
+.neg{border-left:6px solid var(--block);background:var(--block-soft)}
+.neg h3{color:var(--block)}
+.next{border-left:6px solid var(--accent);background:var(--accent-soft)}
+.next h3{color:var(--accent)}
+section{padding:40px 0;border-top:1px solid var(--line)}
+h2{font-family:var(--display);font-weight:800;font-size:32px;letter-spacing:-.015em;margin:0 0 8px;line-height:1.15}
+.lead2{color:var(--muted);font-size:18px;margin:0 0 24px;max-width:860px}
+p{max-width:860px}
+.chip{display:inline-block;font-family:var(--display);font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap;vertical-align:middle}
+.chip.miss{background:var(--block-soft);color:var(--block)}
+.chip.tool{background:var(--warn-soft);color:var(--warn)}
+.chip.setup{background:var(--part-soft);color:var(--part)}
+.chip.meas{background:var(--accent-soft);color:var(--accent)}
+.chip.v{background:var(--ok-soft);color:var(--ok)}
+.chip.r{background:var(--none-soft);color:var(--none)}
+/* pipeline strip */
+.strip{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin:18px 0 8px}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 12px 10px;min-height:150px;position:relative}
+.stage.out{background:var(--none-soft);border-style:dashed;color:var(--muted)}
+.stage .k{font-family:var(--display);font-weight:800;font-size:13px;color:var(--muted);margin:0 0 4px}
+.stage .t{font-family:var(--display);font-weight:800;font-size:16px;line-height:1.2;margin:0 0 8px}
+.stage .pins{display:flex;flex-wrap:wrap;gap:5px}
+.pin{display:inline-block;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-family:var(--display);font-weight:800;font-size:13px;text-align:center;line-height:26px;text-decoration:none}
+.pin:hover{background:var(--fg)}
+.stage.out .pin{background:var(--none)}
+.stage .note{font-size:12.5px;color:var(--muted);margin:8px 0 0;line-height:1.35}
+.legend{font-size:14px;color:var(--muted);margin:6px 0 0}
+table{border-collapse:collapse;width:100%;margin:12px 0 6px;font-size:15.5px}
+th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid var(--line)}
+th{font-family:var(--display);font-size:13px;color:var(--muted)}
+td.n{font-family:var(--display);font-weight:800;color:var(--accent);width:36px}
+td.sz{white-space:nowrap}
+.scroll{overflow-x:auto}
+/* items */
+.item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px 28px;margin:0 0 18px;scroll-margin-top:64px}
+.item h3{font-family:var(--display);font-weight:800;font-size:24px;letter-spacing:-.01em;margin:0 0 6px;line-height:1.2}
+.item h3 .n{display:inline-block;min-width:1.4em;color:var(--accent)}
+.item .meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 14px;font-size:14px;color:var(--muted)}
+.item h4{font-family:var(--display);font-size:13px;color:var(--muted);margin:14px 0 4px;font-weight:700}
+.item p{margin:0 0 8px;font-size:16.5px}
+.item ul{margin:0 0 8px;padding-left:20px;font-size:16.5px}
+.item li{margin:0 0 4px}
+.gloss{display:grid;grid-template-columns:1fr 1fr;gap:10px 28px}
+.gloss dt{font-family:var(--display);font-weight:700;margin:8px 0 2px}
+.gloss dd{margin:0;color:var(--muted);font-size:15.5px}
+footer{padding:28px 0 48px;color:var(--muted);font-size:14px;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+@media print{.topnav{display:none}.item{break-inside:avoid}}
+</style>
+</head>
+<body>
+<nav class="topnav" aria-label="Sections"><div class="wrap">
+  <a href="#answer">Answer</a><a href="#pipeline">Pipeline</a><a href="#ranked">Ranked list</a><a href="#items">The ten</a><a href="#park">Park</a><a href="#unchecked">Not checked</a><a href="#glossary">Glossary</a>
+  <span class="asof">As of 5 Nov 2026</span>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <p class="eyebrow">Lumoview · LumoCad and Marvin · audit for the engineering team</p>
+  <h1>Ten places to improve: from point cloud to 2D plan</h1>
+  <p class="lede">The goal is to turn a scanned building into a finished 2D floor plan with as little hand work as possible: model the sorted point clouds, generate the geometry, draw the plan. The calculations for every step already exist in LumoCad, and Marvin (the chat inside LumoCad) can call all of them. What is missing is proof and glue: nobody has measured how good the result is on a real floor, and several steps are wired together badly or not at all. Below are the ten places where work pays off most, ranked.</p>
+  <div class="state">
+    <div class="panel neg"><h3>What the evidence says today</h3>
+      <ul>
+        <li>The only live test on a real building is a <b>1.25 mm room move</b> (Gewobag OG04, 9 Oct).</li>
+        <li>The one room outline the AI drew from the cloud (room "Flur 32") was <b>rejected</b> by the user.</li>
+        <li>Arne's own benchmark on two real floors: <b>0 safe room placements, 38 and 41 rooms unresolved, 0 walls</b>, and "manual correction counts remain unmeasured".</li>
+        <li>The automatic "finish floor" mode is switched off.</li>
+      </ul></div>
+    <div class="panel next"><h3>Start with</h3>
+      <p><b>#1 Measure first.</b> A scorecard on the golden building, before any other change.</p>
+      <p>In parallel, the cheap ones: <b>#2</b> (one day), <b>#6</b>, <b>#8</b>, <b>#9</b>.</p></div>
+    <div class="panel"><h3>How this was checked</h3>
+      <p>Four read-only code reads on 5 Nov plus hand checks. <span class="chip v">verified</span> means read and confirmed by hand today; <span class="chip r">from the read</span> means reported by a code read. No tool was run on a building.</p></div>
+  </div>
+</div></header>
+
+<main>
+<section id="answer"><div class="wrap">
+  <h2>The answer in one paragraph</h2>
+  <p>There is a deterministic tool that fits a room outline to the point cloud, a tool that draws the floor slab around the rooms, a tool that generates walls from the gaps between rooms, a tool that places measured doors and windows into walls, a plan writer with 52 kinds of warnings, and a six-stage "is this floor ready" check. Marvin has 84 tools to call all of that. But Marvin's own outline fitter is wired to an older algorithm than the button a person clicks; walls are drawn from room outlines alone and never look at the cloud; nothing creates a door or window from evidence; generated walls have no type; "ready" means the geometry agrees with itself, not with the scan; the instructions Marvin gets are 81,000 characters per message and contradict each other; and there is no way to run any of it outside a person's browser. None of this is measured. So the first move is a scorecard, and the next moves are the cheap fixes while the scorecard is built.</p>
+</div></section>
+
+<section id="pipeline"><div class="wrap">
+  <h2>Where each item sits in the pipeline</h2>
+  <p class="lead2">A building travels left to right. Grey stages are out of scope by the 4 Nov decision (sorting and the room puzzle stay with the preprocessing team; roofs and 3D stairs are paused). The numbers are the ten items below.</p>
+  <div class="strip" aria-label="Pipeline stages with item numbers">
+    <div class="stage out"><p class="k">0</p><p class="t">Scan</p><p class="note">Scanner in every room: point cloud, panorama, hand-measured doors.</p></div>
+    <div class="stage out"><p class="k">1–2</p><p class="t">Sort and puzzle</p><p class="note">Scans to rooms, rooms into place. Preprocessing's job.</p></div>
+    <div class="stage"><p class="k">3</p><p class="t">Room outlines</p><div class="pins"><a class="pin" href="#i2">2</a><a class="pin" href="#i3">3</a></div><p class="note">Clean polygon along the inside of the walls, from the cloud.</p></div>
+    <div class="stage"><p class="k">4a</p><p class="t">Slab and walls</p><div class="pins"><a class="pin" href="#i4">4</a><a class="pin" href="#i6">6</a></div><p class="note">Floor outline, then walls in the gaps between rooms.</p></div>
+    <div class="stage"><p class="k">5</p><p class="t">Doors and windows</p><div class="pins"><a class="pin" href="#i5">5</a></div><p class="note">Place the measured openings in the right wall.</p></div>
+    <div class="stage"><p class="k">6</p><p class="t">Ready? Plan</p><div class="pins"><a class="pin" href="#i7">7</a></div><p class="note">Checks, names, numbers, then PDF and DXF.</p></div>
+    <div class="stage"><p class="k">∗</p><p class="t">Marvin himself</p><div class="pins"><a class="pin" href="#i8">8</a><a class="pin" href="#i9">9</a></div><p class="note">His instructions, what he knows at the start, what he learns after a save.</p></div>
+    <div class="stage"><p class="k">∗</p><p class="t">Around it</p><div class="pins"><a class="pin" href="#i1">1</a><a class="pin" href="#i10">10</a></div><p class="note">Measuring results, running without a browser.</p></div>
+  </div>
+  <p class="legend">Tags used below: <span class="chip miss">missing piece</span> no code does it · <span class="chip tool">better tool</span> exists but weak or mis-wired · <span class="chip setup">Marvin setup</span> instructions, limits or feedback · <span class="chip meas">measurement</span> no way to know whether a change helps.</p>
+</div></section>
+
+<section id="ranked"><div class="wrap">
+  <h2>The ten, ranked by leverage</h2>
+  <p class="lead2">Sizes are one person, rough. Items 2, 6, 8 and 9 are small and independent of each other.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>#</th><th>Place</th><th>Tag</th><th>Size</th><th>Owner</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td><a href="#i1">A scorecard on a golden floor before any other change</a></td><td><span class="chip meas">measurement</span></td><td class="sz">1 week</td><td>Milton, Piotr (building copy)</td></tr>
+      <tr><td class="n">2</td><td><a href="#i2">Marvin's outline fitter is a weaker copy of the human's button</a></td><td><span class="chip tool">better tool</span></td><td class="sz">1 day</td><td>Milton</td></tr>
+      <tr><td class="n">3</td><td><a href="#i3">Two competing outline methods and no acceptance rule</a></td><td><span class="chip setup">Marvin setup</span> <span class="chip tool">better tool</span></td><td class="sz">3 days</td><td>Milton, Arne</td></tr>
+      <tr><td class="n">4</td><td><a href="#i4">Walls come from outlines only; exterior thickness is a default</a></td><td><span class="chip tool">better tool</span></td><td class="sz">1–2 weeks</td><td>Milton</td></tr>
+      <tr><td class="n">5</td><td><a href="#i5">Nothing creates a door or window from evidence</a></td><td><span class="chip miss">missing piece</span></td><td class="sz">2 weeks</td><td>Milton, Piotr (server task)</td></tr>
+      <tr><td class="n">6</td><td><a href="#i6">Generated walls have no type</a></td><td><span class="chip miss">missing piece</span></td><td class="sz">3 days</td><td>Milton</td></tr>
+      <tr><td class="n">7</td><td><a href="#i7">"Ready" never looks at the cloud, and there is no single gate</a></td><td><span class="chip tool">better tool</span></td><td class="sz">1 week</td><td>Milton</td></tr>
+      <tr><td class="n">8</td><td><a href="#i8">81,000 characters of instructions per message, with contradictions</a></td><td><span class="chip setup">Marvin setup</span></td><td class="sz">3 days</td><td>Arne, Milton</td></tr>
+      <tr><td class="n">9</td><td><a href="#i9">Marvin starts blind and gets no feedback after a save</a></td><td><span class="chip setup">Marvin setup</span></td><td class="sz">3 days</td><td>Arne, Milton</td></tr>
+      <tr><td class="n">10</td><td><a href="#i10">No way to load a building outside the browser</a></td><td><span class="chip miss">missing piece</span></td><td class="sz">2 weeks</td><td>Piotr, Milton</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<section id="items"><div class="wrap">
+  <h2>The ten places, one by one</h2>
+  <p class="lead2">Each has the same shape: what happens today, why it matters, what to change, and the first step.</p>
+
+  <article class="item" id="i1">
+    <h3><span class="n">1</span> A scorecard on a golden floor before any other change</h3>
+    <div class="meta"><span class="chip meas">measurement</span> 1 week · Milton, Piotr</div>
+    <h4>Today</h4>
+    <p>Nothing scores what Marvin produces. The service has 13 live test scenarios, but they check that the right tools were called in the right order on hand-written fixtures, not whether the geometry is right. The one benchmark that uses real scan data measures the room-placement search, and it came out negative (0 safe placements on two floors). There is no number for "how far is the outline from the cloud", "how many of the generated walls match what the architect finally accepted", "how far off is each door", or "how many fixes did the person make afterwards".</p>
+    <h4>Why it matters</h4>
+    <p>Arne's lesson from the last attempt: take one failing case and fix it; an automatic loop over 50 prompt variants did not work. That needs a case and a number. Without them every item below is a guess, and nobody can tell whether a change helped.</p>
+    <h4>Change</h4>
+    <p>Four numbers, printed by a script after a Marvin pass on a copy of the golden building (Hohental, arriving from Piotr the week of 9 Nov) and on the frozen Gewobag floor OG04:</p>
+    <ul>
+      <li>For every room outline edge, how much of the cloud supports it. The rule exists already in the code (points within 30 mm of the edge, at least 70 % coverage).</li>
+      <li>How many generated walls match the human-accepted walls. Every hand-in uploads the approved layout, so the "correct answer" is already there for free.</li>
+      <li>Door and window position error against the accepted placements.</li>
+      <li>How many edits the person made after the pass.</li>
+    </ul>
+    <h4>First step</h4>
+    <p>A headless browser run (the Playwright setup already used for demo videos) that opens the copy, triggers one tool, and writes the four numbers to a file. Item 10 replaces the browser later.</p>
+  </article>
+
+  <article class="item" id="i2">
+    <h3><span class="n">2</span> Marvin's outline fitter is a weaker copy of the human's button</h3>
+    <div class="meta"><span class="chip tool">better tool</span> <span class="chip v">verified</span> 1 day · Milton</div>
+    <h4>Today</h4>
+    <p>The button a person clicks, "Estimate room boundaries from edge detection (v2)", runs the newer fitting algorithm and hands it the building's reference directions (helper lines a person draws along slanted walls) and the drawing grid. Marvin's tool for the same job, <code>plan_room_outline_fit</code>, defaults to the older v1 algorithm, which can fall back to a plain convex hull, and passes neither the reference directions nor the grid. So Marvin gets worse outlines than the person for no reason. Two more limits: the tool refuses rooms that already have an outline, and if a scan lacks its edge analysis the room silently fails, with no way for Marvin to request the analysis.</p>
+    <p>Where: <code>features/assistant/editorOps/service.ts:474</code> (default method), <code>editorOps/outlineFit.ts:46-49</code> (no reference directions), versus <code>TopViewToolbarCad.tsx:913</code> and <code>hooks/useStoreyRotLidarBoundaryFitRuntime.ts:128-193</code>.</p>
+    <h4>Change</h4>
+    <p>Default to v2, pass the reference directions and the grid, allow replacing an outline when the measured acceptance check that already exists passes, and add a read tool that says which scans lack analysis. Then the October audit's item T1-6: propose the helper lines for slanted walls automatically (a function that clusters wall directions already exists), because without them slanted walls drop out of the outline silently.</p>
+  </article>
+
+  <article class="item" id="i3">
+    <h3><span class="n">3</span> Two competing outline methods and no acceptance rule</h3>
+    <div class="meta"><span class="chip setup">Marvin setup</span> <span class="chip tool">better tool</span> 3 days · Milton, Arne</div>
+    <h4>Today</h4>
+    <p>Marvin has two ways to get a room outline from the cloud. One is the deterministic fitter above, allowed only for rooms with no outline. The other is surprising: the browser renders the cloud as a 1200 × 1000 pixel image with the panoramas, and the AI model itself draws the polygon by looking at the picture. That path needs an existing outline (checked only after the expensive image capture and the model call), allows one retry, caps its own confidence at "medium", and its one real result was rejected. In the automatic "finish floor" mode the drawing tools are switched off, yet the readiness check still tells Marvin to use them for a room without an outline. No instruction anywhere says what a good enough outline is; the words are "supported", "safe" and "plateau", without numbers.</p>
+    <p>Where: <code>outlineReconstruction/service.ts:95</code> <span class="chip v">verified</span>, <code>lumoagent/internal/marvin/floor_request_tools.go:46-54</code> <span class="chip v">verified</span>, <code>floorReadiness/service.ts:~97</code> <span class="chip r">from the read</span>.</p>
+    <h4>Change</h4>
+    <p>One policy, written in the instructions and enforced by the tool: fitter first; model drawing only when the fitter fails, and accepted only when the same numeric check passes (edge support, no scanner position more than 300 mm outside the polygon, area close to the fitter's best attempt). Either make the drawing tool work for rooms without an outline, or stop offering it for that case. Make the readiness text say only what is allowed.</p>
+  </article>
+
+  <article class="item" id="i4">
+    <h3><span class="n">4</span> Walls come from outlines only; exterior thickness is a default</h3>
+    <div class="meta"><span class="chip tool">better tool</span> <span class="chip v">verified</span> 1–2 weeks · Milton</div>
+    <h4>Today</h4>
+    <p>The wall generator never reads the point cloud. It takes the gaps between room outlines as interior walls, and the band between the rooms and the slab outline as exterior walls. The slab outline is made by pushing every room outline outwards by a fixed 40 cm, so every exterior wall is 40 cm thick by default, not because anyone measured it. Any check against the cloud happens only afterwards, as an audit. Marvin adds two refusals the button does not have: it will not generate walls on a floor that already has walls, and it will not handle a slab with holes (a light well, a stairwell) although the button does. Regenerating with the button deletes all walls on the floor and detaches every door and window.</p>
+    <p>The architects' Revit workflow reads the exterior thickness from a visible opening or from the drone model and ends with "does the model sit on the cloud". Today neither happens.</p>
+    <p>Where: <code>constants/slabBoundaryFromSpaces.ts:1</code>, <code>utils/geometry/boundaryWallPreview.ts</code> and the <code>boundaryExternalWall*</code>, <code>boundaryInternalWall*</code> files, <code>features/assistant/creation/planning.ts:39,45</code>.</p>
+    <h4>Change</h4>
+    <ul>
+      <li>Measure exterior thickness per façade: from the cloud at door reveals and window jambs, or from the drone model where it is aligned (audit item T2-13). Feed that into the slab offset per façade instead of one global 40 cm.</li>
+      <li>Let Marvin's planner handle slab holes like the button does.</li>
+      <li>A regenerate mode that keeps walls with attached doors and windows and replaces only the rest.</li>
+      <li>Move the wall-refinement tool off its direct server writes onto the editor's own wall machine (this is step 4 of the existing tool-map plan).</li>
+    </ul>
+  </article>
+
+  <article class="item" id="i5">
+    <h3><span class="n">5</span> Nothing creates a door or window from evidence</h3>
+    <div class="meta"><span class="chip miss">missing piece</span> <span class="chip v">verified</span> 2 weeks · Milton, Piotr</div>
+    <h4>Today</h4>
+    <p>No code in LumoCad or Marvin creates an opening from the cloud or from the photos. Marvin can only place doors and windows that already exist as records, and to do that it needs a person's click in a panorama, or scan points tagged "door" as a hint, or the model reading the door's edges off a calibrated image. The swing direction comes only from a saved placement axis; otherwise the opening is handed back to the editor. Meanwhile three pieces exist and are not connected: the server already outlines doors and windows on every panorama with a vision model when it is uploaded; a server task can turn those outlines into draft marks but a person has to start it; and the capture app records each door's width, height and the two rooms it connects.</p>
+    <p>Where: <code>features/assistant/openingPlacement/capture.ts:68,78</code>, <code>openingPlacement/evidence.ts</code>; the server pieces are <code>objectTags</code> and the <code>PROCESS_OBSERVATION</code> task (October audit items T1-2 and T1-3).</p>
+    <h4>Change</h4>
+    <p>Chain the three: run the vision outlines into draft marks automatically on upload; match each mark to the hand-measured opening by the rooms they share, the width and door-versus-window; then let Marvin's placement tool position it from the gap in the wall's cloud (width and position from the floor cloud, sill height from the section cloud, the Revit method). Swing: a default from the capture's "leads to" and the smaller room, flagged for the person. Marvin's part is the last step and the review card; the first two are server batch jobs.</p>
+  </article>
+
+  <article class="item" id="i6">
+    <h3><span class="n">6</span> Generated walls have no type</h3>
+    <div class="meta"><span class="chip miss">missing piece</span> <span class="chip v">verified</span> 3 days · Milton</div>
+    <h4>Today</h4>
+    <p>A wall type ("24 cm masonry", "10 cm drywall") is what the client and Revit need. The generator never sets one. The Wall Type Organizer groups walls by thickness and suggests, but applies nothing. No Marvin tool touches types. The plan carries the type only as hidden metadata. The October audit called deciding the type "the one pure judgement step left" at the wall station.</p>
+    <p>Where: <code>utils/geometry/boundaryWallPreview.ts</code> and <code>boundaryExternalWallLoop.ts</code> (no <code>wallTypeId</code>), <code>utils/floorplan/extractFloorPlanWalls.ts:86-90</code>.</p>
+    <h4>Change</h4>
+    <p>A <code>plan_wall_types</code> tool over the thickness histogram that already exists: cluster the thicknesses, propose a type per cluster from the organisation's catalogue, apply through the wall machine in one undo batch after approval. Small and self-contained; a good single commit for the cherry-pick workflow.</p>
+  </article>
+
+  <article class="item" id="i7">
+    <h3><span class="n">7</span> "Ready" never looks at the cloud, and there is no single gate</h3>
+    <div class="meta"><span class="chip tool">better tool</span> <span class="chip r">from the read</span> 1 week · Milton</div>
+    <h4>Today</h4>
+    <p>The floor readiness check says "complete" when the saved geometry agrees with itself: the slab minus the rooms equals the walls to within 1 mm², openings are attached, loaded data matches saved data. Its own note says this is "not independent survey accuracy". The one field that would say whether the geometry agrees with the scan has never been true on a real floor. The plan's 52 warnings are a display list whose severity is a tunable map, and some gaps are silent: a missing room number, an unknown north direction, a living-area factor that silently defaults to 1. No check exists for a wall thickness that makes no sense, a room with no door, a door that sits between the wrong two rooms, or a room area that does not match the scan. The human QC checklist is a separate thing, stored in one person's browser.</p>
+    <p>Where: <code>features/assistant/floorReadiness/service.ts:195</code>, <code>wallCoverage.ts:25</code>, <code>constants/floorplanWarnings.ts:74</code>, <code>utils/floorplan/extractFloorPlanRooms.ts:366,376</code>.</p>
+    <h4>Change</h4>
+    <ul>
+      <li>Add a per-wall "does the face sit on the cloud" check (the support rule from item 1) and the four architect checks above to readiness.</li>
+      <li>Define one pass/fail gate with named blockers, used both when Marvin claims a floor is complete and by the QC hand-in (audit items T1-1, T2-10, T2-14).</li>
+      <li>Turn the silent plan omissions into warnings.</li>
+    </ul>
+  </article>
+
+  <article class="item" id="i8">
+    <h3><span class="n">8</span> 81,000 characters of instructions per message, with contradictions</h3>
+    <div class="meta"><span class="chip setup">Marvin setup</span> <span class="chip v">verified</span> 3 days · Arne, Milton</div>
+    <h4>Today</h4>
+    <p>Every time Marvin asks the model something, it sends the complete instruction text first. Measured today: 81,331 characters, about 20,000 tokens, on every single call. In the automatic floor mode 22 tools are switched off, but the text still describes them; the only correction is one sentence. The rules contradict each other: "missing evidence is not permission to guess" sits next to "always try a closed best-effort polygon, hidden areas are normal, not a reason to refuse"; "clarify when the target is unclear" sits next to "do not ask whether to investigate, calculate, or continue". No instruction gives a number for what an acceptable outline, wall or opening is. Some tool descriptions have numbers glued to words ("hard500", "default100"), and one tool advertises four operations where the automatic mode accepts one.</p>
+    <p>Where: <code>lumoagent/internal/marvin/roadmap_tools.go:19</code> (assembly), <code>floor_tools.go:65</code>, <code>single_pass_draw_prompt.txt:27-29</code>, <code>level_improvement_prompt.go:3</code>, <code>floor_request_tools.go:46-54</code>. Marvin's instructions are Go code, so a change means a rebuild and restart.</p>
+    <h4>Change</h4>
+    <p>Build the instruction text per mode from the tools actually offered. One short procedure: readiness, outlines, slab, walls, openings, verify. Put in the numeric checks from items 1, 3 and 7. Delete the contradictions and fix the glued numbers. Measure item 1 before and after.</p>
+  </article>
+
+  <article class="item" id="i9">
+    <h3><span class="n">9</span> Marvin starts blind and gets no feedback after a save</h3>
+    <div class="meta"><span class="chip setup">Marvin setup</span> <span class="chip v">verified</span> 3 days · Arne, Milton</div>
+    <h4>Today</h4>
+    <p>At the start of each message Marvin receives a short summary: building name, active level, how many rooms and walls, how many plan warnings. Nothing about the scans: how many, which rooms have a cloud, which scans are still of type "Unknown" (the thing that blocks a hand-in), whether the edge analysis exists. Marvin has to spend tool calls and model calls to find out, and gets 24 model calls per turn. After a person approves and the save finishes, the model receives only a status and an id, no before-and-after, nothing to learn from. When a person rejects a proposal there is no way to say why, and in the automatic mode a rejection pauses the whole floor. Marvin has no tool to see the sorting state of a scan, and none to change it (sorting stays human, but seeing it is needed).</p>
+    <p>Where: <code>features/assistant/browserTools.ts:208-224</code> (the summary), <code>lumoagent/internal/marvin/runner.go:702-727</code> (what comes back after a decision).</p>
+    <h4>Change</h4>
+    <p>Add a scan inventory to the start summary (per room: scans, analysis present, Unknown count). Return the before-and-after numbers from item 1 with every save result. On "Reject", ask for one line and pass it to the model. Add a read tool for scan types so Marvin can refuse early with the right message.</p>
+  </article>
+
+  <article class="item" id="i10">
+    <h3><span class="n">10</span> No way to load a building outside the browser</h3>
+    <div class="meta"><span class="chip miss">missing piece</span> enabler · 2 weeks · Piotr, Milton</div>
+    <h4>Today</h4>
+    <p>Every calculation above runs only inside a browser tab that a person has open. There is no nightly scoring, no "fit all missing outlines as soon as the scans arrive", and item 1 has to go through a browser automation with a copied login. The October audit listed this as prerequisite P1; Arne named the same gap on 4 Nov: no local LumoCad access to check against a golden dataset while coding.</p>
+    <h4>Change</h4>
+    <p>A headless loader: fetch a building's objects and clouds through the existing API with an organisation API key, build the editor's state machines without React or the 3D canvas (they are plain XState), and expose the pure functions (plan preparation, the fitter, the wall generator). For the next weeks the browser automation is the stand-in.</p>
+  </article>
+</div></section>
+
+<section id="park"><div class="wrap">
+  <h2>What to park</h2>
+  <ul>
+    <li><b>The room placement and registration stack.</b> At 4,266 lines it is Marvin's largest module, and it targets the room puzzle, which the 4 Nov decision leaves with the preprocessing team. Its only real-floor result is negative. Keep the evaluation tool as a check; stop investing in the search until a puzzled Hohental shows where rooms still move.</li>
+    <li><b>Model-drawn outlines as the main method</b> (item 3): fallback only.</li>
+    <li><b>Dimension lines, sheets, title block, room-numbering convention, sections, roofs and stairs:</b> human by decision (Rio, 2 Sept; the roof and stair pause of 4 Nov). Marvin may check them, not author them.</li>
+  </ul>
+</div></section>
+
+<section id="unchecked"><div class="wrap">
+  <h2>What was not checked</h2>
+  <ul>
+    <li>No tool was run on a building today. The thresholds quoted are constants in the code, not measured behaviour.</li>
+    <li>The quality of the server's vision outlines and of the draft-mark task was not inspected.</li>
+    <li>Items 4 and 5 assume the capture app's door measurements are reliable; the October audit notes cases where the unit is ambiguous.</li>
+    <li>Windows (Arne's machine) is untested throughout.</li>
+  </ul>
+  <p><b>Sources.</b> Four code reads of 5 Nov 2026 over <code>platform/src/lumocad</code> and <code>lumoagent/internal/marvin</code>; the tool map of 4 Nov; the <a href="https://miltonmannarino.github.io/lumocad-agent-workforce/">agent workforce audit of 27 Oct</a> (the T and P numbers above); the acceptance records <code>REFERENCE_FLOOR_ACCEPTANCE.md</code>, <code>BUILDING_COMPLETION_ACCEPTANCE.md</code> and the dated verification records in <code>lumoagent/MARVIN.md</code>; Arne's implementation guide of 4 Nov; the meeting of 4 Nov. Companion page: <a href="https://miltonmannarino.github.io/marvin-agent-architecture/">Marvin: the AI architect inside LumoCad</a>.</p>
+</div></section>
+
+<section id="glossary"><div class="wrap">
+  <h2>Glossary</h2>
+  <dl class="gloss">
+    <dt>Point cloud</dt><dd>Millions of measured dots from the laser scanner, each a spot on a wall, floor or object. Raw dots, not a drawing.</dd>
+    <dt>Sorted</dt><dd>Each scan assigned to its room and given a type (room scan, section, stairs, door, discarded). A scan of type "Unknown" is unsorted and blocks the hand-in.</dd>
+    <dt>Room outline</dt><dd>The clean polygon along the inside face of a room's walls. Area and walls are derived from it.</dd>
+    <dt>Slab</dt><dd>The floor plate of a level; its outline bounds the exterior walls.</dd>
+    <dt>Reference directions</dt><dd>Helper lines a person draws along slanted walls so the fitter does not assume every wall is at a right angle.</dd>
+    <dt>Readiness</dt><dd>Marvin's six-stage check of a floor: inventory, rooms, slab, walls, openings, verification.</dd>
+    <dt>Instructions (prompt)</dt><dd>The text sent to the AI model before every request, telling it what Marvin is and how to behave. In Marvin it is Go code.</dd>
+    <dt>Token</dt><dd>The unit the model reads and bills by; roughly four characters.</dd>
+    <dt>Golden building</dt><dd>A finished, human-approved building kept as the "correct answer" to measure tools against. Hohental is the first.</dd>
+    <dt>Headless</dt><dd>Running a calculation on a server without a browser window.</dd>
+  </dl>
+</div></section>
+</main>
+<footer><div class="wrap">Audit of 5 November 2026 · project Lumoview-Building-Analytics-GmbH/platform (also covers lumoagent) · companion to the tool map and the Marvin architecture page.</div></footer>
+</body>
+</html>
