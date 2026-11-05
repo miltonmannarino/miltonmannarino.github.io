@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="project" content="Lumoview-Building-Analytics-GmbH/lumoplan">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>LumoPlan: three weeks of changes, 15 Oct to 5 Nov 2026</title>
+<meta name="description" content="What changed in LumoPlan between 15 October and 5 November 2026, in plain words: the board, the dashboards, hours, the team view, offers and tickets. Plus the LumoCad work from the same weeks.">
+<style>
+  :root {
+    color-scheme: light dark;
+    --paper: #faf8f4;
+    --panel: #ffffff;
+    --ink: #24211d;
+    --soft: #5f5a52;
+    --line: #dfd9cf;
+    --line-strong: #bdb5a7;
+    --red: #b5371f;
+    --red-wash: #fbe9e4;
+    --green: #2c6a45;
+    --green-wash: #e5f2e9;
+    --amber: #8a5a00;
+    --amber-wash: #fbf0d9;
+    --blue: #1f5fa8;
+    --blue-wash: #e6eef9;
+    --stage: #3d6d78;
+    --stage-b: #6b5a8e;
+    --code: #efebe3;
+    --serif: Charter, "Bitstream Charter", "Iowan Old Style", Georgia, serif;
+    --sans: ui-sans-serif, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #1b1a18;
+      --panel: #242220;
+      --ink: #efebe4;
+      --soft: #b3ac9f;
+      --line: #3a3733;
+      --line-strong: #5a554e;
+      --red: #f0907a;
+      --red-wash: #3b211b;
+      --green: #8fd0a8;
+      --green-wash: #1d2f24;
+      --amber: #e6bb6a;
+      --amber-wash: #33291a;
+      --blue: #7fb0ea;
+      --blue-wash: #1e2b3d;
+      --stage: #4c8391;
+      --stage-b: #8472ab;
+      --code: #2f2c28;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.55 var(--sans); }
+  .page { max-width: 1120px; margin: 0 auto; padding: 56px 40px 72px; }
+  a { color: inherit; text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; border-radius: 2px; }
+  code { font: 0.875em var(--mono); background: var(--code); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+  .eyebrow { margin: 0 0 12px; color: var(--soft); font-size: 14px; }
+  h1 { margin: 0; max-width: 19em; font: 600 44px/1.12 var(--serif); letter-spacing: -0.012em; }
+  .lead { margin: 18px 0 0; max-width: 44em; font-size: 19px; line-height: 1.5; color: var(--soft); }
+  .status {
+    margin: 28px 0 0; padding: 14px 18px; border-left: 4px solid var(--green);
+    background: var(--green-wash); border-radius: 0 8px 8px 0; max-width: 52em;
+  }
+  .status strong { color: var(--green); }
+  h2 { margin: 64px 0 8px; font: 600 30px/1.2 var(--serif); letter-spacing: -0.01em; }
+  h2 .where { display: block; margin-top: 4px; font: 14px/1.4 var(--sans); color: var(--soft); }
+  h3 { margin: 28px 0 6px; font: 600 20px/1.3 var(--serif); }
+  p { margin: 10px 0; max-width: 46em; }
+  ul { margin: 8px 0 0; padding-left: 22px; max-width: 46em; }
+  li { margin: 6px 0; }
+  li strong { font-weight: 600; }
+  .muted { color: var(--soft); }
+  .date { font: 500 12.5px/1 var(--mono); color: var(--soft); white-space: nowrap; }
+  .contents { margin: 32px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 24px; max-width: 900px; }
+  .contents li { margin: 0; font-size: 15px; }
+  .contents a { text-decoration: none; color: var(--blue); }
+  .contents a:hover { text-decoration: underline; }
+
+  /* Release calendar */
+  .calendar { margin: 24px 0 0; display: grid; grid-template-columns: 110px repeat(5, minmax(0, 1fr)) repeat(2, 60px); gap: 6px; }
+  .calendar .dow { font: 500 12px/1 var(--sans); color: var(--soft); text-align: left; padding: 0 0 4px 8px; }
+  .calendar .wk { font: 500 13px/1.3 var(--sans); color: var(--soft); align-self: start; padding: 10px 8px 0 0; }
+  .day { min-height: 76px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; position: relative; }
+  .day .n { font: 500 12px/1 var(--mono); color: var(--soft); }
+  .day.out { background: transparent; border-style: dashed; }
+  .day.out .n { opacity: 0.5; }
+  .day.weekend { background: color-mix(in srgb, var(--panel) 60%, var(--paper)); }
+  .day .rel { display: block; margin-top: 6px; font: 500 12px/1.3 var(--sans); color: #fff; background: var(--stage); padding: 3px 7px; border-radius: 5px; text-decoration: none; line-height: 1.25; overflow-wrap: anywhere; }
+  .day .rel.b { background: var(--stage-b); }
+  .day .rel:hover, .day .rel:focus-visible { filter: brightness(1.15); }
+  .day .rel + .rel { margin-top: 4px; }
+  .cal-note { margin: 10px 0 0; font-size: 14px; color: var(--soft); }
+
+  table { border-collapse: collapse; width: 100%; margin: 16px 0 0; font-size: 15px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  th { font-weight: 600; color: var(--soft); font-size: 13px; }
+  td:first-child { white-space: nowrap; }
+  tr:last-child td { border-bottom: 1px solid var(--line-strong); }
+  .wrap { overflow-x: auto; }
+
+  /* Area blocks */
+  .area { margin-top: 36px; border-top: 1px solid var(--line-strong); padding-top: 4px; }
+  .change { display: grid; grid-template-columns: 92px 1fr; gap: 0 20px; margin: 22px 0 0; max-width: 60em; }
+  .change .date { padding-top: 6px; }
+  .change h3 { margin: 0 0 4px; }
+  .change p { margin: 4px 0 0; }
+  .try { margin: 10px 0 0; padding: 10px 14px; background: var(--blue-wash); border-left: 3px solid var(--blue); border-radius: 0 6px 6px 0; font-size: 14.5px; max-width: 46em; }
+  .try b { color: var(--blue); font-weight: 600; }
+  .tag { display: inline-block; font: 500 12px/1.1 var(--sans); padding: 3px 8px; border-radius: 999px; margin-left: 6px; vertical-align: 2px; }
+  .tag.live { background: var(--green-wash); color: var(--green); }
+  .tag.built { background: var(--amber-wash); color: var(--amber); }
+  .tag.paused { background: var(--red-wash); color: var(--red); }
+
+  /* Mock pieces */
+  .mock { margin: 14px 0 0; padding: 14px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; max-width: 46em; font-size: 14px; }
+  .mock .row { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+  .mock .label { width: 170px; color: var(--soft); }
+  .bar { height: 18px; border-radius: 4px; background: var(--stage); color: #fff; font-size: 12px; line-height: 18px; padding: 0 8px; white-space: nowrap; }
+  .bar.b { background: var(--stage-b); }
+  .bar.done { position: relative; }
+  .pill { display: inline-block; font-size: 11.5px; line-height: 1; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--paper); }
+  .pill.late { border-color: var(--red); color: var(--red); background: var(--red-wash); }
+  .pill.done { border-color: var(--green); color: var(--green); background: var(--green-wash); }
+  .strike { text-decoration: line-through; color: var(--soft); }
+
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; max-width: 70em; }
+  .two > div { min-width: 0; }
+  .callout { margin: 24px 0 0; padding: 14px 18px; border-left: 4px solid var(--amber); background: var(--amber-wash); border-radius: 0 8px 8px 0; max-width: 52em; }
+  .callout strong { color: var(--amber); }
+  .links a { color: var(--blue); }
+  .foot { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line-strong); color: var(--soft); font-size: 14px; }
+  @media print { .day .rel { color: #000; background: #ddd; } .try, .status, .callout { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<main class="page">
+  <p class="eyebrow">LumoPlan · 15 October to 5 November 2026 · written for the team, no code knowledge needed</p>
+  <h1>Three weeks in LumoPlan: what you will notice</h1>
+  <p class="lead">Twelve releases went to the live app at <a href="https://plan.lumoview.com">plan.lumoview.com</a> in these three weeks. This page walks through them by the place where you see them: the post-processing board, the dashboards, hour logging, the team view, offers and tickets. A short section at the end covers LumoCad, the 3D modelling tool, where some of the same weeks went.</p>
+  <div class="status"><strong>State on 5 November 2026.</strong> Everything in the LumoPlan sections is live in production. The three releases of 4 November passed the automated checks but have not yet been clicked through by hand on the live board. Two things are paused on purpose: stage reminders by e-mail, and the hour-planning trial.</div>
+
+  <ul class="contents" aria-label="Contents">
+    <li><a href="#releases">The twelve releases</a></li>
+    <li><a href="#board">Post-processing board</a></li>
+    <li><a href="#dashboards">Dashboards</a></li>
+    <li><a href="#hours">Hour logging</a></li>
+    <li><a href="#team">Team view</a></li>
+    <li><a href="#prepro">Preprocessing overview</a></li>
+    <li><a href="#offers">Offers, invoices, tickets</a></li>
+    <li><a href="#lumocad">Also: LumoCad</a></li>
+    <li><a href="#open">Paused and still open</a></li>
+  </ul>
+
+  <h2 id="releases">The twelve releases<span class="where">Each chip is one release. Click it for the full release note on GitHub.</span></h2>
+  <div class="calendar" role="img" aria-label="Calendar of the four weeks from 12 October to 8 November 2026 with the twelve releases marked on 16, 19, 20, 26, 29 and 30 October and 4 November.">
+    <div class="dow"></div>
+    <div class="dow">Mon</div><div class="dow">Tue</div><div class="dow">Wed</div><div class="dow">Thu</div><div class="dow">Fri</div><div class="dow">Sat</div><div class="dow">Sun</div>
+
+    <div class="wk">12 to 18 Oct</div>
+    <div class="day out"><span class="n">12</span></div>
+    <div class="day out"><span class="n">13</span></div>
+    <div class="day out"><span class="n">14</span></div>
+    <div class="day"><span class="n">15</span></div>
+    <div class="day"><span class="n">16</span><a class="rel" href="https://github.com/Lumoview-Building-Analytics-GmbH/lumoplan/pull/54">#54 Milestones</a></div>
+    <div class="day weekend"><span class="n">17</span></div>
+    <div class="day weekend"><span class="n">18</span></div>
+
+    <div class="wk">19 to 25 Oct</div>
+    <div class="day"><span class="n">19</span><a class="rel" href="https://github.com/Lumoview-Building-Analytics-GmbH/lumoplan/pull/55">#55 Dashboards</a><a class="rel b" href="https://github.com/Lumoview-Building-Analytics-GmbH/lumoplan/pull/56">#56 Board, preprocessing</a></div>
+    <div class="day"><span class="n">20</span><a class="rel" href="https://github.com/Lumoview-Building-Analytics-GmbH/lumoplan/pull/57">#57 Invoice wording</a></div>
+    <div class="day"><span class="n">21</span></div>
+    <div class="day"><span class="n">22</span></div>
+    <div class="day"><span class="n">23</span></div>
+    <div class="day weekend"><span class="n">24</span></div>
+    <div class="day weekend"><span class="n">25</span></div>
+
+    <div class="wk">26 Oct to 1 Nov</div>
+    <div class="day"><span class="n">26</span><a class="rel" href="https://github.com/Lumoview-Building-Analytics-GmbH/lumoplan/pull/58">#58 Security updates</a></div>
+    <div class="day"><span class="n">27</span></div>
+    <div class="day"><span class="n">28</span></div>
+    <div class="day"><span class="n">29</span><a class="rel" href="https://github.com/Lumoview-Building-Analytics-GmbH/lumoplan/pull/59">#59 Adoption cutoff</a><a class="rel b" href="https://github.com/Lumoview-Building-Analytics-GmbH/lumoplan/pull/60">#60 Progress % gone</a><a class="rel" href="https://github.com/Lumoview-Building-Analytics-GmbH/lumoplan/pull/61">#61 Team zoom</a></div>
+    <div class="day"><span class="n">30</span><a class="rel" href="https://github.com/Lumoview-Building-Analytics-GmbH/lumoplan/pull/62">#62 Delivered done</a></div>
+    <div class="day weekend"><span class="n">31</span></div>
+    <div class="day weekend"><span class="n">1</span></div>
+
+    <div class="wk">2 to 8 Nov</div>
+    <div class="day"><span class="n">2</span></div>
+    <div class="day"><span class="n">3</span></div>
+    <div class="day"><span class="n">4</span><a class="rel" href="https://github.com/Lumoview-Building-Analytics-GmbH/lumoplan/pull/63">#63 Offers, tickets</a><a class="rel b" href="https://github.com/Lumoview-Building-Analytics-GmbH/lumoplan/pull/64">#64 Hours name a building</a><a class="rel" href="https://github.com/Lumoview-Building-Analytics-GmbH/lumoplan/pull/65">#65 Hours never block</a></div>
+    <div class="day"><span class="n">5</span></div>
+    <div class="day out"><span class="n">6</span></div>
+    <div class="day out weekend"><span class="n">7</span></div>
+    <div class="day out weekend"><span class="n">8</span></div>
+  </div>
+  <p class="cal-note">Dashed days are outside the three weeks. Every release went to production on the day shown; there is no waiting period between a release and the live app.</p>
+
+  <div class="wrap">
+  <table>
+    <thead><tr><th>Date</th><th>Release</th><th>What you notice</th></tr></thead>
+    <tbody>
+      <tr><td><span class="date">16 Oct</span></td><td>#54 Milestones and Packing Sports</td><td>Milestone pills on the board, a milestones list in Edit Timeline, "My milestones" on My Work. The Packing Sports team can be assigned as one group.</td></tr>
+      <tr><td><span class="date">19 Oct</span></td><td>#55 Dashboards and adoption</td><td>Building page with worked hours and cost per building, a Product column on Projects, two new Operations tabs: Productivity and Adoption.</td></tr>
+      <tr><td><span class="date">19 Oct</span></td><td>#56 Board and preprocessing</td><td>Folding a project on the board is yours alone. Bulk edit works for preprocessing stages. The preprocessing Team tab opens at once instead of spinning.</td></tr>
+      <tr><td><span class="date">20 Oct</span></td><td>#57 Invoice wording</td><td>New invoices cite the offer by its number only.</td></tr>
+      <tr><td><span class="date">26 Oct</span></td><td>#58 Security updates</td><td>Nothing visible. Libraries LumoPlan is built on were updated after security advisories.</td></tr>
+      <tr><td><span class="date">29 Oct</span></td><td>#59 and #60 Adoption cutoff, progress % removed</td><td>Adoption counts only buildings created from 28 October on. The stage-based progress percentage is gone from project pages.</td></tr>
+      <tr><td><span class="date">29 Oct</span></td><td>#61 Team zoom</td><td>Day, Week and Month zoom on Tasks › Team, so the whole plan to the end of January fits one screenshot.</td></tr>
+      <tr><td><span class="date">30 Oct</span></td><td>#62 Delivered can be marked done</td><td>The Delivered stage gets the same "Mark stage done" as the other post-processing stages.</td></tr>
+      <tr><td><span class="date">4 Nov</span></td><td>#63 Offers and tickets</td><td>Services in an offer no longer re-tick themselves. Ticking saves at once. People without a Notion account can file a work item.</td></tr>
+      <tr><td><span class="date">4 Nov</span></td><td>#64 Hours name a building</td><td>Every hour entry has to say which building it was for, so building pages see all the hours.</td></tr>
+      <tr><td><span class="date">4 Nov</span></td><td>#65 Hours never block</td><td>Anyone can be assigned to a stage, even on full days. Hour numbers are gone from the timeline bars.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <section class="area" id="board">
+    <h2>Post-processing board<span class="where">Where: the big planning timeline on the Postprocessing page, in Planning mode.</span></h2>
+    <p>The board is where coordinators plan who works on which building and stage on which days. It got the most changes, and the direction is simple: the board says <em>who</em> and <em>when</em>; the hours people log afterwards say <em>how long it really took</em>.</p>
+
+    <div class="change">
+      <span class="date">4 Nov</span>
+      <div>
+        <h3>Assign anyone, hours do not block<span class="tag live">live</span></h3>
+        <p>Right-clicking a stage to pick a person, painting days with the brush, and dragging a stage onto other days no longer refuse or skip a day because the person is already "full". There is no more prompt about capacity. Days when the person is absent or does not work are still skipped, and dropping a stage on a holiday still asks. The "Cleanup Overbooking" entry in the ⋮ menu was removed, because with overlaps allowed one click would have deleted real bookings.</p>
+        <div class="try"><b>Try it:</b> right-click a stage, pick someone who is already booked that week. They are assigned with no dialog.</div>
+      </div>
+    </div>
+
+    <div class="change">
+      <span class="date">4 Nov</span>
+      <div>
+        <h3>Hour numbers leave the timeline<span class="tag live">live</span></h3>
+        <p>Stage bars, person blocks and their hover text no longer show planned hours. Stages shorter than a day keep their real length instead of being stretched. The hours are still stored, so Tasks and the team views keep their numbers.</p>
+        <div class="mock" aria-label="Before and after sketch of a stage bar">
+          <div class="row"><span class="label">Before</span><span class="bar">3D Postprocessing · 12 h</span><span class="bar b">QC · 4 h</span></div>
+          <div class="row"><span class="label">Now</span><span class="bar">3D Postprocessing</span><span class="bar b">QC</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="change">
+      <span class="date">16 Oct</span>
+      <div>
+        <h3>Milestones on a building's row<span class="tag live">live</span></h3>
+        <p>A building can carry dated milestones, such as a client meeting or a hand-over. They show as small pills along the bottom edge of the building's row. Clicking a pill ticks it done; a milestone past its date turns red. Edit Timeline has a Milestones list to add and remove them, and My Work shows a "My milestones" card.</p>
+        <div class="mock" aria-label="Sketch of milestone pills">
+          <div class="row"><span class="label">Row bottom edge</span><span class="pill done">✓ Kick-off 14 Oct</span><span class="pill late">Client review 2 Nov</span><span class="pill">Hand-over 20 Nov</span></div>
+        </div>
+        <div class="try"><b>Try it:</b> open Edit Timeline on a building, add a milestone with yesterday's date. It appears red on the row; click it and it turns green.</div>
+      </div>
+    </div>
+
+    <div class="change">
+      <span class="date">16 Oct</span>
+      <div>
+        <h3>Packing Sports as one assignee<span class="tag live">live</span></h3>
+        <p>Packing Sports is the external team that does preprocessing. It can now be put on a preprocessing stage as one group, like a person. The group has no capacity limit, gets no assignment e-mail, and stays out of the people pickers for post-processing stages, where it would not belong.</p>
+        <p class="muted">Still missing: the group cannot be a building's main assignee yet; the row picker lists people only.</p>
+      </div>
+    </div>
+
+    <div class="change">
+      <span class="date">30 Oct</span>
+      <div>
+        <h3>Delivered can be marked done<span class="tag live">live</span></h3>
+        <p>The Delivered stage now has "Mark stage done" and "Reopen stage" in its right-click menu, exactly like 3D Postprocessing through Ready for Delivery. It also works from My Work and the building page. Client revisions and Invoiced are unchanged.</p>
+        <div class="try"><b>Try it:</b> right-click a Delivered bar › Mark stage done. The bar shows a ✓ in full colour.</div>
+      </div>
+    </div>
+
+    <div class="change">
+      <span class="date">19 Oct</span>
+      <div>
+        <h3>Folding a project is yours alone<span class="tag live">live</span></h3>
+        <p>Opening or closing a project on the board used to change everyone's board. Now the open or closed state lives in your own browser, and every project starts closed on a new day. Nobody can fold your view away any more.</p>
+      </div>
+    </div>
+
+    <div class="change">
+      <span class="date">19 Oct</span>
+      <div>
+        <h3>Bulk edit reaches preprocessing<span class="tag live">live</span></h3>
+        <p>With several buildings selected, dragging a preprocessing end, the pending/in-progress split, or the start of the first post-processing stage now offers to apply the same change to the other selected buildings. "Overwrite all stages" no longer resets their preprocessing split.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="area" id="dashboards">
+    <h2>Dashboards: building, project, Operations<span class="where">Where: a building's page, a project's page, the Projects list, and the Operations page.</span></h2>
+    <p>These were Rio's two Q4 tickets: see the real working hours and cost per building, see what each project actually sold, and track per building whether the 3D model was built in LumoCad or in Revit.</p>
+
+    <div class="change">
+      <span class="date">19 Oct</span>
+      <div>
+        <h3>Building page: hours, BGF/h and invoiced<span class="tag live">live</span></h3>
+        <p>Each stage (measurement, preprocessing, every post-processing stage) now shows the hours people actually logged on it, with start, due date and booked days, in date order. Three new cards at the top: worked hours, BGF per hour (gross floor area modelled per hour of work), and invoiced amount from sent and paid invoices. The page also states the building's category, meaning the model level and outputs sold in the offer, and its LumoCad record.</p>
+        <div class="try"><b>Try it:</b> open a delivered building. The stage table has a Worked h column and the three cards sit above it.</div>
+      </div>
+    </div>
+
+    <div class="change">
+      <span class="date">19 Oct</span>
+      <div>
+        <h3>Projects: Product column and category grouping<span class="tag live">live</span></h3>
+        <p>The Projects list and each project page show a <strong>Product</strong>: the model level and outputs sold, read from the project's accepted offers. The building table on a project page has Worked h, BGF/h and Category columns and can be grouped by category, with totals per group for BGF/h, cost per m² and price per m².</p>
+        <p class="muted">Older projects whose offer is only a PDF read "No offer". A manual override is not built.</p>
+      </div>
+    </div>
+
+    <div class="change">
+      <span class="date">29 Oct</span>
+      <div>
+        <h3>Progress percentage removed<span class="tag live">live</span></h3>
+        <p>The stage-based progress percentage is gone from the project buildings table and from the pipeline bar, as Rio asked on 28 October. It counted stages, not work, and misled more than it helped.</p>
+      </div>
+    </div>
+
+    <div class="change">
+      <span class="date">19 Oct</span>
+      <div>
+        <h3>Operations › Productivity<span class="tag live">live</span></h3>
+        <p>Buildings grouped by category, with BGF/h, cost and price per m², hours per stage and size bands. Only buildings with complete hours count in the ratios: delivered, modelling started after hour logging went live (28 July), and at least half of the booked person-days logged. That keeps half-logged buildings from dragging the averages.</p>
+      </div>
+    </div>
+
+    <div class="change">
+      <span class="date">19 and 29 Oct</span>
+      <div>
+        <h3>Operations › Adoption<span class="tag live">live</span></h3>
+        <p>Per building: modelled in LumoCad, started in LumoCad then switched to Revit, or Revit only, with the reason for a switch and a "should have been LumoCad" flag. A record can be created before modelling starts, with "Planned for LumoCad?" asked up front. Buildings can be set in bulk, and the tab shows totals by project and by person plus a feedback list, laid out like Rio's adoption sheet. Since 29 October it counts only buildings created from 28 October on; a date field and a "Show all buildings" switch bring the older ones back.</p>
+        <div class="try"><b>Try it:</b> Operations › Adoption, set one building's tool, bulk-set two, then flip "Show all buildings".</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="area" id="hours">
+    <h2>Hour logging<span class="where">Where: the hour log dialog, reached from the stage menu, My Work or the Tasks page.</span></h2>
+    <div class="change">
+      <span class="date">4 Nov</span>
+      <div>
+        <h3>Every hour entry names a building<span class="tag live">live</span></h3>
+        <p>Hours could be logged on a project without a building. Those hours never reached a building page. In a dashboard review with Rio, Böckhstrasse 47-48 showed only 1.3 h of measurement, while the measuring had been logged on the project. Across the team, most buildings with post-processing hours had no measurement hours at all for this reason. Now the form asks for the building every time; the project-only tab is gone. Old project-level entries stay exactly as they were and can still be saved.</p>
+        <p class="muted">Side effect to tell the team: a measuring trip over several buildings is split by hand, and work on a project with no building yet goes under Internal work.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="area" id="team">
+    <h2>Team view<span class="where">Where: Tasks › Team.</span></h2>
+    <div class="change">
+      <span class="date">29 Oct</span>
+      <div>
+        <h3>Day, Week and Month zoom<span class="tag live">live</span></h3>
+        <p>Rio wanted one screenshot of the whole team's plan through the end of January. The Team tab now has Day, Week and Month zoom. Week shows up to the end of the third month ahead, Month to the sixth, both fitted to the width of the screen with ISO weeks on the axis. The tab uses the full page width, and the zoom you pick is remembered in your browser.</p>
+        <div class="try"><b>Try it:</b> Tasks › Team › Month. The whole plan to spring fits on one screen.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="area" id="prepro">
+    <h2>Preprocessing overview<span class="where">Where: the Preprocessing page, Team and Buildings tabs.</span></h2>
+    <div class="change">
+      <span class="date">19 Oct</span>
+      <div>
+        <h3>Team tab opens at once<span class="tag live">live</span></h3>
+        <p>The Team tab used to sit behind one spinner until everything had loaded. Now the person cards appear immediately and fill in activity, building and counts as they arrive. It loads only the last seven days of edits and skips data it never showed. The Buildings tab says what it is loading (the team's edits of the last 45 days) while you wait. The computed stages no longer blank out and come back when the building list grows.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="area" id="offers">
+    <h2>Offers, invoices and tickets<span class="where">Where: an offer's page, the invoice editor, and Create Work Item.</span></h2>
+
+    <div class="change">
+      <span class="date">4 Nov</span>
+      <div>
+        <h3>Offer services stop re-ticking themselves<span class="tag live">live</span></h3>
+        <p>Entering the Brutto-Grundfläche in an open offer adds the two optional area rows (08a and 08b) <em>unticked</em>, so they stay out of the price until someone picks them. Before, they were added ticked and the "(optional)" label vanished on the next load. Ticking or unticking a service now saves right away; other edits save within 20 seconds and when you leave the offer. Leaving within those 20 seconds no longer loses the change.</p>
+        <div class="try"><b>Try it:</b> untick a service, switch straight to another offer, come back. Still unticked.</div>
+      </div>
+    </div>
+
+    <div class="change">
+      <span class="date">20 Oct</span>
+      <div>
+        <h3>Invoices cite the offer by number<span class="tag live">live</span></h3>
+        <p>New invoice drafts say "unser Angebot Offer-DE-2026-05-0001 vom …" instead of the whole offer title with date and customer name. The remark in Notion uses the same short number. Invoices drafted earlier keep their saved sentence.</p>
+      </div>
+    </div>
+
+    <div class="change">
+      <span class="date">4 Nov</span>
+      <div>
+        <h3>Work items from people outside Notion<span class="tag live">live</span></h3>
+        <p>Create Work Item failed when the reporter's e-mail had no Notion account. Now the ticket is created anyway, with the reporter's name and e-mail in the ticket body and the Upvote field left empty.</p>
+      </div>
+    </div>
+
+    <div class="change">
+      <span class="date">29 Oct</span>
+      <div>
+        <h3>Legacy offer linked to its project<span class="tag live">done once</span></h3>
+        <p>A script links an old offer, made before projects existed in LumoPlan, to an existing project. It runs as a dry run first. It was used once in production, for the Petra Emmer offer and its project.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="area" id="lumocad">
+    <h2>Also in these weeks: LumoCad and the server<span class="where">LumoCad is the 3D modelling tool in the Lumoview platform. The server is the shared backend both apps talk to.</span></h2>
+    <p>Not LumoPlan, but part of the same three weeks. The links go to pages written for each piece.</p>
+    <div class="two">
+      <div>
+        <h3>Live in LumoCad</h3>
+        <ul>
+          <li><strong>Stairs</strong> (19 Oct): each stair has a construction type (solid, stepped and so on), the opening in the floor slab follows the stair's shape, and a custom chain of flights gets a landing handle. <a class="links" href="https://miltonmannarino.github.io/lumocad-stairs-roofs-status/">Stairs and roofs status</a>.</li>
+          <li><strong>Floor plan sheets</strong> (27 Oct): one marketing crop per flat in one step, cleaner elevations, no north arrow on sections and elevations, balconies counted at half their area in the Wohnfläche, door widths left off the generated plan, a readable title block on every sheet type.</li>
+          <li><strong>QC hand-in</strong> (28 Oct): a checker can hand in a quality check before the building's status has caught up. The QC e-mails from the server name who assigned, handed in or approved (20 Oct). <a class="links" href="https://miltonmannarino.github.io/lumocad-qc-hand-in/">QC hand-in page</a>.</li>
+          <li><strong>Security updates</strong> (26 Oct), same as in LumoPlan.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Built, not yet released<span class="tag built">local only</span></h3>
+        <ul>
+          <li><strong>Roofs from drone scans</strong> (29 Oct): roof surfaces are read off a cleaned-up drone mesh, and roof elements such as dormers can span several faces. Committed locally, not on the shared branch.</li>
+          <li><strong>Airteam drone sync</strong> (4 Nov): when Airteam delivers a drone survey, its 3D model reaches the right building in LumoCad without anyone uploading it. Clear name matches link themselves; the rest wait in a review list where a person picks the building. Server and app parts both built, not deployed. <a class="links" href="https://miltonmannarino.github.io/airteam-drone-sync/">Airteam page</a>.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="area" id="open">
+    <h2>Paused and still open<span class="where">So nobody is surprised when they look for these.</span></h2>
+    <div class="two">
+      <div>
+        <h3>Paused on purpose<span class="tag paused">paused</span></h3>
+        <ul>
+          <li><strong>Stage reminders by e-mail</strong> (a nudge the day before a stage's planned end). The strategy is written; Rio paused the build on 28 October. Nothing is sent.</li>
+          <li><strong>Hour-planning trial.</strong> Replaced by the 4 November change: hours left the timeline and stopped blocking directly, so no trial was needed. <a class="links" href="https://miltonmannarino.github.io/lumoplan-hour-trial-and-notifications/">The two briefs</a>.</li>
+        </ul>
+        <h3>Not yet verified by hand</h3>
+        <ul>
+          <li>The three releases of 4 November passed the type check, the unit tests and the deploy, but the browser tests did not run (the saved test login expired on 31 October) and nobody has clicked them through on the live board.</li>
+          <li>Milestones have not been clicked through by hand either, only by automated checks.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Waiting on a decision</h3>
+        <ul>
+          <li><strong>Rio:</strong> the required feedback step after modelling on the Adoption tab, and the adoption field list (questionnaire sent 19 Oct).</li>
+          <li><strong>Rio and coordinators:</strong> removing the hour blocks and "Cleanup Overbooking" goes further than Rio's original ask. They should hear it before they look for the button.</li>
+          <li><strong>Milton:</strong> should the hour log open blank instead of pre-filling the planned number; does the Personio limit on logged hours stay.</li>
+          <li><strong>Settings:</strong> Rio's tables use 46.10 €/h with overhead; Settings holds 45 €/h.</li>
+          <li><strong>Q4 key result "LumoPlan only":</strong> of its nine project results, dashboards and the timeline moved in these weeks; the other seven (units and tenants, client-list import, appointments, travel estimates, tenant mail from the plan, field outputs) have not started.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout"><strong>Undo path.</strong> Each release can be taken back by reverting its merge. No data was migrated or deleted in any of them; old hour entries, past assignments and people's names stay as they were.</div>
+  </section>
+
+  <p class="foot">Checked on 5 November 2026 against the merged pull requests on the main branch of the LumoPlan repository, the production deploy runs, and the plan trackers in the repository (dated 4 November). Last automated run on the 4 November code: type check clean, 2,218 unit tests green. Last browser run: 30 October, 82 of 82 page checks green. Related pages: <a href="https://miltonmannarino.github.io/lumoplan-assign-then-log-hours/">assign, then log hours</a> · <a href="https://miltonmannarino.github.io/lumoplan-dashboards-adoption/">dashboards and adoption</a> · <a href="https://miltonmannarino.github.io/lumoplan-timeline-improvements/">timeline improvements, day one</a>.</p>
+</main>
+</body>
+</html>
