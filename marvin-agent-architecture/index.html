@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="project" content="Lumoview-Building-Analytics-GmbH/platform">
+<meta name="description" content="Architecture, goal, current status, next step and gaps of Marvin, the AI agent inside LumoCad.">
+<title>Marvin: the AI architect inside LumoCad</title>
+<style>
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --fg:#18202c; --muted:#566173; --line:#d3d9e2; --soft:#e9edf3;
+  --accent:#2453c0; --accent-soft:#e6ecfa; --ok:#1d7a46; --ok-soft:#e3f3ea; --warn:#9a5b00; --warn-soft:#fbf0dc;
+  --block:#b0322b; --block-soft:#fae6e4; --part:#6a4bb0; --part-soft:#efe9fa; --none:#5b6474; --none-soft:#eceff3;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif; --body:"Source Sans 3","Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0f141b; --surface:#171e28; --fg:#e7ecf3; --muted:#9aa6b8; --line:#2b3544; --soft:#1f2834;
+    --accent:#7ea3ff; --accent-soft:#1a2644; --ok:#58c98a; --ok-soft:#14301f; --warn:#e6a94f; --warn-soft:#33260f;
+    --block:#ff8a80; --block-soft:#3a1a18; --part:#b79cf5; --part-soft:#2a2144; --none:#9aa6b8; --none-soft:#1f2834;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:70px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.58}
+a{color:var(--accent)}
+a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:3px}
+code{font-family:var(--mono);font-size:.86em;background:var(--soft);padding:.08em .38em;border-radius:4px;overflow-wrap:anywhere}
+.wrap{max-width:1160px;margin:0 auto;padding:0 40px}
+
+/* top navigation */
+.topnav{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.topnav .wrap{display:flex;gap:26px;align-items:center;height:50px;font-family:var(--display);font-size:14px}
+.topnav b{letter-spacing:.01em}
+.topnav a{color:var(--muted);text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.topnav a:hover{color:var(--fg);border-bottom-color:var(--accent)}
+.topnav .asof{margin-left:auto;color:var(--muted)}
+
+/* hero */
+.hero{padding:54px 0 30px}
+.eyebrow{font-family:var(--display);font-size:14px;color:var(--muted);margin:0 0 10px}
+h1{font-family:var(--display);font-weight:800;font-size:54px;line-height:1.04;letter-spacing:-.02em;margin:0 0 18px;max-width:900px}
+.lede{font-size:21px;line-height:1.5;max-width:860px;margin:0 0 26px;color:var(--fg)}
+.state{display:grid;grid-template-columns:1.25fr 1fr;gap:28px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px 26px}
+.panel h3{font-family:var(--display);font-size:15px;margin:0 0 10px;color:var(--muted);font-weight:700}
+.panel ul{margin:0;padding-left:20px}
+.panel li{margin:6px 0}
+.next{border-left:6px solid var(--accent);background:var(--accent-soft)}
+.next h3{color:var(--accent)}
+
+/* sections */
+section{padding:46px 0 10px}
+h2{font-family:var(--display);font-weight:800;font-size:34px;letter-spacing:-.015em;margin:0 0 8px;line-height:1.15}
+h2 .n{display:inline-block;min-width:1.5em;color:var(--accent)}
+h3.sub{font-family:var(--display);font-size:21px;margin:34px 0 8px;letter-spacing:-.005em}
+p{margin:0 0 14px;max-width:880px}
+.lead2{color:var(--muted);font-size:18px;margin-bottom:22px;max-width:880px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+hr.rule{border:0;border-top:1px solid var(--line);margin:40px 0 0}
+
+/* chips */
+.chip{display:inline-block;font-family:var(--display);font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap;vertical-align:1px}
+.chip.ok{background:var(--ok-soft);color:var(--ok)} .chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.block{background:var(--block-soft);color:var(--block)} .chip.part{background:var(--part-soft);color:var(--part)}
+.chip.none{background:var(--none-soft);color:var(--none)} .chip.acc{background:var(--accent-soft);color:var(--accent)}
+
+/* tables */
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);margin:12px 0 22px}
+table{border-collapse:collapse;width:100%;font-size:15.5px}
+th,td{text-align:left;vertical-align:top;padding:10px 14px;border-bottom:1px solid var(--line)}
+th{font-family:var(--display);font-size:13px;color:var(--muted);background:var(--soft);font-weight:700}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--display);font-weight:700;white-space:nowrap}
+td.nw{white-space:nowrap}
+
+/* diagram */
+figure{margin:16px 0 8px}
+figcaption{color:var(--muted);font-size:15px;margin-top:8px;max-width:880px}
+svg{display:block;width:100%;height:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+svg text{font-family:var(--body);fill:var(--fg)}
+svg .t-h{font-family:var(--display);font-weight:700;font-size:13px;fill:var(--muted)}
+svg .t-s{font-size:13.5px} svg .t-m{font-size:12.5px;fill:var(--muted)}
+svg .box{fill:var(--surface);stroke:var(--line);stroke-width:1.3}
+svg .zone{fill:var(--soft);stroke:var(--line);stroke-width:1.3}
+svg .zone-a{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.3}
+svg .plan{fill:var(--surface);stroke:var(--none);stroke-width:1.3;stroke-dasharray:5 4}
+svg .line{stroke:var(--none);stroke-width:1.8;fill:none}
+svg .good{stroke:var(--ok);stroke-width:3;fill:none}
+svg .bad{stroke:var(--block);stroke-width:3;fill:none;stroke-dasharray:7 5}
+svg .cut{stroke:var(--block);stroke-width:2;stroke-dasharray:9 6}
+svg .cut-t{fill:var(--block);font-weight:700;font-size:13.5px}
+svg .dot{fill:var(--accent)} svg .dot-t{fill:#fff;font-family:var(--display);font-weight:700;font-size:12.5px;text-anchor:middle}
+@media (prefers-color-scheme:dark){svg .dot-t{fill:#0f141b}}
+.legend{counter-reset:s;list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 36px;max-width:1080px}
+.legend li{counter-increment:s;padding-left:34px;position:relative;font-size:16px}
+.legend li::before{content:counter(s);position:absolute;left:0;top:1px;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-family:var(--display);font-weight:700;font-size:13px;text-align:center;line-height:24px}
+@media (prefers-color-scheme:dark){.legend li::before{color:#0f141b}}
+
+/* verdict bar */
+.bar{display:flex;height:34px;border-radius:8px;overflow:hidden;border:1px solid var(--line);margin:8px 0 10px}
+.bar span{display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;font-size:13px;color:#fff}
+.bar .a{background:var(--ok)} .bar .b{background:var(--accent)} .bar .c{background:var(--warn)} .bar .d{background:var(--block)}
+@media (prefers-color-scheme:dark){.bar span{color:#0f141b}}
+.keys{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:15px;color:var(--muted);margin-bottom:10px}
+.keys i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* before/after */
+.ba{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:14px 0 6px}
+.ba .panel ol{margin:0;padding-left:22px}
+.ba .panel li{margin:6px 0}
+.ba .old{border-top:5px solid var(--warn)} .ba .new{border-top:5px solid var(--ok)}
+
+/* roadmap */
+.road td:first-child{font-family:var(--display);font-weight:800;width:44px}
+.legend-line{font-size:15px;color:var(--muted);margin:6px 0 0}
+details{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 20px;margin:12px 0}
+summary{cursor:pointer;font-family:var(--display);font-weight:700}
+pre{font-family:var(--mono);font-size:14px;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:12px 16px;overflow-x:auto;margin:10px 0}
+footer{padding:36px 0 60px;color:var(--muted);font-size:15px}
+@media print{.topnav{display:none} body{background:#fff} .panel,.scroll,svg{break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<nav class="topnav" aria-label="Page sections">
+  <div class="wrap">
+    <b>Marvin</b>
+    <a href="#goal">Goal</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#changed">1 What changed</a>
+    <a href="#test">2 How to test</a>
+    <a href="#missing">3 What's missing</a>
+    <span class="asof">as of 5 Nov 2026</span>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Lumoview · platform and lumoagent · working note for the engineering team</p>
+    <h1>Marvin: an AI architect that works inside LumoCad</h1>
+    <p class="lede">Marvin is an agent that does an architect's routine modelling steps inside the LumoCad editor and shows every change as a preview that a person approves. It runs on one Mac today except for the model call. The first step of making it use LumoCad's own functions is built and tested. Four things need a decision or a hand-off, not more code: the model key, the real-app run, Arne's design document, and a few open decisions.</p>
+    <div class="state">
+      <div class="panel">
+        <h3>Where we stand</h3>
+        <ul>
+          <li><span class="chip ok">verified</span> The whole stack boots locally and the assistant pane connects to the service, with the same model picker and capability list as Arne's demo.</li>
+          <li><span class="chip ok">verified</span> 81 of about 84 tools are mapped to the existing LumoCad function they should call. Most are fine; the <em>saving after approval</em> is duplicated.</li>
+          <li><span class="chip ok">built, tested</span> Step 1: approving a room move now uses the editor's own events inside one undo batch. 21 new tests pass.</li>
+          <li><span class="chip warn">not yet</span> Step 1 has not run in the real app, and nothing has been chatted with a model.</li>
+        </ul>
+      </div>
+      <div class="panel next">
+        <h3>Next step</h3>
+        <ul>
+          <li><b>Today:</b> ask Arne for the model key, and send him the tool map with three questions (section 3).</li>
+          <li><b>Then:</b> run the real-app check of step 1 on a dev building, and move on to step 2: rotation and the batch moves from alignment.</li>
+          <li><b>Parallel:</b> a direct Anthropic provider in the Go service, using the unused Anthropic credits.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+<section id="goal" aria-labelledby="goal-h">
+  <h2 id="goal-h">The goal</h2>
+  <p class="lead2">Make the architect a reviewer, not an executor. A scanned building goes in; a correct 2D floor plan with its areas comes out; people only check.</p>
+  <div class="cols">
+    <div>
+      <p><b>The direction the team set on 4 Nov 2026.</b> The north star is a highly automated 2D workflow. Active work on roof details and on 3D stair geometry is paused. Stairs only need their area contribution and a drawing. IFC export and the HotCut format are dropped for now. Automation should go where the work is expensive, the architect layer: naming rooms, fixing outlines, building walls, placing doors and windows. Sorting scans stays with the cheaper sorting layer for now.</p>
+      <p><b>Two agents, one shared toolbox.</b> <em>Marvin</em> is the live agent inside LumoCad. It uses LumoCad's tools on a real building, cannot read or change the code, and cannot approve its own changes. A second, <em>local coding agent</em> is a normal coding assistant with the code and test buildings. It runs a tool on a test building, sees the error, fixes the tool, and runs it again. Marvin gets better because the tools get better.</p>
+    </div>
+    <div>
+      <p><b>How we will know it works.</b> The first test building is a new-build with flat roofs that already has boundaries, sorting, walls and windows done. The plan is three working copies on the dev server, one each for Arne, Milton and Piotr, plus one untouched original to clone again. Each person reverts a copy to the state just after sorting and models it, then the outputs are compared: where people got stuck, how accurate the result is, how consistent. Piotr is targeting the start of the week of 9 Nov for the reset system.</p>
+      <p><b>What it replaces.</b> A person today clicks through each station of the pipeline by hand. The earlier audit of that pipeline (the Agent Workforce page) ranked which steps an agent could take over. Its suggested first pilots included readiness reports and door and window placement, and Marvin's tools already touch both.</p>
+    </div>
+  </div>
+</section>
+
+<section id="architecture" aria-labelledby="arch-h">
+  <h2 id="arch-h">The architecture</h2>
+  <p class="lead2">Three parts talk to each other: the browser with LumoCad, a small Go service that runs the conversation, and a language model. Everything that touches a building happens in the browser.</p>
+
+  <figure>
+    <svg viewBox="0 0 1160 628" role="img" aria-labelledby="fig1t fig1d">
+      <title id="fig1t">Marvin architecture</title>
+      <desc id="fig1d">The browser holds the assistant pane, the assistant feature and the LumoCad core, separated by a dashed line. The Go service in the middle talks to a model provider on the right. LumoCad core saves to the platform API.</desc>
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="context-stroke"/></marker>
+      </defs>
+
+      <!-- browser -->
+      <rect class="zone" x="20" y="38" width="590" height="534" rx="12"/>
+      <text class="t-h" x="38" y="62">THE BROWSER TAB · LumoCad, a React app</text>
+
+      <rect class="box" x="40" y="76" width="550" height="62" rx="8"/>
+      <text class="t-s" x="56" y="101" font-weight="700">Assistant pane</text>
+      <text class="t-m" x="56" y="122">chat · model picker · proposal card with Approve and Skip</text>
+      <circle class="dot" cx="562" cy="107" r="12"/><text class="dot-t" x="562" y="111.5">6</text>
+
+      <rect class="zone-a" x="40" y="156" width="550" height="156" rx="8"/>
+      <text class="t-h" x="56" y="178">ASSISTANT FEATURE · 4.9 MB, 749 files in one folder</text>
+      <rect class="box" x="56" y="192" width="150" height="104" rx="6"/>
+      <text class="t-s" x="68" y="216" font-weight="700">Controller</text>
+      <text class="t-m" x="68" y="236">streams with the service,</text><text class="t-m" x="68" y="252">dispatches each tool,</text><text class="t-m" x="68" y="268">holds the approval</text>
+      <rect class="box" x="218" y="192" width="214" height="104" rx="6"/>
+      <text class="t-s" x="230" y="216" font-weight="700">Tool services</text>
+      <text class="t-m" x="230" y="236">about 20 classes: read, plan,</text><text class="t-m" x="230" y="252">propose. Plan = compute a</text><text class="t-m" x="230" y="268">preview, change nothing.</text>
+      <rect class="box" x="444" y="192" width="132" height="104" rx="6"/>
+      <text class="t-s" x="454" y="216" font-weight="700">Apply and save</text>
+      <text class="t-m" x="454" y="236">own journal, own</text><text class="t-m" x="454" y="252">server writes, own</text><text class="t-m" x="454" y="268">undo history</text>
+
+      <!-- cut line and its labels, kept clear of the two arrows -->
+      <line class="cut" x1="20" y1="364" x2="610" y2="364"/>
+      <text class="cut-t" x="36" y="356">Separation Arne asked for</text>
+      <text class="t-m" x="418" y="336" text-anchor="middle" style="fill:var(--block)">today 21 core files import</text>
+      <text class="t-m" x="418" y="351" text-anchor="middle" style="fill:var(--block)">across this line</text>
+
+      <!-- crossing arrows -->
+      <path class="good" d="M290 296 V386" marker-end="url(#ah)"/>
+      <path class="bad" d="M530 296 V386" marker-end="url(#ah)"/>
+      <circle class="dot" cx="290" cy="330" r="12"/><text class="dot-t" x="290" y="334.5">4</text>
+      <circle cx="530" cy="330" r="12" style="fill:var(--block)"/><text class="dot-t" x="530" y="334.5">!</text>
+
+      <rect class="zone" x="40" y="388" width="550" height="164" rx="8"/>
+      <text class="t-h" x="56" y="412">LUMOCAD CORE · the editor that already exists</text>
+      <rect class="box" x="56" y="424" width="176" height="112" rx="6"/>
+      <text class="t-s" x="68" y="448" font-weight="700">Element machines</text>
+      <text class="t-m" x="68" y="468">state machines for room,</text><text class="t-m" x="68" y="484">outline, wall, door,</text><text class="t-m" x="68" y="500">window, storey</text>
+      <rect class="box" x="244" y="424" width="100" height="112" rx="6"/>
+      <text class="t-s" x="254" y="448" font-weight="700">Undo</text><text class="t-m" x="254" y="468">one stack,</text><text class="t-m" x="254" y="484">Ctrl+Z</text>
+      <rect class="box" x="356" y="424" width="100" height="112" rx="6"/>
+      <text class="t-s" x="366" y="448" font-weight="700">Stores</text><text class="t-m" x="366" y="468">3D canvas,</text><text class="t-m" x="366" y="484">scans</text>
+      <rect class="box" x="468" y="424" width="108" height="112" rx="6"/>
+      <text class="t-s" x="478" y="448" font-weight="700">Save queue</text><text class="t-m" x="478" y="468">debounced</text><text class="t-m" x="478" y="484">writes to the</text><text class="t-m" x="478" y="500">platform API</text>
+
+      <!-- service -->
+      <rect class="zone" x="668" y="38" width="236" height="332" rx="12"/>
+      <text class="t-h" x="684" y="62">MARVIN SERVICE · Go, port 8091</text>
+      <rect class="box" x="684" y="76" width="204" height="46" rx="6"/><text class="t-s" x="696" y="104">Sign-in check (Auth0)</text>
+      <rect class="box" x="684" y="132" width="204" height="46" rx="6"/><text class="t-s" x="696" y="160">Chats and runs (Mongo)</text>
+      <rect class="box" x="684" y="188" width="204" height="62" rx="6"/><text class="t-s" x="696" y="212">Agent loop</text><text class="t-m" x="696" y="232">up to 24 model calls, 10 min</text>
+      <rect class="box" x="684" y="260" width="204" height="46" rx="6"/><text class="t-s" x="696" y="288">About 84 tool schemas</text>
+      <rect class="box" x="684" y="316" width="204" height="40" rx="6"/><text class="t-s" x="696" y="341">US$2 spending cap per chat</text>
+
+      <!-- outside -->
+      <rect class="zone" x="948" y="38" width="196" height="332" rx="12"/>
+      <text class="t-h" x="964" y="62">MODEL PROVIDER</text>
+      <rect class="box" x="964" y="76" width="164" height="124" rx="6"/>
+      <text class="t-s" x="974" y="100" font-weight="700">OpenRouter</text><text class="t-m" x="974" y="120">a relay to many models:</text><text class="t-m" x="974" y="138">Claude Fable 5.1</text><text class="t-m" x="974" y="154">GPT-6 Astra</text><text class="t-m" x="974" y="170">GPT-6 Luna</text>
+      <rect class="plan" x="964" y="214" width="164" height="74" rx="6"/>
+      <text class="t-s" x="974" y="238" font-weight="700">Direct Anthropic</text><text class="t-m" x="974" y="258">planned, uses the unused</text><text class="t-m" x="974" y="274">Anthropic credits</text>
+
+      <rect class="zone" x="948" y="424" width="196" height="128" rx="12"/>
+      <text class="t-h" x="964" y="448">PLATFORM API</text>
+      <text class="t-s" x="964" y="474">buildings, rooms,</text><text class="t-s" x="964" y="494">walls, openings</text><text class="t-m" x="964" y="520">the real database</text>
+
+      <!-- horizontal links -->
+      <path class="line" d="M590 200 H668" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      <circle class="dot" cx="629" cy="176" r="12"/><text class="dot-t" x="629" y="180.5">1</text>
+      <text class="t-m" x="629" y="224" text-anchor="middle">3 · 5</text>
+      <path class="line" d="M904 138 H948" marker-end="url(#ah)"/>
+      <circle class="dot" cx="926" cy="114" r="12"/><text class="dot-t" x="926" y="118.5">2</text>
+      <path class="line" d="M576 480 H948" marker-end="url(#ah)"/>
+      <circle class="dot" cx="640" cy="480" r="12"/><text class="dot-t" x="640" y="484.5">7</text>
+      <text class="t-m" x="662" y="470">save, then read the saved fields back (8)</text>
+
+      <!-- key -->
+      <path class="good" d="M40 604 H84" marker-end="url(#ah)"/>
+      <text class="t-s" x="96" y="609">target: the assistant calls the editor's own functions</text>
+      <path class="bad" d="M520 604 H564" marker-end="url(#ah)"/>
+      <text class="t-s" x="576" y="609">today: private events, own save, own undo</text>
+    </svg>
+    <figcaption>The green arrow is the path the architecture should follow. The dashed red arrow is what the assistant does today for most changes. The dashed box is planned, not built. Numbers match the list below.</figcaption>
+  </figure>
+
+  <ol class="legend">
+    <li>You type a request. The controller sends it to the service over HTTP and listens to a stream of events back (server-sent events: a one-way stream from server to browser).</li>
+    <li>The service calls the language model with the conversation and the tool list.</li>
+    <li>The model asks for a tool. The service forwards the request to the browser, because only the browser has the building loaded.</li>
+    <li>The browser runs the tool against LumoCad: read, or compute a preview. Nothing changes yet.</li>
+    <li>The result goes back to the service. Steps 2 to 5 repeat, up to 24 times per request.</li>
+    <li>A change appears as a preview card on the canvas. A person presses Approve. The model cannot approve, and Approve is not a tool.</li>
+    <li>On approval the change is applied and saved to the platform API.</li>
+    <li>A read-back check compares the saved fields with the proposal. It never writes.</li>
+  </ol>
+
+  <h3 class="sub">What each part is, and where it lives</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>Part</th><th>What it is</th><th>Repository</th><th>State</th></tr></thead>
+    <tbody>
+      <tr><td>Assistant feature</td><td>Chat pane, preview cards, and the code that runs each tool in the browser. About half of its files are tests.</td><td>platform, <code>src/<wbr>lumocad/<wbr>features/<wbr>assistant</code></td><td><span class="chip ok">exists</span> Arne's branch</td></tr>
+      <tr><td>Marvin service</td><td>Runs the conversation: sign-in check, history, the loop, spending cap, tool schemas, the provider call. It holds no building data.</td><td>lumoagent, <code>internal/marvin</code>, about 15,700 lines</td><td><span class="chip ok">exists</span> Arne's branch, offline checks pass</td></tr>
+      <tr><td>Contract between them</td><td>HTTP routes under one building, a stream of events, and a version number that must match (28). They upgrade together.</td><td>both</td><td><span class="chip ok">exists</span></td></tr>
+      <tr><td>Direct Anthropic provider</td><td>One small Go package behind the existing single-method provider interface. No change to the loop or the tools.</td><td>lumoagent</td><td><span class="chip none">planned</span></td></tr>
+      <tr><td>Local coding agent and test-building loop</td><td>Runs a tool on a test building, reads the error, fixes the tool, repeats.</td><td>not started</td><td><span class="chip none">planned</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="sub">What Marvin can do: about 84 tools</h3>
+  <p>A tool is one named action the model may ask for. Reading tools look at the building. Planning tools compute a preview and change nothing. Proposing tools show a card and only change something after Approve. The tool map checked each one against the existing LumoCad function it should call.</p>
+  <div class="cols">
+    <div>
+      <p class="legend-line" style="margin-top:0">By kind, from the service's tool schemas (82 found by text extraction)</p>
+      <div class="scroll"><table>
+        <tbody>
+          <tr><td class="num">30</td><td>read the building, a room, the selection, the plan warnings, the areas</td></tr>
+          <tr><td class="num">32</td><td>plan: alignment, outlines, walls, openings, room names and numbers</td></tr>
+          <tr><td class="num">12</td><td>propose: move or rotate rooms, edit an outline, create walls, place doors</td></tr>
+          <tr><td class="num">8</td><td>helpers: canvas markers, navigation, floor workflow</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div>
+      <p class="legend-line" style="margin-top:0">Verdict per row: 82 rows covering 81 tools, one listed twice. 22 rows have mixed verdicts; the first one is counted.</p>
+      <div class="bar" role="img" aria-label="30 reuse, 33 keep own, 18 replace, 1 drop">
+        <span class="a" style="width:36.6%">30</span><span class="b" style="width:40.2%">33</span><span class="c" style="width:22%">18</span><span class="d" style="width:1.2%"></span>
+      </div>
+      <div class="keys"><span><i style="background:var(--ok)"></i>reuses LumoCad (30)</span><span><i style="background:var(--accent)"></i>needs its own logic (33)</span><span><i style="background:var(--warn)"></i>duplicates LumoCad (18)</span><span><i style="background:var(--block)"></i>drop (1)</span></div>
+    </div>
+  </div>
+  <p>So the agent is not mostly duplication. The duplication sits in two places: the <b>apply and save stack</b> after approval, and about a dozen small <b>read helpers</b> that re-read data LumoCad already exposes.</p>
+
+  <h3 class="sub">The two rules from Arne, and what they mean in the code</h3>
+  <ol>
+    <li><b>Stronger separation between the agent and LumoCad.</b> Today the dependency points the wrong way: 21 core files import from the assistant folder, including every element machine, the building machine and the undo machine, and seven assistant-only event types live inside core machines.</li>
+    <li><b>Use LumoCad's existing functions; do not double them as tools.</b> The logic stays in the frontend. The planners mostly comply. The apply step does not: it sets positions through a private event, posts its own patches to the server and keeps its own undo history.</li>
+  </ol>
+  <p>The two rules are one change. If an approved proposal sends the editor's ordinary events, the private events and most of the cross-imports have no reason to exist.</p>
+</section>
+
+<hr class="rule">
+
+<section id="changed" aria-labelledby="changed-h">
+  <h2 id="changed-h"><span class="n">1</span>What changed</h2>
+  <p class="lead2">Grouped by area. Each item says whether it was run, read from code, or is still open.</p>
+
+  <h3 class="sub">Direction and decisions</h3>
+  <ul>
+    <li><span class="chip ok">decided</span> 2D-only automation is the north star; roof and 3D stair work is paused; IFC and HotCut are dropped (meeting of 4 Nov).</li>
+    <li><span class="chip ok">decided</span> We keep Arne's Go service and build our own version on top of it, instead of replacing it with a command-line agent as in the workbench tool. The service is the half that already works, and staying close to it keeps the agreed cherry-picking between versions possible. The command-line route is parked, with one condition recorded: a product used by other people must run on an API key, not on a personal subscription login.</li>
+    <li><span class="chip ok">decided</span> Our work is branched off Arne's branch, worktrees are allowed if needed, and every branch, worktree and process is listed in one tracker file.</li>
+  </ul>
+
+  <h3 class="sub">The service and the assistant pane run on one Mac</h3>
+  <ul>
+    <li><span class="chip ok">verified</span> The Go service builds with its pinned Go version and its offline vet and tests pass (run today). It listens on port 8091, with its own local Mongo.</li>
+    <li><span class="chip ok">verified</span> A headless Chrome with an isolated copy of the demo login opened a dev building, clicked <b>Assistant</b>, and the service answered the chat list, capabilities and template references. The pane shows "marvin · Connected", three models and the capability list.</li>
+    <li><span class="chip warn">open</span> Chat itself is untried: there is no model key on this machine.</li>
+  </ul>
+
+  <h3 class="sub">The tool map</h3>
+  <ul>
+    <li><span class="chip ok">done</span> A document of about 390 lines lists 81 tools with executor, the LumoCad code each already calls, the duplicated logic, the existing equivalent and the UI button that triggers it, and a verdict. It ends in a 10-step plan.</li>
+    <li><span class="chip ok">found</span> Arne's branch contains general bug fixes that help every user and should reach <code>development</code> separately: a door and window machine bug that gives a wrong wall id after detach or undo, a wall property that was left behind on the server when walls were deleted, and orphaned relation rows after a wall undo.</li>
+    <li><span class="chip warn">review</span> The same branch changes the shared wall generator, so the "Create boundary walls" button would behave differently for every user once merged. It needs comparison on a few test buildings first.</li>
+    <li><span class="chip ok">corrected</span> An early count of 29 tools was wrong, and ring replacement was first called the fully native model. There are about 84 tools, and ring replacement saves natively but suppresses the editor's undo. Both are fixed in the document.</li>
+  </ul>
+
+  <h3 class="sub">Step 1: approving a room move now uses the editor's own events</h3>
+  <p>The first tool converted is <code>propose_room_move</code>. It is a small change on a local branch off Arne's: one new module, two test files and three small edits, about 430 lines in all. Nothing is committed or pushed.</p>
+  <div class="ba">
+    <div class="panel old"><h3>Before: the assistant's private path</h3>
+      <ol>
+        <li>Write a journal entry to the browser's storage</li>
+        <li>Record the operation on the server</li>
+        <li>Lock the room against normal edits</li>
+        <li>Send an assistant-only event that sets positions directly</li>
+        <li>Post patches to the platform API itself</li>
+        <li>Check the saved fields</li>
+        <li>Add an assistant-owned undo entry</li>
+      </ol></div>
+    <div class="panel new"><h3>After: what a mouse drag does</h3>
+      <ol>
+        <li>Open one editor undo batch</li>
+        <li>Move the room anchor; the editor moves measurements, outline, shapes and comments</li>
+        <li>Read the anchor back; stop if it did not move</li>
+        <li>Finalize the room, then let the editor save outline, shapes and measurements</li>
+        <li>Close the batch: one Ctrl+Z restores everything</li>
+        <li>Wait for the saves, then read the server fields back, without writing</li>
+      </ol></div>
+  </div>
+  <p>Building it against the real machines exposed four traps that a mocked version would have hidden. Each is covered by a test.</p>
+  <ul>
+    <li>The room anchor <b>silently ignores</b> a move outside Point Cloud, CAD and TGA-shapes modes, and for rooms whose annotation is complete. A naive version would have saved unchanged positions and reported success. The new code checks the result before saving and refuses with a clear message. The real machine confirmed the refusal in View, Observation and QC 3D modes.</li>
+    <li>With "Freeze boundaries and TGA shapes" on in Point Cloud mode, the editor deliberately leaves outlines in place while scans move. The proposal card promises the outline moves, so the new code refuses up front and names the button.</li>
+    <li>The editor records undo at the moment of saving, so wrapping the events in one batch gives exactly one undo step. Without it, outline and measurements would be two steps.</li>
+    <li>The editor's own drag does not rewrite combined door and window placements, so a move that shifts them stays on the old path.</li>
+  </ul>
+  <div class="scroll"><table>
+    <thead><tr><th>Check</th><th>Result</th><th>Run</th></tr></thead>
+    <tbody>
+      <tr><td>21 new tests: real room, outline and anchor machines, plus manager-level approval</td><td><span class="chip ok">21 pass</span></td><td class="nw">5 Nov</td></tr>
+      <tr><td>Three deliberate breakages (no read-back, no undo batch, no outline save)</td><td><span class="chip ok">each fails the right tests</span></td><td class="nw">4 Nov</td></tr>
+      <tr><td>Whole assistant test suite, 292 files</td><td><span class="chip ok">2,498 pass</span></td><td class="nw">4 Nov</td></tr>
+      <tr><td>Type check of the whole app</td><td><span class="chip ok">clean</span></td><td class="nw">4 Nov</td></tr>
+      <tr><td>Go service offline vet and tests</td><td><span class="chip ok">pass</span></td><td class="nw">5 Nov</td></tr>
+      <tr><td>One real run in the app against the dev server</td><td><span class="chip warn">not run</span> blocked by the automatic safety check, see section 3</td><td></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<hr class="rule">
+
+<section id="test" aria-labelledby="test-h">
+  <h2 id="test-h"><span class="n">2</span>How to test</h2>
+  <p class="lead2">Three levels. The first needs nothing but the repositories. The second needs the local stack. The third needs a model key.</p>
+
+  <h3 class="sub">A. Automated checks, no key needed</h3>
+  <p>In <code>platform</code>, on the branch <code>marvin/native-apply</code>:</p>
+<pre>NODE_ENV=test npx vitest run \
+  src/lumocad/features/assistant/moves/nativeRoomMove.test.ts \
+  src/lumocad/features/assistant/moves/manager.native.test.ts
+# expect: 2 files, 21 tests passed
+
+NODE_ENV=test npx vitest run src/lumocad/features/assistant
+# expect: 292 files passed, 2,498 tests
+
+pnpm exec tsc -b
+# expect: exit 0, no output</pre>
+  <p>In <code>lumoagent</code>, on <code>development_ai-chat</code>: <code>GOTOOLCHAIN=go1.25.0 go run ./cmd/devcheck</code>, which runs the Go checks offline with fake providers. Expect "devcheck: passed". Go 1.27 fails to build this service, so the toolchain must be pinned.</p>
+
+  <h3 class="sub">B. The assistant pane in the real app, no key needed</h3>
+  <ol>
+    <li>Start the local stack: Mongo and the Go service. Start the platform dev server with the development environment setting; a production setting makes the app crash with a JSX error.</li>
+    <li>Open a dev building in LumoCad on the branch. Click <b>Assistant</b> in the top bar.</li>
+    <li>Expect the pane header "marvin · Connected", a model picker with Claude Fable 5.1, GPT-6 Astra and GPT-6 Luna, and the list "What marvin can do". Sending is disabled until a model is chosen.</li>
+  </ol>
+
+  <h3 class="sub">C. The room move end to end, needs a model key</h3>
+  <ol>
+    <li>Choose a model, then ask: "Move the room <i>name</i> 100 mm to the east."</li>
+    <li>Expect a preview card with the outline before and after, and <b>Approve</b> and <b>Skip</b>. Nothing has changed yet.</li>
+    <li>Press <b>Approve</b>. Expect the card to say saved and to show "Use the editor's Undo to restore this operation". There is no Undo button on the card by design.</li>
+    <li>Press Ctrl+Z once. Expect the room, its outline and its scans back where they were, in one step.</li>
+    <li>Refusals to try: switch to View mode and approve a move, expecting a message that the editor did not accept it and nothing changed. In Point Cloud mode turn on <b>Freeze boundaries and TGA shapes</b> and approve, expecting a message naming <b>Unfreeze boundaries and TGA shapes</b>.</li>
+  </ol>
+
+  <h3 class="sub">D. The real-app check without the model</h3>
+  <details>
+    <summary>What the script does, and why it has not run</summary>
+    <p>A script opens the dev Example Building in headless Chrome with an isolated copy of the demo login, takes the smallest level, builds a real move proposal for one room, applies it through the new code, reads the server fields, undoes with the editor's own undo event and checks that the room is back. It has a safety restore: if the undo does not restore the room, it moves the room back itself. It writes to the shared dev server for a few seconds, so the automatic safety check refused to run it. It runs only after a person decides to allow it.</p>
+    <p>What it settles: the read-back compares the proposal's patches with the fields the editor saved. Whether those agree within the tolerance used is only visible against a real save.</p>
+  </details>
+</section>
+
+<hr class="rule">
+
+<section id="missing" aria-labelledby="missing-h">
+  <h2 id="missing-h"><span class="n">3</span>What's missing</h2>
+
+  <div class="panel next" style="margin:14px 0 24px">
+    <h3>Next step</h3>
+    <p style="margin-bottom:8px"><b>Unblock, then continue.</b> Ask Arne for the model key today. Send him the tool map with three questions: does he agree with the contract that approved proposals apply only through the editor's own events, should the general bug fixes in his branch reach <code>development</code> first, and who reviews his wall-generator change. Run the real-app check of step 1 once it is allowed. Then start step 2, rotation and the batch moves from alignment.</p>
+  </div>
+
+  <h3 class="sub">Open items</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>Missing</th><th>Why it matters</th><th>Owner</th><th>Blocks</th></tr></thead>
+    <tbody>
+      <tr><td>A model key (OpenRouter, or Anthropic for the planned provider)</td><td>No chat with a model is possible without it. The service reads a placeholder today.</td><td>Milton asks Arne</td><td>Section 2C, the Go provider's real test</td></tr>
+      <tr><td>The real-app run of step 1</td><td>It is the only proof that the editor's own save and the read-back agree on a real building.</td><td>Milton: run it or allow it</td><td>Confidence for steps 2 to 4</td></tr>
+      <tr><td>Arne's design document, about 15 pages</td><td>It is the basis for a shared agent design. The service README on his branch is a protocol log, not an overview.</td><td>Arne</td><td>The adversarial review</td></tr>
+      <tr><td>The adversarial design review skill</td><td>Agreed in the meeting; it does not exist yet. It can start on the service README and the assistant README without waiting.</td><td>Milton</td><td>Comparing Arne's setup with the recommended one</td></tr>
+      <tr><td>Decisions</td><td>A branch name for <code>lumoagent</code>; whether to commit step 1; whether to keep the read-back check but drop the assistant's own journal (recommended); landing the general bug fixes first (recommended); who reviews the wall-generator change.</td><td>Milton, Arne</td><td>Steps 0, 3, 9, 10</td></tr>
+      <tr><td>Test buildings with a reset</td><td>Without a copy that can be reset to the state after sorting, every change risks real data.</td><td>Piotr, target week of 9 Nov</td><td>Any benchmark, step 7</td></tr>
+      <tr><td>A test-building loop for the local coding agent</td><td>Arne's second gap: no local LumoCad to check a tool against a test building while coding. His tests use mocks, and so do ours for the manager. The loop needs the real app driven headlessly against a copy; a separate loader would duplicate model loading, which his rule forbids.</td><td>Milton, design with Arne</td><td>The "improve the tools" loop</td></tr>
+      <tr><td>A stage for open-ended exploration</td><td>Arne's first gap: nothing in the workflow covers work that is neither client-driven nor context-driven.</td><td>Team</td><td>Not blocking</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="sub">The plan, step by step</h3>
+  <p>About five to six working weeks for one person across steps 1 to 6 and 9 to 10. Step 7 waits for the test buildings and step 8 for Arne.</p>
+  <div class="scroll"><table class="road">
+    <thead><tr><th>#</th><th>Work</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>0</td><td>Agree the contract and branch names with Arne</td><td><span class="chip warn">waiting</span></td></tr>
+      <tr><td>1</td><td>Prove it on <code>propose_room_move</code></td><td><span class="chip ok">built, tested</span> <span class="chip warn">real run pending</span></td></tr>
+      <tr><td>2</td><td>Room rotation and the batch moves from alignment: three tools, most of the old move stack goes</td><td><span class="chip acc">next</span></td></tr>
+      <tr><td>3</td><td>Boundary edit and editor operation, five native apply functions</td><td><span class="chip none">planned</span></td></tr>
+      <tr><td>4</td><td>Room metadata, wall edit, wall refinement, slab voids, opening corrections</td><td><span class="chip none">planned</span></td></tr>
+      <tr><td>5</td><td>Remove the 21 core-to-assistant imports, undo first</td><td><span class="chip none">planned</span></td></tr>
+      <tr><td>6</td><td>Replace the read-side duplicates, about twelve small ones</td><td><span class="chip none">planned</span></td></tr>
+      <tr><td>7</td><td>Replace the duplicated scan scoring and point-cloud matcher, only against a benchmark</td><td><span class="chip warn">needs test buildings</span></td></tr>
+      <tr><td>8</td><td>Clean up the tool set; this changes the schemas and therefore the contract version</td><td><span class="chip warn">needs Arne</span></td></tr>
+      <tr><td>9</td><td>Land the general bug fixes from Arne's branch on <code>development</code>, one small change each</td><td><span class="chip warn">needs Arne</span></td></tr>
+      <tr><td>10</td><td>Direct Anthropic provider in the Go service</td><td><span class="chip none">planned, parallel</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="sub">Unknowns and risks</h3>
+  <ul>
+    <li><span class="chip none">unknown</span> The real cost of a chat turn and of a full floor with a model: nothing has run with one.</li>
+    <li><span class="chip none">unknown</span> How the read-back tolerance behaves on a real save, see the real-app check.</li>
+    <li><span class="chip none">unknown</span> How many tools survive the design review, and how much the duplicated scoring is worth keeping.</li>
+    <li><span class="chip warn">risk</span> The editor's events were built for a mouse. Room moves are now covered for modes, completed rooms and frozen outlines; the other tools are not yet.</li>
+    <li><span class="chip warn">risk</span> The browser and the service must upgrade together: a version mismatch is refused. Any tool-set change in step 8 crosses that line.</li>
+    <li><span class="chip warn">risk</span> The service allows one active run per user and building, enforced in Mongo with a lease. Several architects on one building will queue.</li>
+    <li><span class="chip warn">risk</span> A product used by other people cannot run on a personal subscription login; it needs an API key under the commercial terms.</li>
+  </ul>
+</section>
+
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>As of 5 Nov 2026.</b> Read from git and run today: platform branch <code>marvin/native-apply</code>, level with Arne's <code>development_ai-chat</code> plus uncommitted work; lumoagent on <code>development_ai-chat</code>; Arne has pushed nothing new since 4 Nov; no design document has arrived; no model key is set. Sources: the tool map (<code>manuals/lumocad-plans/automation/MARVIN_TOOL_SURFACE_MAP_2026-11-04.md</code> in platform, not tracked), the service README <code>MARVIN.md</code> in lumoagent, <code>src/lumocad/features/assistant/README.md</code> in platform, and the meeting notes of 4 Nov. <b>Chips:</b> verified means run or tested; found means read from code; open, unknown and risk are not settled.</p>
+  </div>
+</footer>
+</body>
+</html>
