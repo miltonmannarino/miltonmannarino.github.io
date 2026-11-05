@@ -138,8 +138,8 @@
   </ul>
 
   <h2>How to test</h2>
-  <h3>In the real app, once deployed to dev</h3>
-  <p>The hourly timer runs only in production, so on dev each run starts from the button. A run handles at most 40 projects, so seeing all of them takes about five presses.</p>
+  <h3>In the real app, once released to production</h3>
+  <p>Dev has no Airteam key on purpose, because it mostly holds dummy buildings, so production is the first real run. Restarting the worker starts the sync: the timer fires an hour later, or press <b>Sync now</b>. A run handles at most 40 projects, so importing all of them takes about five runs.</p>
   <ol class="steps">
     <li>As an admin, open <b>Admin → Airteam</b> and press <b>Sync now</b>.<span class="expect">A message says "Sync queued. New models arrive within a few minutes." Reload after a few minutes: rows and counts appear.</span></li>
     <li>Open <b>Auto-linked</b> and pick a row saying "Linked by address". Open that building in LumoCad and choose <b>Drone Model</b> on the first screen.<span class="expect">Orbit opens with the model and Top View shows its slice, without any upload. It sits near the scene centre and still needs aligning.</span></li>
@@ -171,8 +171,8 @@
   <div class="tablewrap"><table>
     <thead><tr><th>Item</th><th>Why it matters</th><th>Owner</th></tr></thead>
     <tbody>
-      <tr><td><b>Deploy</b></td><td>Add <code>AIRTEAM_API_KEY</code> to the API's runtime secret in Scaleway Secret Manager, for dev and prod. A new version replaces the whole secret, so keep every existing key. Then push both repos, deploy the API and run <code>deploy-worker.yml</code>, because a normal deploy doesn't restart the worker.</td><td class="who">Milton</td></tr>
-      <tr><td><b>Real production run</b></td><td>Never run end to end on real buildings. Real match rate, upload and rate limits are unmeasured, and so is the app on real data in a browser.</td><td class="who">Milton</td></tr>
+      <tr><td><b>Deploy</b></td><td>The key is in production's secret since 5 November, and left out of dev on purpose. Still to do: push both repos, release the API and platform to production, then run <code>deploy-worker.yml</code>. A normal deploy doesn't restart the worker, and that restart is what starts the sync.</td><td class="who">Milton</td></tr>
+      <tr><td><b>Real production run</b></td><td>Never run end to end on real buildings, and dev won't rehearse it, so the first run is live. Real match rate, upload and rate limits are unmeasured, and so is the app on real data in a browser.</td><td class="who">Milton</td></tr>
       <tr><td><b>Who reviews</b></td><td>The screen needs the <code>admin</code> role and the API needs <code>building:*</code>. Whoever works the list needs both.</td><td class="who">Milton, Rio</td></tr>
       <tr><td><b>Wrong name links</b></td><td>Name links were a deliberate call with thin evidence: only 2 known pairs to check, 1 right and 1 a different house number on the same street. Expect some reassigning.</td><td class="who">Reviewers</td></tr>
       <tr><td><b>Alignment</b></td><td>The model arrives, but placing it is still by hand. Models sit near the origin, with the lowest point up to about 1.6 m off zero.</td><td class="who">Open</td></tr>
