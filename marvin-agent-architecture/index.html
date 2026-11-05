@@ -141,7 +141,7 @@ footer{padding:36px 0 60px;color:var(--muted);font-size:15px}
   <div class="wrap">
     <p class="eyebrow">Lumoview · platform and lumoagent · working note for the engineering team</p>
     <h1>Marvin: an AI architect that works inside LumoCad</h1>
-    <p class="lede">Marvin is an agent that does an architect's routine modelling steps inside the LumoCad editor and shows every change as a preview that a person approves. It runs on one Mac today except for the model call. The first step of making it use LumoCad's own functions is built and tested. Three things need a decision or a hand-off, not more code: the model key, the real-app run, and a few open decisions. The main one is whether a room move needs a recovery journal and a checked Undo, as Arne's guide of 5 Nov asks. The work stays on Arne's AI-chat branch, and Milton, Arne and Piotr share finished commits.</p>
+    <p class="lede">Marvin is an agent that does an architect's routine modelling steps inside the LumoCad editor and shows every change as a preview that a person approves. It runs on one Mac today except for the model call. The first step of making it use LumoCad's own functions is built and tested. A first real chat works (5 Nov). What is left needs a decision or a hand-off more than code: the real-app run of a room move through chat, and a few open decisions. The main one is whether a room move needs a recovery journal and a checked Undo, as Arne's guide of 5 Nov asks. The work stays on Arne's AI-chat branch, and Milton, Arne and Piotr share finished commits.</p>
     <div class="state">
       <div class="panel">
         <h3>Where we stand</h3>
@@ -155,7 +155,7 @@ footer{padding:36px 0 60px;color:var(--muted);font-size:15px}
       <div class="panel next">
         <h3>Next step</h3>
         <ul>
-          <li><b>Today:</b> ask Arne for the model key, and send him the tool map with three questions (section 3).</li>
+          <li><b>Next:</b> run a room move through chat on the example building, the first real-app check of step 1, and send Arne the tool map with the open questions (section 3).</li>
           <li><b>Then:</b> run the real-app check of step 1 on a dev building, and move on to step 2: rotation and the batch moves from alignment.</li>
           <li><b>Parallel:</b> a direct Anthropic provider in the Go service, using the unused Anthropic credits.</li>
         </ul>
@@ -352,7 +352,7 @@ footer{padding:36px 0 60px;color:var(--muted);font-size:15px}
   <ul>
     <li><span class="chip ok">verified</span> The Go service builds with its pinned Go version and its offline vet and tests pass (run today). It listens on port 8091, with its own local Mongo.</li>
     <li><span class="chip ok">verified</span> A headless Chrome with an isolated copy of the demo login opened a dev building, clicked <b>Assistant</b>, and the service answered the chat list, capabilities and template references. The pane shows "marvin · Connected", three models and the capability list.</li>
-    <li><span class="chip warn">open</span> Chat itself is untried: there is no model key on this machine.</li>
+    <li><span class="chip warn">open</span> Chat works: on 5 Nov the first real chat ("Summarise the building") ran end to end, with the model reading the building through a tool. Only a room move through chat is still untried.</li>
   </ul>
 
   <h3 class="sub">The tool map</h3>
@@ -457,14 +457,14 @@ pnpm exec tsc -b
 
   <div class="panel next" style="margin:14px 0 24px">
     <h3>Next step</h3>
-    <p style="margin-bottom:8px"><b>Unblock, then continue.</b> Ask Arne for the model key today. Send him the tool map with three questions: does he agree with the contract that approved proposals apply only through the editor's own events, should the general bug fixes in his branch reach <code>development</code> first, and who reviews his wall-generator change. Run the real-app check of step 1 once it is allowed. Then start step 2, rotation and the batch moves from alignment.</p>
+    <p style="margin-bottom:8px"><b>Check, then continue.</b> Run a room move through chat on the example building and undo it. Send Arne the tool map with three questions: does he agree with the contract that approved proposals apply only through the editor's own events, should the general bug fixes in his branch reach <code>development</code> first, and who reviews his wall-generator change. Run the real-app check of step 1 once it is allowed. Then start step 2, rotation and the batch moves from alignment.</p>
   </div>
 
   <h3 class="sub">Open items</h3>
   <div class="scroll"><table>
     <thead><tr><th>Missing</th><th>Why it matters</th><th>Owner</th><th>Blocks</th></tr></thead>
     <tbody>
-      <tr><td>A model key (OpenRouter, or Anthropic for the planned provider)</td><td>No chat with a model is possible without it. The service reads a placeholder today. The OpenRouter key is stored in Scaleway Secret Manager as <code>openrouter-api-key</code> (named in the service docs; nobody has read it yet), so it only has to be copied from there into the service's env file. The Anthropic key for the planned direct provider is not set up yet.</td><td>Milton (Scaleway), Arne (Anthropic key)</td><td>Section 2C, the Go provider's real test</td></tr>
+      <tr><td>The OpenRouter key and a separate Anthropic key</td><td>The OpenRouter key is in Scaleway Secret Manager as <code>openrouter-api-key</code> and is now in the service's env file; the first chat answered with it on 5 Nov. The Anthropic key for the planned direct provider is not set up yet.</td><td>Arne (Anthropic key)</td><td>Section 2C, the Go provider's real test</td></tr>
       <tr><td>The real-app run of step 1</td><td>It is the only proof that the editor's own save and the read-back agree on a real building.</td><td>Milton: run it or allow it</td><td>Confidence for steps 2 to 4</td></tr>
       <tr><td>Arne's implementation guide, 20 pages, received 5 Nov</td><td>It is a build prompt for porting Marvin onto <code>development</code>, in small steps. We read it as meaning Arne's AI-chat branch and stay on it (working assumption, Arne has not confirmed it). That branch is 31 commits ahead of where it forked and 186 behind <code>development</code>, so a later move to <code>development</code> is real work. Two questions to Arne stay open: whether a native room move must keep a recovery journal and a checked Undo (step 1 has neither; the default is the editor's own Undo plus a read-back that never writes, the same safety as dragging a room by hand); and who owns changes to Marvin's instructions, which are Go code, not settings.</td><td>Arne</td><td>Step 0, and the base branch of every step</td></tr>
       <tr><td>The adversarial design review skill</td><td>Agreed in the meeting; it does not exist yet. It can start on the service README and the assistant README without waiting.</td><td>Milton</td><td>Comparing Arne's setup with the recommended one</td></tr>
@@ -512,7 +512,7 @@ pnpm exec tsc -b
 
 <footer>
   <div class="wrap">
-    <p><b>As of 5 Nov 2026.</b> Read from git and run today: platform branch <code>marvin/native-apply-milton</code>, four commits on top of Arne's <code>development_ai-chat</code> (12be54d34), pushed as <code>origin/marvin/native-apply-milton</code>, no pull request; lumoagent on <code>development_ai-chat</code>; Arne has pushed nothing new since 4 Nov; Arne's 20-page implementation guide arrived on 5 Nov and has been read (analysis in section 5 of the tool map); no model key is set. Sources: the tool map (<code>manuals/lumocad-plans/automation/MARVIN_TOOL_SURFACE_MAP_2026-11-04.md</code> in platform, not tracked), the service README <code>MARVIN.md</code> in lumoagent, <code>src/lumocad/features/assistant/README.md</code> in platform, and the meeting notes of 4 Nov. <b>Chips:</b> verified means run or tested; found means read from code; open, unknown and risk are not settled.</p>
+    <p><b>As of 5 Nov 2026.</b> Read from git and run today: platform branch <code>marvin/native-apply-milton</code>, four commits on top of Arne's <code>development_ai-chat</code> (12be54d34), pushed as <code>origin/marvin/native-apply-milton</code>, no pull request; lumoagent on <code>development_ai-chat</code>; Arne has pushed nothing new since 4 Nov; Arne's 20-page implementation guide arrived on 5 Nov and has been read (analysis in section 5 of the tool map); the OpenRouter key is set and a first chat worked. Sources: the tool map (<code>manuals/lumocad-plans/automation/MARVIN_TOOL_SURFACE_MAP_2026-11-04.md</code> in platform, not tracked), the service README <code>MARVIN.md</code> in lumoagent, <code>src/lumocad/features/assistant/README.md</code> in platform, and the meeting notes of 4 Nov. <b>Chips:</b> verified means run or tested; found means read from code; open, unknown and risk are not settled.</p>
   </div>
 </footer>
 </body>
