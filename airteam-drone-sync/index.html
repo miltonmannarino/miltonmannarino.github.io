@@ -83,9 +83,9 @@
   <h1>Airteam drone models now find their building</h1>
   <p class="lead">When Airteam delivers a drone survey, its 3D model (an OBJ file) reaches the right building in LumoCad without anyone uploading it. Projects that clearly match a building link themselves. The rest wait in a review list, where a person picks the building or corrects an automatic link.</p>
   <dl class="status">
-    <div><dt>State on 4 November 2026</dt><dd>Built, local commits only, not deployed</dd></div>
+    <div><dt>State on 5 November 2026</dt><dd>Released to production, sync not started yet</dd></div>
     <div><dt>Receipt</dt><dd>10 of 10 checks pass, verdict done</dd></div>
-    <div><dt>Repos</dt><dd><code>api</code> and <code>platform</code>, on <code>development</code></dd></div>
+    <div><dt>Repos</dt><dd><code>api</code> and <code>platform</code>, on <code>main</code></dd></div>
   </dl>
 
   <h2>What changed</h2>
@@ -171,7 +171,7 @@
   <div class="tablewrap"><table>
     <thead><tr><th>Item</th><th>Why it matters</th><th>Owner</th></tr></thead>
     <tbody>
-      <tr><td><b>Deploy</b></td><td>The key is in production's secret since 5 November, and left out of dev on purpose. Still to do: push both repos, release the API and platform to production, then run <code>deploy-worker.yml</code>. A normal deploy doesn't restart the worker, and that restart is what starts the sync.</td><td class="who">Milton</td></tr>
+      <tr><td><b>Deploy</b></td><td>The API and platform are released, and the key is in production's secret, left out of dev on purpose. Still to do: run <code>deploy-worker.yml</code> for production. A normal deploy doesn't restart the worker, and that restart is what starts the sync.</td><td class="who">Milton</td></tr>
       <tr><td><b>Real production run</b></td><td>Never run end to end on real buildings, and dev won't rehearse it, so the first run is live. Real match rate, upload and rate limits are unmeasured, and so is the app on real data in a browser.</td><td class="who">Milton</td></tr>
       <tr><td><b>Who reviews</b></td><td>The screen needs the <code>admin</code> role and the API needs <code>building:*</code>. Whoever works the list needs both.</td><td class="who">Milton, Rio</td></tr>
       <tr><td><b>Wrong name links</b></td><td>Name links were a deliberate call with thin evidence: only 2 known pairs to check, 1 right and 1 a different house number on the same street. Expect some reassigning.</td><td class="who">Reviewers</td></tr>
@@ -183,7 +183,7 @@
     </tbody>
   </table></div>
 
-  <footer>Spec, tests and receipt: <code>.factory/airteam-sync/</code> in <code>platform</code>. How the API side works and deploys: <code>docs/airteam-sync.md</code> in <code>api</code>. Page written 4 November 2026.</footer>
+  <footer>Spec, tests and receipt: <code>.factory/airteam-sync/</code> in <code>platform</code>. How the API side works and deploys: <code>docs/airteam-sync.md</code> in <code>api</code>. Page updated 5 November 2026.</footer>
 </main>
 </body>
 </html>
