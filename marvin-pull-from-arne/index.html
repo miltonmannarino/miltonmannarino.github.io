@@ -38,6 +38,7 @@ pre{font-family:var(--mono);font-size:14px;line-height:1.5;background:var(--soft
 h1{font-family:var(--display);font-weight:800;font-size:50px;line-height:1.05;letter-spacing:-.02em;margin:0 0 18px;max-width:920px}
 .lede{font-size:21px;line-height:1.5;max-width:880px;margin:0 0 28px}
 .state{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}
+.state .next+.next{grid-column:1 / -1}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 24px}
 .panel h3{font-family:var(--display);font-size:14px;margin:0 0 10px;color:var(--muted);font-weight:700}
 .panel p,.panel li{margin:0 0 8px;font-size:16px}
@@ -90,6 +91,8 @@ footer{padding:28px 0 48px;color:var(--muted);font-size:14px;border-top:1px soli
   <h1>What to pull from Arne's branch into the harness branch</h1>
   <p class="lede">Piotr's harness lives on <code>lumocad/local-harness-piotr</code>, cut from <code>development</code> on 2 Nov. Marvin lives on Arne's <code>development_ai-chat</code>, cut from <code>development</code> on 8 Oct, with Milton's seven commits on top as <code>marvin/native-apply-milton</code>. This page says what Piotr needs from those two branches to run Marvin next to the harness, what to leave out, where the merges collide, and in which order to do it. Every number below was read from git on 6 Nov; nothing was merged or run.</p>
   <div class="state">
+    <div class="panel next"><h3>Update, later on 6 Nov: the merge was done</h3>
+      <p>Milton merged <code>development</code> into <code>marvin/native-apply-milton</code> himself (commit <code>c3a6b86b9</code>, local, not pushed): 23 conflicts resolved, typecheck clean, 12,504 of 12,656 tests pass, every test <code>development</code> already had passes. 145 tests that Arne's branch added fail (slab tools, wall tools, partial wall batch, multi-slab BGF rule); the commit message is the checklist. Piotr's merge of that branch now has only <code>vite.config.ts</code> of its own. The sections below are the plan as read from git that morning.</p></div>
     <div class="panel next"><h3>The short answer</h3>
       <ol>
         <li><b>Merge, don't cherry-pick.</b> Marvin is 755 new files plus hooks in 27 core files. Picking commits one by one would break at the first core hook.</li>
