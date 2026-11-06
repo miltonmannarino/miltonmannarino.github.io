@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="project" content="Lumoview-Building-Analytics-GmbH/platform">
+<meta name="description" content="How Milton's work fits together with Workbench, Calvin, Marvin and LumoCad, what each layer is for, and everything learned in the 6 November 2026 meeting with Piotr and Arne.">
+<title>Workbench, Calvin, Marvin, LumoCad: who does what</title>
+<style>
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --fg:#18202c; --muted:#566173; --line:#d3d9e2; --soft:#e9edf3;
+  --accent:#2453c0; --accent-soft:#e6ecfa; --ok:#1d7a46; --ok-soft:#e3f3ea; --warn:#9a5b00; --warn-soft:#fbf0dc;
+  --block:#b0322b; --block-soft:#fae6e4; --none:#5b6474; --none-soft:#eceff3;
+  --calvin:#0e7a6b; --calvin-soft:#dff3ef; --bench:#8a4b12; --bench-soft:#f8ead9; --lumo:#3a4358; --lumo-soft:#e4e8f0;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif; --body:"Source Sans 3","Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0f141b; --surface:#171e28; --fg:#e7ecf3; --muted:#9aa6b8; --line:#2b3544; --soft:#1f2834;
+    --accent:#7ea3ff; --accent-soft:#1a2644; --ok:#58c98a; --ok-soft:#14301f; --warn:#e6a94f; --warn-soft:#33260f;
+    --block:#ff8a80; --block-soft:#3a1a18; --none:#9aa6b8; --none-soft:#1f2834;
+    --calvin:#52d1bd; --calvin-soft:#10302b; --bench:#e8a463; --bench-soft:#3a2713; --lumo:#b4bdd0; --lumo-soft:#232b3a;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.58}
+a{color:var(--accent)}
+a:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:3px}
+code{font-family:var(--mono);font-size:.84em;background:var(--soft);padding:.08em .38em;border-radius:4px;overflow-wrap:anywhere}
+.wrap{max-width:1120px;margin:0 auto;padding:0 32px}
+.topnav{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.topnav .wrap{display:flex;gap:24px;align-items:center;height:50px;font-family:var(--display);font-size:14px}
+.topnav a{color:var(--muted);text-decoration:none;padding:4px 0;border-bottom:2px solid transparent;white-space:nowrap}
+.topnav a:hover{color:var(--fg);border-bottom-color:var(--accent)}
+.topnav .asof{margin-left:auto;color:var(--muted)}
+.hero{padding:56px 0 36px}
+.eyebrow{font-family:var(--display);font-size:14px;color:var(--muted);margin:0 0 10px}
+h1{font-family:var(--display);font-weight:800;font-size:50px;line-height:1.06;letter-spacing:-.02em;margin:0 0 18px;max-width:920px}
+.lede{font-size:21px;line-height:1.5;max-width:880px;margin:0 0 20px}
+section{padding:40px 0;border-top:1px solid var(--line)}
+h2{font-family:var(--display);font-weight:800;font-size:32px;letter-spacing:-.015em;margin:0 0 8px;line-height:1.15}
+h3{font-family:var(--display)}
+.lead2{color:var(--muted);font-size:18px;margin:0 0 22px;max-width:860px}
+p{max-width:860px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 24px}
+.panel h3{font-size:14px;margin:0 0 10px;color:var(--muted);font-weight:700}
+.panel p,.panel li{margin:0 0 8px;font-size:16px}
+.panel ul,.panel ol{margin:0;padding-left:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 20px 16px;border-top-width:6px}
+.card h3{font-weight:800;font-size:22px;margin:0 0 2px}
+.card .tag{font-family:var(--display);font-size:13px;color:var(--muted);margin:0 0 10px}
+.card p{margin:0 0 8px;font-size:15.5px}
+.card.bench{border-top-color:var(--bench)} .card.bench h3{color:var(--bench)}
+.card.calvin{border-top-color:var(--calvin)} .card.calvin h3{color:var(--calvin)}
+.card.marvin{border-top-color:var(--accent)} .card.marvin h3{color:var(--accent)}
+.card.lumo{border-top-color:var(--lumo)} .card.lumo h3{color:var(--lumo)}
+.chip{display:inline-block;font-family:var(--display);font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap;vertical-align:middle}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.none{background:var(--none-soft);color:var(--none)}
+.chip.block{background:var(--block-soft);color:var(--block)}
+.chip.info{background:var(--accent-soft);color:var(--accent)}
+table{border-collapse:collapse;width:100%;margin:12px 0 6px;font-size:15.5px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+th,td{text-align:left;vertical-align:top;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--display);font-size:13px;color:var(--muted);background:var(--soft)}
+td.k{font-family:var(--display);font-weight:700;white-space:nowrap}
+.table-scroll{overflow-x:auto}
+.diagram{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;overflow-x:auto}
+.diagram svg{display:block;width:100%;height:auto;min-width:900px}
+.diagram text{font-family:var(--display);fill:var(--fg)}
+.steps{counter-reset:s;list-style:none;margin:0;padding:0}
+.steps li{counter-increment:s;position:relative;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 18px 14px 62px;margin:0 0 10px}
+.steps li::before{content:counter(s);position:absolute;left:16px;top:12px;width:32px;height:32px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-family:var(--display);font-weight:800;display:flex;align-items:center;justify-content:center}
+.steps b{font-family:var(--display)}
+.steps p{margin:4px 0 0;font-size:16px}
+.callout{border-left:6px solid var(--accent);background:var(--accent-soft);border-radius:0 10px 10px 0;padding:14px 20px;margin:18px 0;max-width:900px}
+.callout.warn{border-left-color:var(--warn);background:var(--warn-soft)}
+.callout p{margin:0 0 6px}
+.callout p:last-child{margin:0}
+details{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 18px;margin:0 0 10px}
+summary{cursor:pointer;font-family:var(--display);font-weight:700}
+details p,details ul{font-size:16px;margin:10px 0 0}
+footer{padding:30px 0 60px;border-top:1px solid var(--line);color:var(--muted);font-size:14.5px}
+@media (prefers-reduced-motion:no-preference){ html{scroll-behavior:smooth} }
+@media print{ .topnav{display:none} body{background:#fff} }
+</style>
+</head>
+<body>
+<nav class="topnav" aria-label="Page sections"><div class="wrap">
+  <a href="#answer">The short version</a>
+  <a href="#layers">The layers</a>
+  <a href="#day">Your day</a>
+  <a href="#meeting">Meeting insights</a>
+  <a href="#rules">Ground rules</a>
+  <a href="#open">Open items</a>
+  <span class="asof">As of 6 Nov 2026</span>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <p class="eyebrow">Project: Lumoview platform (LumoCad) · Marvin and agent workflow</p>
+  <h1>One loop, four layers: where your work with Workbench fits next to Calvin, Marvin and LumoCad</h1>
+  <p class="lede">After the meeting with Piotr and Arne on 6 November, the picture is clearer. Workbench is where <em>you</em> talk to a coding agent. Calvin is the cable that lets that agent see and change a live LumoCad building while developing. Marvin is the chat that architects use. LumoCad is the platform they all end up in.</p>
+</div></header>
+
+<main class="wrap">
+
+<section id="answer" style="border-top:none;padding-top:8px">
+  <h2>The short version</h2>
+  <p class="lead2">Two moments in time. Keep them apart in your head and most of the confusion goes away.</p>
+  <div class="grid2">
+    <div class="panel">
+      <h3>BUILD TIME: you, Piotr and Arne, on your own machines</h3>
+      <p>You open a chat in <b>Workbench</b>, pick a gap (wall types, doors, windows), and a coding agent changes LumoCad's code. Once Piotr's harness is merged, <b>Calvin</b> lets that agent try its change on a live building and see the result right away. A <b>golden set</b> of known-good buildings says whether the result is actually better.</p>
+    </div>
+    <div class="panel">
+      <h3>USE TIME: an architect, in the real app</h3>
+      <p>The architect types to <b>Marvin</b> inside LumoCad. Marvin proposes a change, the architect presses <b>Approve</b>, and the change goes through LumoCad's own editing path, so Undo works. Marvin never touches code, and Calvin does not exist here at all.</p>
+    </div>
+  </div>
+  <div class="callout warn">
+    <p><b>One correction from the meeting.</b> We believed our branch (<code>marvin/native-apply-milton</code>) already contained Piotr's harness. It does not: only <code>origin/development</code> was merged into it. Piotr has not merged his harness yet, and he will do it himself. Until he does, nothing on this page about Calvin can be tried by you.</p>
+  </div>
+</section>
+
+<section id="layers">
+  <h2>What each layer is for</h2>
+  <p class="lead2">The picture first, then the details. Solid arrows exist today; dashed ones depend on Piotr's merge or on the plan we agreed.</p>
+
+  <div class="diagram">
+  <svg viewBox="0 0 1040 430" role="img" aria-labelledby="dt dd">
+    <title id="dt">How Workbench, Calvin, Marvin and LumoCad connect</title>
+    <desc id="dd">Top row, build time: you in Workbench talk to a coding agent, which uses Calvin to reach LumoCad's live building state. Bottom row, use time: an architect talks to Marvin, presses Approve, and the change enters LumoCad. A golden set at the bottom measures both.</desc>
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/></marker>
+    </defs>
+    <text x="20" y="26" font-size="13" font-weight="700" style="fill:var(--muted)">BUILD TIME · dev machines only</text>
+    <rect x="12" y="36" width="1016" height="150" rx="12" fill="none" stroke="var(--line)" stroke-dasharray="5 5"/>
+    <rect x="30" y="64" width="190" height="92" rx="10" fill="var(--bench-soft)" stroke="var(--bench)" stroke-width="2"/>
+    <text x="125" y="96" font-size="19" font-weight="800" text-anchor="middle" style="fill:var(--bench)">Workbench</text>
+    <text x="125" y="118" font-size="13" text-anchor="middle">your chat window</text>
+    <text x="125" y="136" font-size="13" text-anchor="middle">tickets, notes, OKRs</text>
+    <rect x="290" y="64" width="190" height="92" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/>
+    <text x="385" y="96" font-size="19" font-weight="800" text-anchor="middle">Coding agent</text>
+    <text x="385" y="118" font-size="13" text-anchor="middle">Claude Code or Codex</text>
+    <text x="385" y="136" font-size="13" text-anchor="middle">edits LumoCad code</text>
+    <rect x="550" y="64" width="190" height="92" rx="10" fill="var(--calvin-soft)" stroke="var(--calvin)" stroke-width="2" stroke-dasharray="7 4"/>
+    <text x="645" y="96" font-size="19" font-weight="800" text-anchor="middle" style="fill:var(--calvin)">Calvin</text>
+    <text x="645" y="118" font-size="13" text-anchor="middle">connector, Piotr's branch</text>
+    <text x="645" y="136" font-size="13" text-anchor="middle">not merged yet</text>
+    <path d="M220 110 H288" stroke="var(--muted)" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+    <text x="254" y="102" font-size="12" text-anchor="middle" style="fill:var(--muted)">you ask</text>
+    <path d="M480 110 H548" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 4" fill="none" marker-end="url(#ar)" marker-start="url(#ar)"/>
+    <text x="514" y="102" font-size="12" text-anchor="middle" style="fill:var(--muted)">try, look</text>
+
+    <text x="20" y="226" font-size="13" font-weight="700" style="fill:var(--muted)">USE TIME · architects, production</text>
+    <rect x="12" y="236" width="1016" height="130" rx="12" fill="none" stroke="var(--line)" stroke-dasharray="5 5"/>
+    <rect x="30" y="262" width="190" height="80" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/>
+    <text x="125" y="296" font-size="19" font-weight="800" text-anchor="middle">Architect</text>
+    <text x="125" y="318" font-size="13" text-anchor="middle">types what they want</text>
+    <rect x="290" y="262" width="190" height="80" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+    <text x="385" y="294" font-size="19" font-weight="800" text-anchor="middle" style="fill:var(--accent)">Marvin</text>
+    <text x="385" y="316" font-size="13" text-anchor="middle">proposes, never codes</text>
+    <rect x="550" y="262" width="190" height="80" rx="10" fill="var(--ok-soft)" stroke="var(--ok)" stroke-width="2"/>
+    <text x="645" y="294" font-size="19" font-weight="800" text-anchor="middle" style="fill:var(--ok)">Approve</text>
+    <text x="645" y="316" font-size="13" text-anchor="middle">a human, every change</text>
+    <path d="M220 302 H288" stroke="var(--muted)" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+    <path d="M480 302 H548" stroke="var(--muted)" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+
+    <rect x="820" y="64" width="190" height="278" rx="12" fill="var(--lumo-soft)" stroke="var(--lumo)" stroke-width="2.5"/>
+    <text x="915" y="190" font-size="22" font-weight="800" text-anchor="middle" style="fill:var(--lumo)">LumoCad</text>
+    <text x="915" y="214" font-size="13" text-anchor="middle">the platform</text>
+    <text x="915" y="234" font-size="13" text-anchor="middle">building tree: storeys,</text>
+    <text x="915" y="252" font-size="13" text-anchor="middle">rooms, walls, openings</text>
+    <path d="M740 110 H818" stroke="var(--calvin)" stroke-width="2" stroke-dasharray="6 4" fill="none" marker-end="url(#ar)" marker-start="url(#ar)"/>
+    <text x="779" y="102" font-size="12" text-anchor="middle" style="fill:var(--calvin)">live state</text>
+    <path d="M740 302 H818" stroke="var(--ok)" stroke-width="2.5" fill="none" marker-end="url(#ar)"/>
+    <text x="779" y="294" font-size="12" text-anchor="middle" style="fill:var(--ok)">undoable</text>
+
+    <path d="M385 262 V196 H385" stroke="none" fill="none"/>
+    <path d="M385 158 V258" stroke="var(--muted)" stroke-width="1.8" stroke-dasharray="3 5" fill="none" marker-end="url(#ar)"/>
+    <text x="392" y="214" font-size="12" style="fill:var(--muted)">what you build becomes</text>
+    <text x="392" y="229" font-size="12" style="fill:var(--muted)">something Marvin can use</text>
+
+    <rect x="30" y="384" width="980" height="36" rx="8" fill="var(--warn-soft)" stroke="var(--warn)"/>
+    <text x="520" y="407" font-size="14" font-weight="700" text-anchor="middle" style="fill:var(--warn)">Golden set (Piotr): known-good buildings + measures. The ruler for both rows.</text>
+  </svg>
+  </div>
+  <p style="color:var(--muted);font-size:15px">The dashed arrow from the coding agent down to Marvin is an inference, not something said in the meeting: the tools you build (wall types, doors, windows) are exactly what Marvin would later call. Arne's Marvin guide describes the same direction.</p>
+
+  <div class="grid4" style="margin-top:22px">
+    <div class="card bench">
+      <h3>Workbench</h3>
+      <p class="tag">Your desk · yours alone</p>
+      <p>A local chat window for coding agents, with Work Hub for tickets, meeting notes and OKRs. Edits ask first and show the real diff. Each chat can use its own copy of the code.</p>
+      <p><b>Runs:</b> on your Mac.<br><b>Ships:</b> never.</p>
+    </div>
+    <div class="card calvin">
+      <h3>Calvin</h3>
+      <p class="tag">Connector · Piotr's branch</p>
+      <p>Gives a coding agent live, structured access to LumoCad's building state, skipping the browser screen and the database. Codex plus Calvin together is the full harness.</p>
+      <p><b>Runs:</b> local dev server only.<br><b>Ships:</b> can go to main early, it has no production surface.</p>
+    </div>
+    <div class="card marvin">
+      <h3>Marvin</h3>
+      <p class="tag">Architect chat · Arne's service</p>
+      <p>A chat inside LumoCad. About 84 tools to read, plan and propose. Cannot touch code. Every change needs a human Approve.</p>
+      <p><b>Runs:</b> browser pane + Go service + MongoDB.<br><b>Ships:</b> soon, behind an experimental flag.</p>
+    </div>
+    <div class="card lumo">
+      <h3>LumoCad</h3>
+      <p class="tag">The platform</p>
+      <p>The 3D editor and its building data. It is the only place real buildings change, and its own undo/redo is the safety net.</p>
+      <p><b>Runs:</b> production for customers.<br><b>Ships:</b> hotfixes must stay possible.</p>
+    </div>
+  </div>
+
+  <h3 style="margin:30px 0 4px;font-size:20px">The same thing as a table</h3>
+  <div class="table-scroll"><table>
+    <thead><tr><th>Layer</th><th>Who built it</th><th>Can change</th><th>Must never</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Workbench</td><td>You</td><td>Code in repos you point it at, after you approve each edit</td><td>Touch a building directly; it has no link to LumoCad's data</td></tr>
+      <tr><td class="k">Calvin</td><td>Piotr (the idea and first version), Arne demoed it</td><td>The building state of buildings it was explicitly authorised for; every write is logged</td><td>Exist in production; correct real customer buildings; touch a building not on its allow list</td></tr>
+      <tr><td class="k">Marvin</td><td>Arne (Go service, tools), you (undo-safe room move)</td><td>Building data, only through LumoCad's editor events, after Approve</td><td>Run code or change tools by itself</td></tr>
+      <tr><td class="k">LumoCad</td><td>The whole team</td><td>Everything above ends here</td><td>Be blocked by experimental agent work</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="day">
+  <h2>How your work will look, step by step</h2>
+  <p class="lead2">You work <b>downstream</b>, close to the finished plan: windows, doors, wall types. Piotr works <b>upstream</b>: backup, golden set, wall boundary. Arne called it "working backwards": start from the end state and find the bottlenecks.</p>
+
+  <ol class="steps">
+    <li><b>Pick one gap</b> <span class="chip warn">after review with Piotr</span>
+      <p>The ten-gap list is paused. Several items (scoring, outline filter) overlap with Piotr's golden set, and two agents on the same thing would collide. Review the list together first, then claim only the downstream items.</p></li>
+    <li><b>Open a Workbench chat in the platform repo</b> <span class="chip ok">works today</span>
+      <p>Start it from the ticket in Work Hub so the chat carries the ticket. The agent reads the repo's <code>AGENTS.md</code> for the Marvin rules and the setup steps.</p></li>
+    <li><b>Let the agent build and try the change</b>
+      <p><span class="chip none">after Piotr's merge</span> With Calvin the agent builds a tool, runs it on a live building, looks at the building state and decides to iterate or undo, all in one loop. <span class="chip ok">today</span> Without Calvin you run the local app and unit tests, and you or the agent look at the result by hand.</p></li>
+    <li><b>Measure it against the golden set</b> <span class="chip none">after Monday 9 Nov, Piotr</span>
+      <p>No measure exists yet that says "this wall layout is good". Until it does, a result is a picture someone likes, not proof.</p></li>
+    <li><b>Commit small and standalone</b> <span class="chip ok">works today</span>
+      <p>One idea per commit so the other two can cherry-pick it. Push to the shared branch Piotr creates, not to <code>development</code> or <code>main</code>.</p></li>
+    <li><b>Marvin picks it up</b>
+      <p>A new capability becomes a Marvin tool or read, behind the experimental flag. The architect sees a proposal, presses Approve, and Undo still works.</p></li>
+  </ol>
+
+  <div class="callout">
+    <p><b>Why Workbench stays separate from Calvin.</b> They solve different problems and do not overlap. Workbench is where you and the agent talk, hold tickets and review diffs. Calvin is what the agent uses to touch LumoCad's live state. You can use Workbench without Calvin (you do today); you cannot meaningfully use Calvin without some chat window on top of it.</p>
+  </div>
+</section>
+
+<section id="meeting">
+  <h2>What we learned in the meeting</h2>
+  <p class="lead2">From the transcript of 6 November 2026 (you, Piotr, Arne). These are things people said, not things I checked in the code, except where marked.</p>
+
+  <details open>
+    <summary>1. The names are now settled</summary>
+    <ul>
+      <li><b>Calvin</b> is a connector, not an LLM and not a full harness. It gives a coding agent live access to LumoCad's building tree. The harness is Codex plus Calvin.</li>
+      <li><b>Marvin</b> is the architect-facing chat. It has to stay stable and must not run code.</li>
+      <li>Calvin is a development tool only: never in production, never used to correct real buildings.</li>
+    </ul>
+  </details>
+
+  <details open>
+    <summary>2. Calvin demo: what it showed and what it did not prove</summary>
+    <ul>
+      <li>It works on the pure building tree (storeys, rooms, measurements) inside the live session, not through the API or database. Arne called this much cleaner for agents, because the database holds many differently linked objects that must be crawled.</li>
+      <li>In about a minute it wrote a floor-sorting algorithm for 10 to 12 rooms. It invented a "room core" (the area cleanly covered by measurements) and used panorama tags to guess where doors are.</li>
+      <li>Arne was candid that it may be <b>overfitted</b> to the one building used. That is exactly why a golden set is needed before judging quality.</li>
+      <li>It can build a tool, use it in the same session, look at the result and undo. All writes are logged, and a hard block stops it from touching buildings it was not authorised for.</li>
+      <li><b>Limit:</b> it is not headless. If LumoCad reloads (when the XState tree structure changes), someone must keep the tab visible. Overnight unattended runs would need more work.</li>
+    </ul>
+  </details>
+
+  <details open>
+    <summary>3. Marvin's known weakness: no real memory between messages</summary>
+    <ul>
+      <li>Marvin was designed as a one-shot agent: prompt and tools in, data out, done. There is no native session continuity.</li>
+      <li>The MongoDB you set up is a workaround that simulates continuity across messages. Burak (who reviewed the setup with Arne) said he would have designed it differently. Acknowledged, <b>not resolved</b>.</li>
+    </ul>
+  </details>
+
+  <details open>
+    <summary>4. Branches and deployment</summary>
+    <ul>
+      <li>Everything is local today. Marvin has never been deployed; Calvin lives only on the local Vite server.</li>
+      <li>Keep this work off <code>development</code> and <code>main</code> for now, so a hotfix for a real project never has to untangle agent work.</li>
+      <li>A third shared branch (tentatively "agent-stage") becomes the day-to-day target for all three of you. <b>Piotr creates it</b> after merging his harness.</li>
+      <li>Marvin moves to <code>development</code>/<code>main</code> fairly soon behind an experimental flag. Without a database and API keys, the chat tab shows a graceful "not set up" message and breaks nothing.</li>
+      <li>Calvin can go to <code>main</code> immediately: it has no production surface.</li>
+      <li>Your only real code change to Marvin was routing its writes through LumoCad's undo/redo instead of straight to the API. The rest of your Marvin work is instructions in the agent file.</li>
+    </ul>
+  </details>
+
+  <details open>
+    <summary>5. The wall-creation fix: still open</summary>
+    <ul>
+      <li>Wall creation failed with "cannot create an outer wall loop" after a slab update. Arne and Piotr each have a fix.</li>
+      <li>The transcript says the team leaned to Arne's. Your recollection is that Piotr showed his working at the end and the room preferred it. <b>Treat it as undecided.</b> The final answer is whatever Piotr merges.</li>
+      <li>Arne's fix was written entirely by a coding agent and not reviewed by hand; Piotr wants to run both on buildings he knows well.</li>
+      <li><span class="chip warn">Consequence for us</span> When we merged <code>development</code> we kept Arne's join and step logic in <code>boundaryExternalWallJoinGeometry.ts</code> and <code>boundaryExternalWallLoop.ts</code>. If Piotr's wins, those files may have to give way.</li>
+    </ul>
+  </details>
+
+  <details open>
+    <summary>6. The golden set: the ruler everything else waits for</summary>
+    <ul>
+      <li>A hand-curated set of buildings with known-good results, at least two, and some must be made by hand because few clean examples exist.</li>
+      <li>Method: build measures on the golden set, check them on separate test buildings, then use set plus measures as the objective benchmark for all agent work.</li>
+      <li>It replaces today's manual judging (Kim reviewing five rooms at a time: "fix room five but keep the solution for one to four").</li>
+      <li>Piotr finishes and fully tests the backup system on Friday 6 Nov and starts golden-set cases on Monday 9 Nov.</li>
+    </ul>
+  </details>
+
+  <details open>
+    <summary>7. Gaps named in the meeting</summary>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Gap</th><th>What was said</th><th>Likely owner</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Outline filter</td><td>Marvin uses Arne's older edge-detection (v1), not v2, because the coding agent picked a hidden method in the development section of the UI. Arne prefers v2's boundary walls, but there is no objective measure yet.</td><td>Piotr (tied to golden set)</td></tr>
+        <tr><td class="k">Wall types</td><td>Generated walls have no type: no interior, exterior, load-bearing distinction. Raised by Burak in the agent review.</td><td>You (downstream)</td></tr>
+        <tr><td class="k">Door and window placement</td><td>No automation. Example: windows look evenly spaced from outside, but placed spacing is 88.5, 85.5 and 84.5 cm even after manual correction. A rule is needed to be consistent.</td><td>You (downstream)</td></tr>
+        <tr><td class="k">Room separation</td><td>A space split by walls but measured as one room, or one hospital corridor measured as three, causes missing door links and overlapping boundaries. No automated fix.</td><td>Open</td></tr>
+        <tr><td class="k">Exterior wall thickness</td><td>About 70% of buildings have outside measurements, about 20% a drone model (some overlap), about 20% neither. For the last group nothing estimates thickness.</td><td>Open</td></tr>
+        <tr><td class="k">Dimensions</td><td>Stay manual. Rio said automatic dimensions never match what architects want to measure, so low priority.</td><td>Parked</td></tr>
+      </tbody>
+    </table></div>
+  </details>
+
+  <details open>
+    <summary>8. Ideas floated, not planned</summary>
+    <ul>
+      <li>Log architect sessions (video with commentary plus the sequence of LumoCad actions) as future training input.</li>
+      <li>Old Notion sprint tickets are probably mostly irrelevant once agents handle the workflow. Suggestion: compile them with Notion AI into one file and let an agent triage the easy ones. Your Work Hub already does something like this.</li>
+    </ul>
+  </details>
+</section>
+
+<section id="rules">
+  <h2>Ground rules between the layers</h2>
+  <p class="lead2">These came up in the meeting or already exist in the Marvin instructions. They are what keeps the loop safe.</p>
+  <div class="grid2">
+    <div class="panel"><h3>WHAT NEVER CROSSES</h3>
+      <ul>
+        <li>Marvin never runs code. Changing LumoCad or its tools is the team plus a coding agent.</li>
+        <li>Calvin never reaches production and never edits real customer buildings.</li>
+        <li>Approve is a human button on a card, not a tool the model can call.</li>
+        <li>Agent work stays off <code>development</code> and <code>main</code> until we say otherwise.</li>
+      </ul></div>
+    <div class="panel"><h3>WHAT KEEPS IT SAFE</h3>
+      <ul>
+        <li>Every Marvin change goes through LumoCad's editor, in one undo batch.</li>
+        <li>Calvin writes are logged and limited to authorised buildings.</li>
+        <li>Small standalone commits so each of you can cherry-pick the others' work.</li>
+        <li>A hotfix path to <code>main</code> that carries no Marvin code (your separate hotfix checkout).</li>
+      </ul></div>
+  </div>
+</section>
+
+<section id="open">
+  <h2>What is open, and who owns it</h2>
+  <div class="table-scroll"><table>
+    <thead><tr><th>Item</th><th>Owner</th><th>State</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Merge the harness, create the shared branch (name open)</td><td>Piotr</td><td><span class="chip warn">waiting</span> Everything else on your side pauses until this lands.</td></tr>
+      <tr><td class="k">Choose the wall-creation fix</td><td>Piotr, with Arne</td><td><span class="chip warn">undecided</span> Leaning Piotr's, per your memory of the demo.</td></tr>
+      <tr><td class="k">Golden set, first cases</td><td>Piotr</td><td><span class="chip none">Mon 9 Nov</span></td></tr>
+      <tr><td class="k">Review the ten-gap list together, then split it</td><td>You and Piotr</td><td><span class="chip warn">paused</span> Loop deliberately not started.</td></tr>
+      <tr><td class="k">Fix the copy/worker error (the worker check was missing)</td><td>You</td><td><span class="chip none">next</span> Then wait for Piotr's branch.</td></tr>
+      <tr><td class="k">Marvin session continuity (Mongo workaround)</td><td>Arne</td><td><span class="chip none">acknowledged, not solved</span></td></tr>
+      <tr><td class="k">Port Marvin's slab and wall tools to the merged wall generator</td><td>Arne</td><td><span class="chip warn">145 tests fail</span> in our merge; they are the checklist. May change again if Piotr's wall fix wins.</td></tr>
+      <tr><td class="k">Native room move: real-app check (move, Approve, Ctrl+Z)</td><td>You</td><td><span class="chip none">not done</span> Unit tests pass; never run through chat in the real app.</td></tr>
+      <tr><td class="k">Daily stand-up 10:00, 20 minutes, weekdays from next week</td><td>Arne</td><td><span class="chip ok">set</span></td></tr>
+    </tbody>
+  </table></div>
+  <p style="color:var(--muted);font-size:15px">Calvin's earlier explainer page (<a href="../calvin-and-marvin/">calvin-and-marvin</a>) was written before the meeting and still treats Calvin as a harness we named ourselves. This page replaces its framing.</p>
+</section>
+
+</main>
+<footer><div class="wrap">Sources: transcript of the 6 Nov 2026 meeting (Milton, Piotr, Arne); Workbench README; the Marvin tool-surface map and agent instructions in the platform repo. Git facts (Piotr's harness not in our branch) were checked on 6 Nov 2026 before the meeting summary was added.</div></footer>
+</body>
+</html>
