@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="project" content="Lumoview-Building-Analytics-GmbH/platform">
+<meta name="description" content="What Piotr's harness branch needs to pull from Arne's Marvin branch (and Milton's commits on top), what to leave out, where the merge conflicts are, and the order to do it in. Read from git on 6 Nov 2026.">
+<title>What to pull from Arne's branch into the harness branch</title>
+<style>
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --fg:#18202c; --muted:#566173; --line:#d3d9e2; --soft:#e9edf3;
+  --accent:#2453c0; --accent-soft:#e6ecfa; --ok:#1d7a46; --ok-soft:#e3f3ea; --warn:#9a5b00; --warn-soft:#fbf0dc;
+  --block:#b0322b; --block-soft:#fae6e4; --part:#6a4bb0; --part-soft:#efe9fa; --none:#5b6474; --none-soft:#eceff3;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif; --body:"Source Sans 3","Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0f141b; --surface:#171e28; --fg:#e7ecf3; --muted:#9aa6b8; --line:#2b3544; --soft:#1f2834;
+    --accent:#7ea3ff; --accent-soft:#1a2644; --ok:#58c98a; --ok-soft:#14301f; --warn:#e6a94f; --warn-soft:#33260f;
+    --block:#ff8a80; --block-soft:#3a1a18; --part:#b79cf5; --part-soft:#2a2144; --none:#9aa6b8; --none-soft:#1f2834;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.58}
+a{color:var(--accent)}
+a:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:3px}
+code{font-family:var(--mono);font-size:.84em;background:var(--soft);padding:.08em .38em;border-radius:4px;overflow-wrap:anywhere}
+pre{font-family:var(--mono);font-size:14px;line-height:1.5;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto;margin:10px 0 16px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 32px}
+.topnav{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.topnav .wrap{display:flex;gap:24px;align-items:center;height:50px;font-family:var(--display);font-size:14px}
+.topnav a{color:var(--muted);text-decoration:none;padding:4px 0;border-bottom:2px solid transparent;white-space:nowrap}
+.topnav a:hover{color:var(--fg);border-bottom-color:var(--accent)}
+.topnav .asof{margin-left:auto;color:var(--muted)}
+.hero{padding:56px 0 36px}
+.eyebrow{font-family:var(--display);font-size:14px;color:var(--muted);margin:0 0 10px}
+h1{font-family:var(--display);font-weight:800;font-size:50px;line-height:1.05;letter-spacing:-.02em;margin:0 0 18px;max-width:920px}
+.lede{font-size:21px;line-height:1.5;max-width:880px;margin:0 0 28px}
+.state{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 24px}
+.panel h3{font-family:var(--display);font-size:14px;margin:0 0 10px;color:var(--muted);font-weight:700}
+.panel p,.panel li{margin:0 0 8px;font-size:16px}
+.panel ol,.panel ul{margin:0;padding-left:20px}
+.next{border-left:6px solid var(--accent);background:var(--accent-soft)}
+.next h3{color:var(--accent)}
+section{padding:40px 0;border-top:1px solid var(--line)}
+h2{font-family:var(--display);font-weight:800;font-size:32px;letter-spacing:-.015em;margin:0 0 8px;line-height:1.15}
+h3.sub{font-family:var(--display);font-weight:800;font-size:20px;margin:26px 0 8px}
+.lead2{color:var(--muted);font-size:18px;margin:0 0 20px;max-width:860px}
+p{max-width:860px}
+.chip{display:inline-block;font-family:var(--display);font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap;vertical-align:middle}
+.chip.take{background:var(--ok-soft);color:var(--ok)}
+.chip.later{background:var(--warn-soft);color:var(--warn)}
+.chip.leave{background:var(--none-soft);color:var(--none)}
+.chip.review{background:var(--block-soft);color:var(--block)}
+.chip.sep{background:var(--part-soft);color:var(--part)}
+.chip.v{background:var(--accent-soft);color:var(--accent)}
+table{border-collapse:collapse;width:100%;margin:12px 0 6px;font-size:15.5px}
+th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid var(--line)}
+th{font-family:var(--display);font-size:13px;color:var(--muted)}
+td.k{font-family:var(--display);font-weight:800;white-space:nowrap}
+.scroll{overflow-x:auto}
+figure{margin:18px 0 8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px 12px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{font-size:14px;color:var(--muted);margin-top:8px}
+.svg-t{font-family:var(--display);font-size:13px;font-weight:700;fill:var(--fg)}
+.svg-s{font-family:var(--body);font-size:12.5px;fill:var(--muted)}
+.svg-line{stroke:var(--muted);stroke-width:2.5;fill:none}
+.svg-dev{stroke:var(--fg)}
+.svg-arne{stroke:var(--block)}
+.svg-piotr{stroke:var(--ok)}
+.svg-ours{stroke:var(--accent)}
+.dot{fill:var(--surface);stroke-width:2.5}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.conf li{font-family:var(--mono);font-size:13.5px;margin:0 0 2px;overflow-wrap:anywhere}
+.conf ul{padding-left:18px;margin:6px 0 0}
+footer{padding:28px 0 48px;color:var(--muted);font-size:14px;border-top:1px solid var(--line)}
+@media print{.topnav{display:none}}
+</style>
+</head>
+<body>
+<nav class="topnav" aria-label="Sections"><div class="wrap">
+  <a href="#answer">Answer</a><a href="#branches">Branches</a><a href="#whats-in">What's in Arne's branch</a><a href="#conflicts">Conflicts</a><a href="#how">How to do it</a><a href="#open">What's open</a>
+  <span class="asof">Read from git, 6 Nov 2026</span>
+</div></nav>
+
+<header class="hero" id="answer"><div class="wrap">
+  <p class="eyebrow">Lumoview · platform and lumoagent · for Piotr and Arne</p>
+  <h1>What to pull from Arne's branch into the harness branch</h1>
+  <p class="lede">Piotr's harness lives on <code>lumocad/local-harness-piotr</code>, cut from <code>development</code> on 2 Nov. Marvin lives on Arne's <code>development_ai-chat</code>, cut from <code>development</code> on 8 Oct, with Milton's seven commits on top as <code>marvin/native-apply-milton</code>. This page says what Piotr needs from those two branches to run Marvin next to the harness, what to leave out, where the merges collide, and in which order to do it. Every number below was read from git on 6 Nov; nothing was merged or run.</p>
+  <div class="state">
+    <div class="panel next"><h3>The short answer</h3>
+      <ol>
+        <li><b>Merge, don't cherry-pick.</b> Marvin is 755 new files plus hooks in 27 core files. Picking commits one by one would break at the first core hook.</li>
+        <li><b>Arne first.</b> A dry-run merge shows 24 conflicting files. 23 of them are between Arne's branch and <code>development</code> itself, because his branch is 186 commits behind. That is his to bring up to date, not Piotr's.</li>
+        <li><b>Then one merge for Piotr</b> with exactly one conflict of his own: <code>vite.config.ts</code>, where both branches add something to the same line. Easy.</li>
+        <li><b>Review the wall generator after the merge</b> before trusting "Create boundary walls" again. Three people have now changed it.</li>
+        <li><b>The Go service is a separate repository</b> (<code>lumoagent</code>, branch <code>development_ai-chat</code>). Nothing to pull; check it out next to platform.</li>
+      </ol></div>
+    <div class="panel"><h3>How this was checked</h3>
+      <p>Branch tips, fork points and file lists from <code>git</code>; conflicts from <code>git merge-tree</code>, which computes a merge without touching any files (a "dry run"). Groupings of Arne's changes come from the tool map of 4 Nov. No merge, build or test was run. <span class="chip v">from git</span> marks numbers read today.</p></div>
+  </div>
+</div></header>
+
+<main>
+<section id="branches"><div class="wrap">
+  <h2>The three branches</h2>
+  <p class="lead2">"Fork point" is the last commit two branches share. "Ahead" counts commits a branch adds after it; "behind" counts commits it is missing from the other side.</p>
+  <figure>
+    <svg viewBox="0 0 1040 250" role="img" aria-labelledby="svgt"><title id="svgt">Timeline of development, Arne's branch, Milton's commits and Piotr's branch</title>
+      <!-- development -->
+      <line class="svg-line svg-dev" x1="40" y1="120" x2="1000" y2="120"/>
+      <text class="svg-t" x="40" y="105">development</text>
+      <text class="svg-s" x="860" y="105">bd10b74e5 · 5 Nov</text>
+      <circle class="dot svg-dev" cx="180" cy="120" r="6" style="stroke:var(--fg)"/>
+      <text class="svg-s" x="150" y="150">8 Oct · b8b3fd469</text>
+      <circle class="dot" cx="700" cy="120" r="6" style="stroke:var(--fg)"/>
+      <text class="svg-s" x="665" y="150">2 Nov · 625e7afd4</text>
+      <text class="svg-s" x="330" y="112">186 commits</text>
+      <!-- arne -->
+      <path class="svg-line svg-arne" d="M180 120 C 230 120, 240 50, 290 50 L 760 50"/>
+      <text class="svg-t" x="300" y="38" style="fill:var(--block)">development_ai-chat (Arne) · 31 commits · 12be54d34, 4 Nov</text>
+      <!-- ours -->
+      <path class="svg-line svg-ours" d="M760 50 L 980 50"/>
+      <text class="svg-t" x="770" y="38" style="fill:var(--accent)">+7 Milton · marvin/native-apply-milton</text>
+      <!-- piotr -->
+      <path class="svg-line svg-piotr" d="M700 120 C 740 120, 750 200, 800 200 L 980 200"/>
+      <text class="svg-t" x="690" y="224" style="fill:var(--ok)">lumocad/local-harness-piotr (Piotr)</text>
+      <text class="svg-s" x="690" y="242">12 commits · 04fb699e0, 6 Nov</text>
+    </svg>
+    <figcaption>Arne's branch left <code>development</code> a month before Piotr's did. Everything <code>development</code> gained in those four weeks (186 commits, including the roof, room book and floor-plan releases) is in Piotr's branch and not in Arne's. That is where almost all conflicts come from.</figcaption>
+  </figure>
+  <div class="scroll"><table>
+    <thead><tr><th>Branch</th><th>Tip</th><th>Fork from development</th><th>Ahead / behind</th><th>Touches</th></tr></thead>
+    <tbody>
+      <tr><td class="k">development_ai-chat (Arne)</td><td><code>12be54d34</code>, 4 Nov</td><td><code>b8b3fd469</code>, 8 Oct</td><td>31 ahead, 186 behind</td><td>755 files in the Marvin folder, 255 outside it</td></tr>
+      <tr><td class="k">marvin/native-apply-milton</td><td><code>82459cf21</code>, 5 Nov</td><td>same as Arne's (sits on top of it)</td><td>7 ahead of Arne</td><td>Marvin folder and <code>manuals/</code> only</td></tr>
+      <tr><td class="k">lumocad/local-harness-piotr</td><td><code>04fb699e0</code>, 6 Nov</td><td><code>625e7afd4</code>, 2 Nov</td><td>12 ahead, 3 behind</td><td>harness, lab tools, floor puzzle, an October wall-generator fix; nothing in the Marvin folder</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<section id="whats-in"><div class="wrap">
+  <h2>What is in Arne's branch, and what to do with each part</h2>
+  <p class="lead2">Grouped by what it is for. <span class="chip take">take</span> needed to run Marvin · <span class="chip later">take, then shrink</span> needed today, planned to go away · <span class="chip review">review first</span> changes everyone's behaviour · <span class="chip leave">optional</span> · <span class="chip sep">separate repo</span>.</p>
+
+  <div class="scroll"><table>
+    <thead><tr><th>Part</th><th>What it is</th><th>Size <span class="chip v">from git</span></th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td class="k">A. The Marvin folder</td><td><code>src/lumocad/features/assistant/</code>: the chat pane, the controller, about 20 services, 84 tools, tests, READMEs. All new files, so nothing on Piotr's side can collide with them.</td><td>755 files</td><td><span class="chip take">take</span></td></tr>
+      <tr><td class="k">B. Hooks inside the editor core</td><td>27 files outside the folder import from it: the undo/redo, building, space, storey, wall, door, window, outline, measurement, TGA-shape, comment and node machines; the layout shell (<code>LumoCadNewLayout</code>, <code>ViewFactory</code>, <code>PointCloudView</code>); the plan download and PDF buttons; the room-book export; the QC hand-in footer; one store. Marvin cannot start without them. The tool map's step 5 removes them one by one once each tool uses the editor's own events.</td><td>27 files, largest <code>undoRedoMachine</code> +136, <code>arbitraryProfileMachine</code> +134, <code>wallMachine</code> +121</td><td><span class="chip later">take, then shrink</span></td></tr>
+      <tr><td class="k">C. General bug fixes mixed in</td><td>Four fixes that help every user and have nothing to do with Marvin: a door/window save that turned a detached opening into an attached one on undo; a wall deletion that left a property set orphaned on the server; undo now deleting relation rows the restored state no longer has; opening load no longer counting a null placement as saved CAD. They sit inside the machine diffs of part B.</td><td>a few lines each, in <code>doorMachine</code>, <code>windowMachine</code>, <code>storeyMachine</code>, <code>wallMachine</code></td><td><span class="chip take">take</span>, and send to <code>development</code> as their own small PRs (tool-map step 9)</td></tr>
+      <tr><td class="k">D. The shared wall generator</td><td>"Create boundary walls" was rewritten in part: <code>boundaryExternalWallLoop</code>, <code>…JoinGeometry</code>, <code>…InternalWallStrips</code>, <code>…InternalWallJunctions</code>, plus new join-repair, step-join and face-fit utilities. This changes the button for every user. Piotr's October commit touches the same area (<code>boundaryExternalWallPreview</code>, <code>…Matching</code>, a new <code>…Merging</code>), and <code>development</code> changed it too, so the merge will stop here.</td><td>about +235/−94 in the four files, plus about 20 new files with tests</td><td><span class="chip review">review first</span>: compare the button's output on three golden buildings before and after</td></tr>
+      <tr><td class="k">E. New helper utilities</td><td>Mostly needed by Marvin's tools: a plan data-revision tracker (<code>planDataRevision.ts</code>, 335 lines), a saved-element graph, saved-boundary sync, a hydrated wall footprint, a manual wall-edit planner, sorting-backup file tests.</td><td>45 new files under <code>utils/</code> and <code>machines/</code></td><td><span class="chip take">take</span></td></tr>
+      <tr><td class="k">F. Tooling and config</td><td>New scripts in <code>package.json</code> (<code>typecheck</code>, <code>verify</code>, <code>test:run</code>, <code>test:browser</code>, <code>test:ci</code>…) with <code>scripts/verify.mjs</code>; CI workflow (+54 lines); <code>vite.config.ts</code> (adds an app-version define); <code>vitest.config.ts</code>; <code>.gitignore</code> (ignores <code>artifacts/…</code> and <code>.tmp/</code>); <code>.env.dist</code> (adds <code>VITE_MARVIN_SERVICE_URL</code> and <code>VITE_DEV_DIAGNOSTICS</code>); three lines in <code>AGENTS.md</code>; <code>DEVELOPMENT.md</code>; <code>README.md</code>.</td><td>about 12 files</td><td><span class="chip take">take</span>; <code>vite.config.ts</code> is the one real conflict with the harness</td></tr>
+      <tr><td class="k">G. Tests and evidence</td><td><code>tests/marvin-ui/</code>: 39 Playwright fixture tests for the chat pane. <code>artifacts/</code>: 36 committed evidence files from Arne's own checks (budget UI, wall diagnostics, a timing JSON).</td><td>75 files</td><td><span class="chip take">take</span> the tests; the evidence files are <span class="chip leave">optional</span></td></tr>
+      <tr><td class="k">H. Milton's seven commits</td><td>On top of Arne's: the room move through the editor's own events (step 1, 21 tests); <code>AGENTS.md</code> and <code>CLAUDE.md</code> in the Marvin folder (rules, traps, setup, Mongo, key in Scaleway, troubleshooting); the tool map and plan; a plan note. All inside the Marvin folder and <code>manuals/</code>, so no conflicts.</td><td>7 commits, +1,400 lines</td><td><span class="chip take">take</span>: merge <code>marvin/native-apply-milton</code> instead of Arne's branch and you get both</td></tr>
+      <tr><td class="k">I. The Go service</td><td>Repository <code>lumoagent</code>, branch <code>development_ai-chat</code>. The <code>serve</code> command (the Marvin service) and <code>devcheck</code> exist only on that branch; <code>development</code> there has neither. Needs Go 1.25, MongoDB and the OpenRouter key from Scaleway (<code>openrouter-api-key</code>). Setup steps are in the Marvin folder's <code>AGENTS.md</code>.</td><td>separate repo</td><td><span class="chip sep">separate repo</span>: check out, don't merge</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<section id="conflicts"><div class="wrap">
+  <h2>Where the merge collides</h2>
+  <p class="lead2">From the dry run. A "content" conflict means both sides changed the same lines of a file and git cannot pick. The two lists below are the same 24 files split by whose change is on the other side.</p>
+  <div class="two">
+    <div class="panel conf"><h3>23 files: Arne's branch against <code>development</code></h3>
+      <p>These conflict even if Piotr's branch did not exist. They are the cost of forking on 8 Oct. The fix is for Arne to merge <code>development</code> into <code>development_ai-chat</code> once (or rebase), run <code>pnpm typecheck</code> and the assistant tests, and push.</p>
+      <ul>
+        <li>.gitignore</li><li>README.md</li>
+        <li>src/components/building/RoomData/raumbuch/useRaumbuchExport.ts</li>
+        <li>src/lumocad/DESIGN_SYSTEM.md</li>
+        <li>…/LumocadLeftSidebar/RoofBoundaries.tsx</li>
+        <li>…/LumocadLeftSidebarV2/QcHandInFooter.tsx</li>
+        <li>src/lumocad/components/views/PointCloudView.tsx</li>
+        <li>src/lumocad/hooks/floorplan/useFloorPlanStructureDataRevision.ts</li>
+        <li>machines: arbitraryProfileMachine, measurementMachine, wallMachine, buildingMachine, individualCommentMachine, interactableNode, undoRedoMachine</li>
+        <li>src/lumocad/types/boundaryInternalWallPreview.ts, view.ts</li>
+        <li>src/lumocad/utils/annotationHelper.ts</li>
+        <li>src/lumocad/utils/floorplan/preparedPlanAreas.ts</li>
+        <li>src/lumocad/utils/roomBook/roomBookSchedule.ts</li>
+        <li>wall generator: boundaryExternalWallJoinGeometry, boundaryExternalWallLoop, boundaryExternalWallPreview, boundaryWallPreview</li>
+      </ul></div>
+    <div class="panel conf"><h3>1 file: Piotr's own work against Arne's</h3>
+      <p>Both add to the same line of <code>vite.config.ts</code>: Piotr registers the harness bridge plugin, Arne adds an app-version define and an import. Keep both. That is the whole Piotr-specific conflict.</p>
+      <ul><li>vite.config.ts</li></ul>
+      <p style="margin-top:12px">Two places need a careful look even though git merges them without complaint: Piotr's October change to <code>boundaryExternalWallPreview.ts</code> and <code>…Matching.ts</code> lands on files Arne also rewrote (part D), and both branches add a line to <code>AGENTS.md</code> and <code>.gitignore</code> (git merges those cleanly).</p></div>
+  </div>
+</div></section>
+
+<section id="how"><div class="wrap">
+  <h2>How to do it, in order</h2>
+  <p class="lead2">Learning note: <code>git merge</code> brings a whole branch across and remembers it, so later merges only bring what is new. <code>git cherry-pick</code> copies single commits and forgets where they came from; it suits small, self-contained commits, not 31 commits with hooks in 27 core files.</p>
+
+  <h3 class="sub">Step 1 · Arne brings his branch up to date (once)</h3>
+  <pre>git checkout development_ai-chat
+git fetch origin
+git merge origin/development          # expect the 23 files above
+# resolve, then:
+pnpm install
+pnpm typecheck
+NODE_ENV=test pnpm exec vitest run src/lumocad/features/assistant
+git push</pre>
+  <p>Milton's branch then needs one line to follow: <code>git merge origin/development_ai-chat</code> on <code>marvin/native-apply-milton</code> (no conflicts expected: his seven commits only touch the Marvin folder and <code>manuals/</code>).</p>
+
+  <h3 class="sub">Step 2 · Piotr merges Marvin into the harness branch</h3>
+  <pre>git checkout lumocad/local-harness-piotr
+git fetch origin
+git merge origin/marvin/native-apply-milton   # Arne's branch plus Milton's 7 commits
+# expect one conflict: vite.config.ts — keep the harness plugin AND Arne's define
+pnpm install                                  # package.json gained scripts, no new dependencies expected
+cp .env.dist .env.marvin-example              # copy the two new VITE_ lines into your .env
+pnpm typecheck
+NODE_ENV=test pnpm exec vitest run src/lumocad/features/assistant src/lumocad/lab
+pnpm harness install-skill                    # the harness skill is gitignored; the Marvin AGENTS.md is not</pre>
+  <p>If Arne cannot do step 1 soon, the same merge works today, but Piotr then resolves all 24 files himself, including the wall-generator ones, which he is the right person for anyway. Milton can pair on the machine files.</p>
+
+  <h3 class="sub">Step 3 · Run the service next to the harness</h3>
+  <pre>git clone git@github.com:Lumoview-Building-Analytics-GmbH/lumoagent.git
+cd lumoagent && git checkout development_ai-chat
+# MongoDB (Docker or local), env file with the key from Scaleway, then:
+go run . serve --env-file ~/marvin.env         # port 8091; browser on 5173</pre>
+  <p>The full checklist, including the MongoDB commands and the "Cannot connect to marvin" fixes, is in <code>src/lumocad/features/assistant/AGENTS.md</code> after the merge.</p>
+
+  <h3 class="sub">Step 4 · Review what changed for everyone</h3>
+  <ul>
+    <li><b>Wall generator (part D).</b> Run "Create boundary walls" on three buildings with the merged code and with <code>development</code>, compare wall counts, thicknesses and the residual regions. Owner to agree: Piotr knows the generator, Arne made the change.</li>
+    <li><b>General fixes (part C).</b> Open one small PR each against <code>development</code> so they stop travelling inside the Marvin branch.</li>
+    <li><b>Core hooks (part B).</b> Agree that they are temporary: tool-map step 5 removes them as each Marvin tool moves onto the editor's own events (step 1 of that plan is done for room moves).</li>
+  </ul>
+</div></section>
+
+<section id="open"><div class="wrap">
+  <h2>What is open</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Item</th><th>Why it matters</th><th>Owner</th></tr></thead>
+    <tbody>
+      <tr><td>Arne has not confirmed which branch is the target</td><td>His guide of 4 Nov says port Marvin onto <code>development</code>; the three of us work on <code>development_ai-chat</code> as a working assumption. Step 1 above makes the two almost the same thing.</td><td>Arne</td></tr>
+      <tr><td>Nobody has reviewed the wall-generator change</td><td>Three branches now modify it; the merged button may behave differently from today's.</td><td>Piotr, Arne</td></tr>
+      <tr><td>Nothing here was run</td><td>Conflict lists come from a dry run. Typecheck and tests after the real merge may show more than git does.</td><td>whoever merges</td></tr>
+      <tr><td>Two instruction files for coding agents</td><td>Piotr's harness skill and the Marvin folder's <code>AGENTS.md</code> do not mention each other yet.</td><td>Milton</td></tr>
+      <tr><td>The real-app check of the native room move</td><td>Still not done. Once merged, the harness can run it: move one room through Marvin, undo, read the server.</td><td>Milton</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>Sources.</b> <code>git merge-tree --write-tree</code> dry runs of 6 Nov (Arne → Piotr, Milton → Piotr, Arne → development); the tool map (<code>manuals/lumocad-plans/automation/MARVIN_TOOL_SURFACE_MAP_2026-11-04.md</code>, sections 2.4 and 4); Piotr's harness document of 5 Nov; Arne's implementation guide of 4 Nov. Companion pages: <a href="https://miltonmannarino.github.io/marvin-agent-architecture/">Marvin: the AI architect inside LumoCad</a> and <a href="https://miltonmannarino.github.io/marvin-2d-pipeline-gaps/">Ten places to improve</a>.</p>
+</div></section>
+</main>
+<footer><div class="wrap">6 November 2026 · project Lumoview-Building-Analytics-GmbH/platform (also covers lumoagent) · read from git, nothing merged or run.</div></footer>
+</body>
+</html>
