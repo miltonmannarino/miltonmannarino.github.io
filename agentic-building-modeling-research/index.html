@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="project" content="Lumoview-Building-Analytics-GmbH/platform">
+<meta name="description" content="Research survey (7 Nov 2026) of technologies, libraries, papers, datasets and agent patterns for modelling a building from Lumoview's room-by-room LiDAR scans: sorting and puzzling rooms, walls with thickness and type, doors and windows, and the Marvin/Calvin agent layer with a golden set.">
+<title>Agentic building modelling: what to try, from the research</title>
+<style>
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --fg:#18202c; --muted:#566173; --line:#d3d9e2; --soft:#e9edf3;
+  --accent:#2453c0; --accent-soft:#e6ecfa; --ok:#1d7a46; --ok-soft:#e3f3ea; --warn:#9a5b00; --warn-soft:#fbf0dc;
+  --block:#b0322b; --block-soft:#fae6e4; --none:#5b6474; --none-soft:#eceff3;
+  --a1:#0e7a6b; --a1-soft:#dff3ef; --a2:#8a4b12; --a2-soft:#f8ead9; --a3:#6a4bb0; --a3-soft:#efe9fa; --a4:#2453c0; --a4-soft:#e6ecfa;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif; --body:"Source Sans 3","Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0f141b; --surface:#171e28; --fg:#e7ecf3; --muted:#9aa6b8; --line:#2b3544; --soft:#1f2834;
+    --accent:#7ea3ff; --accent-soft:#1a2644; --ok:#58c98a; --ok-soft:#14301f; --warn:#e6a94f; --warn-soft:#33260f;
+    --block:#ff8a80; --block-soft:#3a1a18; --none:#9aa6b8; --none-soft:#1f2834;
+    --a1:#52d1bd; --a1-soft:#10302b; --a2:#e8a463; --a2-soft:#3a2713; --a3:#b79cf5; --a3-soft:#2a2144; --a4:#7ea3ff; --a4-soft:#1a2644;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.58}
+a{color:var(--accent)}
+a:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:3px}
+code{font-family:var(--mono);font-size:.84em;background:var(--soft);padding:.08em .38em;border-radius:4px;overflow-wrap:anywhere}
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+.topnav{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.topnav .wrap{display:flex;gap:20px;align-items:center;height:50px;font-family:var(--display);font-size:13.5px}
+.topnav a{color:var(--muted);text-decoration:none;padding:4px 0;border-bottom:2px solid transparent;white-space:nowrap}
+.topnav a:hover{color:var(--fg);border-bottom-color:var(--accent)}
+.topnav .asof{margin-left:auto;color:var(--muted)}
+.hero{padding:56px 0 32px}
+.eyebrow{font-family:var(--display);font-size:14px;color:var(--muted);margin:0 0 10px}
+h1{font-family:var(--display);font-weight:800;font-size:50px;line-height:1.06;letter-spacing:-.02em;margin:0 0 18px;max-width:980px}
+.lede{font-size:21px;line-height:1.5;max-width:900px;margin:0 0 18px}
+section{padding:40px 0;border-top:1px solid var(--line)}
+h2{font-family:var(--display);font-weight:800;font-size:32px;letter-spacing:-.015em;margin:0 0 8px;line-height:1.15}
+h3{font-family:var(--display);font-size:21px;margin:26px 0 6px}
+h4{font-family:var(--display);font-size:16px;margin:18px 0 4px;color:var(--muted)}
+.lead2{color:var(--muted);font-size:18px;margin:0 0 20px;max-width:900px}
+p{max-width:900px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 24px}
+.panel h3{font-size:14px;margin:0 0 10px;color:var(--muted);font-weight:700}
+.panel p,.panel li{margin:0 0 8px;font-size:16px}
+.panel ul,.panel ol{margin:0;padding-left:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.verdicts{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0 6px}
+.verdict{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 18px 14px;border-top-width:6px}
+.verdict h3{margin:0 0 4px;font-size:19px}
+.verdict .n{font-family:var(--display);font-size:12.5px;color:var(--muted);margin:0 0 8px}
+.verdict p{margin:0;font-size:15.5px}
+.verdict.a1{border-top-color:var(--a1)} .verdict.a1 h3{color:var(--a1)}
+.verdict.a2{border-top-color:var(--a2)} .verdict.a2 h3{color:var(--a2)}
+.verdict.a3{border-top-color:var(--a3)} .verdict.a3 h3{color:var(--a3)}
+.verdict.a4{border-top-color:var(--a4)} .verdict.a4 h3{color:var(--a4)}
+.chip{display:inline-block;font-family:var(--display);font-size:12px;font-weight:700;padding:1px 8px;border-radius:999px;white-space:nowrap;vertical-align:middle}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.none{background:var(--none-soft);color:var(--none)}
+.chip.block{background:var(--block-soft);color:var(--block)}
+.chip.gap{background:var(--accent-soft);color:var(--accent)}
+table{border-collapse:collapse;width:100%;margin:12px 0 6px;font-size:14.5px;background:var(--surface);border:1px solid var(--line)}
+th,td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{font-family:var(--display);font-size:12.5px;color:var(--muted);background:var(--soft)}
+td.k{font-family:var(--display);font-weight:700}
+td.num{white-space:nowrap}
+.table-scroll{overflow-x:auto}
+.callout{border-left:6px solid var(--accent);background:var(--accent-soft);border-radius:0 10px 10px 0;padding:14px 20px;margin:18px 0;max-width:960px}
+.callout.warn{border-left-color:var(--warn);background:var(--warn-soft)}
+.callout.block{border-left-color:var(--block);background:var(--block-soft)}
+.callout p{margin:0 0 6px}
+.callout p:last-child{margin:0}
+.area{border-left:6px solid var(--line);padding-left:22px;margin:10px 0 0}
+.area.a1{border-left-color:var(--a1)} .area.a2{border-left-color:var(--a2)} .area.a3{border-left-color:var(--a3)} .area.a4{border-left-color:var(--a4)}
+.stat .num-big{font-family:var(--display);font-weight:800;font-size:30px;line-height:1;margin:0 0 8px;color:var(--fg)}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.stat p{margin:0;font-size:15px;color:var(--muted)}
+ul.tight li{margin:0 0 6px}
+footer{padding:30px 0 60px;border-top:1px solid var(--line);color:var(--muted);font-size:14.5px}
+@media (prefers-reduced-motion:no-preference){ html{scroll-behavior:smooth} }
+@media print{ .topnav{display:none} body{background:#fff} }
+</style>
+</head>
+<body>
+<nav class="topnav" aria-label="Page sections"><div class="wrap">
+  <a href="#answer">Short version</a>
+  <a href="#why">Why ports</a>
+  <a href="#licences">Licences</a>
+  <a href="#sorting">1 Sorting</a>
+  <a href="#walls">2 Walls</a>
+  <a href="#openings">3 Openings</a>
+  <a href="#agents">4 Agents</a>
+  <a href="#golden">Golden set</a>
+  <a href="#first">Try first</a>
+  <a href="#open">Open questions</a>
+  <span class="asof">7 Nov 2026</span>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <p class="eyebrow">Project: Lumoview platform (LumoCad) · research survey for Milton, Piotr and Arne</p>
+  <h1>Port the classics; let models propose, not measure</h1>
+  <p class="lede">What the literature, the libraries and the datasets offer for modelling a building from our own data: one LiDAR ring per room, panoramas at a known pose, a compass, a surveyor-recorded door graph, and sometimes a drone mesh. Four areas: sorting and puzzling rooms, walls with thickness and type, doors and windows, and the agent layer around Marvin, Calvin and the golden set.</p>
+  <p style="color:var(--muted);font-size:15.5px;max-width:900px">Made from twelve research notes in two rounds (about 230 cited links). The full working document with every source is on Milton's machine at <code>~/Documents/lumoview/reports/Agentic building modeling research.md</code>; the notes are in <code>~/Documents/lumoview/research_notes/Agentic building modeling research/</code>. Gap ids (G1 to G28) refer to the context brief <code>00_lumoview_context.md</code> in that folder.</p>
+</div></header>
+
+<main class="wrap">
+
+<section id="answer" style="border-top:none;padding-top:8px">
+  <h2>The short version</h2>
+  <p class="lead2">Nothing published takes our actual input. A RotLidar "point cloud" is one horizontal ring of about 5,000 points at scanner height, rooms are scanned one at a time with no overlap, and the only cross-room evidence is the door graph. The fastest credible path in every area is a handful of small TypeScript ports of classical algorithms, each testable on Hohental within days, not the adoption of a learned model.</p>
+
+  <div class="verdicts">
+    <div class="verdict a1"><p class="n">AREA 1 · SORTING AND PUZZLING</p><h3>Exhaustive search beats random</h3><p>Replace the random pose search with Cartographer's branch-and-bound matcher (Apache-2.0): 8 to 86 ms per match on a 2009 CPU, and repeatable by construction. For puzzling, the best paper gets 35 % of look-alike rooms wrong because it must guess which door matches which. Our door graph already knows.</p></div>
+    <div class="verdict a2"><p class="n">AREA 2 · WALLS</p><h3>Thickness is a registration problem</h3><p>Every open pipeline measures thickness as the gap between the two faces, and none publishes a millimetre error. Our accuracy is bounded by how well rooms are puzzled. Wall type has no classifier anywhere; the precedent is "snap to the nearest catalogue width" plus position rules, as a proposal.</p></div>
+    <div class="verdict a3"><p class="n">AREA 3 · DOORS AND WINDOWS</p><h3>Measure with rays, classify with vision</h3><p>Width and position should come from LiDAR geometry (gaps along the wall line, panorama mask columns intersected with the wall). Vision-language models get 45 % on the hard grounding benchmark and never say "not there". Use them only for closed questions, hosted in the EU.</p></div>
+    <div class="verdict a4"><p class="n">AREA 4 · AGENT LAYER</p><h3>Marvin's design is the right one</h3><p>LLMs fully solve at most 3.4 % of BIM edits; a rule-based checker agrees with humans 94 % of the time where a vision judge gets 59 %. Keep typed tools and a human Approve, and promote the deterministic check from audit to gate. Code-as-action belongs in Calvin, behind a golden-set regression.</p></div>
+  </div>
+
+  <div class="grid2" style="margin-top:16px">
+    <div class="panel"><h3>TWO THINGS THAT CUT ACROSS ALL FOUR</h3>
+      <ul>
+        <li><b>Licences.</b> Most learned code and almost every dataset in this field is non-commercial (SALVe, HEAT, ZInD, Matterport3D, Structured3D, ScanNet++, CubiCasa5K) or GPL (YOLO-World, HouseDiffusion, PolyFit, CGAL kinetic partition). A second reason to port rather than adopt.</li>
+        <li><b>The scorecard gates everything.</b> With six golden buildings of fifteen rooms, a real 10 mm improvement shows up about two times in three, and a naive per-room test manufactures wins a third of the time. Score at building level from day one.</li>
+      </ul></div>
+    <div class="panel"><h3>HOW TO READ THE NUMBERS</h3>
+      <ul>
+        <li><b>Verified</b>: a researcher read the linked page.</li>
+        <li><b>(search summary)</b>: only a search-engine extract was seen; re-check before relying on it.</li>
+        <li><b>(inference)</b>: a researcher's reasoning. Every "days" and "risk" estimate, every design sketch and every error budget is inference. None of it has been run on Lumoview data.</li>
+        <li>Owners follow the 6 Nov split: Piotr upstream (sorting, golden set, wall boundary), Milton downstream (wall types, doors, windows), Arne on Marvin.</li>
+      </ul></div>
+  </div>
+</section>
+
+<section id="why">
+  <h2>Why ports beat adoption</h2>
+  <p class="lead2">Three facts decide what is usable.</p>
+  <div class="grid3">
+    <div class="stat"><p class="num-big">1 ring</p><p>Each scanner placement gives one 2D ring (x, y, z = 0; no normals, no colour, no per-point height). Vertical structure exists only in separate "section" and "stairs" slices. Learned floor-plan networks (Floor-SP, MonteFloor, HEAT, RoomFormer, FRI-Net) all want a top-down density image of a whole floor and output polygons without thickness or openings. A dedicated search found no learned method that takes one room's ring and returns a polygon. Our own line-fit plus arrangement (v1, v2) is, for this input, the state of the art.</p></div>
+    <div class="stat"><p class="num-big">0 overlap</p><p>Rooms are scanned one at a time. The 3D registration toolkits (TEASER++, small_gicp, KISS-ICP, Open3D, GTSAM) need feature correspondences or substantial overlap, are C++ or Python, and have no maintained browser build (the one WebAssembly port, pcl.js, has been archived since 2023). The cross-room evidence we do have is the door-frame scan type and the capture app's door graph (<code>doorLeadsTo</code>, <code>spaceConnections</code>), which no calculation uses today (G4).</p></div>
+    <div class="stat"><p class="num-big">TS + EU</p><p>All geometry runs in the architect's browser tab in TypeScript, or could run in a Node worker; nothing runs headless (G25). Customer data stays in the EU (Scaleway, Paris). The product is commercial, so MIT/BSD/Apache is preferred and GPL may only run as a separate server process. "Directly usable" therefore means TypeScript, or portable in a few hundred lines. That is exactly the size of the algorithms that matter here.</p></div>
+  </div>
+  <div class="callout warn">
+    <p><b>Corrections to the context brief found while checking paths.</b> The random search lives at <code>src/lumocad/utils/alignment/shared/differentialEvolution.ts</code>; the slab offset is <code>DEFAULT_SLAB_BOUNDARY_FROM_SPACES_OFFSET_CM = 40</code>; the thickness modules are <code>boundaryWallThicknessAnalysis.ts</code>, <code>boundaryWallThicknessFit.ts</code> and <code>boundaryWallThicknessDoorComparison.ts</code> (the last one already compares thickness labels with opening depths, the natural hook for exterior thickness); the 800 mm ceiling is <code>BOUNDARY_EXTERNAL_WALL_MAX_BRIDGED_GAP_MM</code>. And the room book: WoFlV counts balconies one quarter by default, one half at most; <code>inferWofivFactor()</code> uses the ceiling as its default. A decision to confirm with the architects, not a bug by itself.</p>
+  </div>
+</section>
+
+<section id="licences">
+  <h2>Licences that block product use</h2>
+  <p class="lead2">"Non-commercial" means it cannot be shipped or used to train a shipped model, and most dataset terms bind for-profit employers even for internal tests. Verified through GitHub, npm or Hugging Face licence fields or the LICENSE text unless noted.</p>
+  <div class="table-scroll"><table>
+    <thead><tr><th>Item</th><th>Licence</th><th>Consequence</th></tr></thead>
+    <tbody>
+      <tr><td class="k">SALVe (Zillow, door-based room assembly)</td><td><span class="chip block">CC BY-NC-ND 4.0</span></td><td>Ideas only; no product use, no derivatives</td></tr>
+      <tr><td class="k">ZInD dataset (panoramas, door/window boxes, floor plans)</td><td><span class="chip block">non-commercial</span> code Apache-2.0</td><td>Internal research only; ask Zillow for terms</td></tr>
+      <tr><td class="k">HEAT (floor-plan transformer)</td><td><span class="chip block">GPL-3.0 + "non-commercial research only"</span></td><td>Not usable</td></tr>
+      <tr><td class="k">Matterport3D / HM3D and any model trained on them</td><td><span class="chip block">academic EULA</span></td><td>Blocks HorizonNet/HoHoNet weights too</td></tr>
+      <tr><td class="k">Structured3D</td><td><span class="chip warn">terms unread; mirror says non-commercial</span></td><td>Treat as non-commercial until read</td></tr>
+      <tr><td class="k">ScanNet++, Replica, CubiCasa5K, FloorPlanCAD, Hilti SLAM</td><td><span class="chip block">non-commercial</span></td><td>Not usable</td></tr>
+      <tr><td class="k">ARKitScenes</td><td><span class="chip warn">ambiguous commercial clause</span></td><td>Ask Apple</td></tr>
+      <tr><td class="k">ISPRS Indoor Modelling, S3DIS, NavVis samples</td><td><span class="chip warn">terms not readable</span></td><td>Ask by mail before any internal use</td></tr>
+      <tr><td class="k">ipa_room_segmentation (Fraunhofer IPA)</td><td><span class="chip block">LGPL academic only; commercial on request</span></td><td>Reimplement (each algorithm is about 100 lines)</td></tr>
+      <tr><td class="k">YOLO-World / Ultralytics YOLOv8-11</td><td><span class="chip block">GPL-3.0 / AGPL-3.0</span></td><td>Prefer RT-DETR (Apache-2.0)</td></tr>
+      <tr><td class="k">DQ-HorizonNet (door detector for panoramas)</td><td><span class="chip block">no licence file</span></td><td>Cannot reuse without the author</td></tr>
+      <tr><td class="k">HouseDiffusion, Graph2Plan</td><td><span class="chip block">GPL-3.0 / no licence</span></td><td>Papers to read, not code to ship</td></tr>
+      <tr><td class="k">PolyFit, CGAL kinetic partition</td><td><span class="chip block">GPL</span></td><td>Server-only, and 3D anyway</td></tr>
+      <tr><td class="k">Grounding DINO 1.5/1.6, DINO-X</td><td><span class="chip block">hosted API only, China-based</span></td><td>Never for customer images</td></tr>
+      <tr><td class="k">SAM 3</td><td><span class="chip warn">custom "SAM License", unread</span></td><td>Read before any use</td></tr>
+    </tbody>
+  </table></div>
+  <p style="font-size:15.5px"><b>Safe to use, for contrast:</b> Cartographer (Apache-2.0), RoomFormer (MIT), Cloud2BIM (MIT), FloorNet (MIT), Grounding DINO 1.0 and OWLv2 (Apache-2.0), Florence-2 (MIT), RT-DETR (Apache-2.0), Qwen3-VL and Mistral Small 3.2 (Apache-2.0), the NRW cadastre (dl-de/zero-2.0, no attribution duty), WMM2025 (public domain), Infinigen (BSD-3), Hypersim (CC BY-SA), and every geometry npm package named below.</p>
+</section>
+
+<section id="sorting">
+  <h2>Area 1 · Sorting and puzzling</h2>
+  <p class="lead2">Branch-and-bound replaces the random search; the door graph replaces the integer program.</p>
+  <div class="area a1">
+    <h3>A deterministic single-room pose search <span class="chip gap">G1</span></h3>
+    <p>Today <code>alignScansWithGridCorrelation</code> rasterises each cloud onto a 100 mm grid and maximises overlap with Differential Evolution, a population-based random search: 5,050 evaluations, 5 to 10 s per pair, not repeatable unless seeded. Robotics settled this fifteen years ago with <b>correlative scan matching</b>: evaluate every pose in a window, using a coarse grid whose cells hold the maximum of the fine cells they cover, so coarse scores are provable upper bounds and whole regions can be discarded without missing the optimum. <a href="https://april.eecs.umich.edu/pdfs/olson2009icra.pdf">Olson 2009</a> measured 8.4 ms (0.5 m / 20° window), 20.8 ms (2 m / 40°) and 86.1 ms (4 m / 90°) on one 2009 CPU thread, against 65 s for the naive scan. <a href="https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/45466.pdf">Hess 2016</a> generalised it into Cartographer's depth-first branch-and-bound with max-pooled grids of 1, 4, 16 and 64 cells; the <code>FastCorrelativeScanMatcher2D</code> source is Apache-2.0 and is the model to port.</p>
+    <p><b>For us (inference):</b> 300 to 600 lines of TypeScript inside the existing worker, 4 to 6 days, low risk; a 2 m prior window costs a few milliseconds with branch-and-bound. It replaces the random search inside <code>multiScanGridAlignment</code> and the door-frame fitting, but not room-to-room placement, which needs a different objective. Open <code>utils/alignment/deprecated/csmAlignment.ts</code> first: it may be a half-finished correlative matcher. FFT phase correlation (MIT libraries <code>fft.js</code>, <code>webfft</code>, <code>kissfft-wasm</code>) is a cheaper seed for same-room placements, with a four-fold rotation ambiguity on right-angled rooms.</p>
+
+    <h3>Puzzling rooms with the surveyor's door graph <span class="chip gap">G4</span></h3>
+    <p>Three published lines come close, and all three are instructive mainly for where they fail. <a href="https://ar5iv.arxiv.org/html/1812.06677">Floorplan-Jigsaw</a> (ICCV 2019) reaches 85 % global placement on 101 mostly synthetic scenes but assumes one closed ring of Manhattan fragments and never released code. <a href="https://johnwlambert.github.io/salve">SALVe</a> (Zillow, 2022) proposes door-to-door alignments from panoramas, verifies them with a learned network and solves a pose graph, localising 81 % of panoramas; its licence is CC BY-NC-ND, so only the ideas can be reused. The closest is <a href="https://archive.ymsc.tsinghua.edu.cn/pacm_download/61/544-GlobalBlockRegistration.pdf">Block Assembly</a> (Yan, Nan, Wonka, SIGGRAPH Asia 2016): it detects door "portals" in isolated room scans, aligns two scans from a portal pair by shifting one room by the wall thickness along the door normal, and chooses which pairs to believe with an integer program under a no-penetration constraint. On a 102-room synthetic floor <b>35 % of rooms landed in the wrong place</b> because identical-looking rooms are interchangeable, and conflict enumeration took over four hours at 156 scans.</p>
+    <div class="callout">
+      <p><b>The lesson.</b> The hard part of every published method is the discrete question <em>which door matches which</em>, and we already have the answer in <code>doorLeadsTo</code>. No system was found that takes a <em>measured</em> door graph plus real per-room scans. So the formulation is an own design (inference): one pose per room; for every door-graph edge a term that makes the two door midpoints coincide after a shift of the wall thickness (75 to 800 mm) with opposite normals; a non-overlap penalty with Clipper (already a dependency); a weak compass prior plus a snap to the storey's dominant directions; and a late exterior term. Initialise from a spanning tree of the door graph, refine with Levenberg-Marquardt. The dense pose-graph solver in <code>pointToLineGlobalICP.ts</code> already handles 90 unknowns. Treat door-frame scans as trusted edges and door-graph-only edges as uncertain ones, as Open3D's multiway registration does. 8 to 12 days, medium risk. Marvin's own 4,266-line registration stack produced 0 safe candidates on Gewobag OG01/OG04: the measured cost of attacking this without the door graph.</p>
+    </div>
+
+    <h3>Splits, merges, storey stacking, compass <span class="chip gap">G7</span> <span class="chip gap">G5</span> <span class="chip gap">G6</span></h3>
+    <p><b>Room segmentation</b> on an occupancy grid is classical: <a href="https://whiteoak.umd.edu/roswiki/attachments/ipa_room_segmentation/article.pdf">Bormann 2016</a> measured the Voronoi method at 95.0 % recall / 94.8 % precision on 20 maps; the Fraunhofer package is non-commercial, but the morphological and distance variants are about a hundred lines each, so reimplement (3 to 5 days). <b>Storey stacking</b> has almost no literature; the design is a per-section histogram of horizontal edges for slab levels, chained through section or stair scans that span two storeys, with XY alignment by minimising the symmetric difference of the exterior outline and the stair core, which is what the Revit architects do by hand (6 to 8 days, medium-high risk, no benchmark). <b>Compass:</b> <code>createImuNorthPrediction</code> applies no declination; WMM2025 is public domain (npm <code>geomagnetism</code>, Apache-2.0) but needs a geocoded address, and the one indoor study found <a href="https://cgi.cse.unsw.edu.au/~mahbub/PDF_Publications/IPIN2013_heading.pdf">12.45° average heading error</a> for phones. Treat the compass as a ±15° prior after snapping and as a per-storey consistency check (1 to 2 days).</p>
+
+    <h4>Candidates for area 1</h4>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Candidate</th><th>What it is</th><th>Evidence</th><th>Licence / language</th><th>Days</th><th>Risk</th><th>Gap</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Hess/Olson branch-and-bound matcher</td><td>Exhaustive pose search with max-pooled coarse grids</td><td>8 to 86 ms per match (Olson); 5 cm grids, 7 m / 30° windows (Hess)</td><td>Cartographer Apache-2.0, C++ to TS; no GPU</td><td class="num">4–6</td><td>low</td><td>G1</td></tr>
+        <tr><td class="k">FFT phase correlation (log-polar)</td><td>Global translation and rotation from spectra</td><td>99k 1-D transforms/s at 1024 in Chrome; 2-D timing inferred</td><td>fft.js / webfft / kissfft-wasm, MIT</td><td class="num">3–5</td><td>medium</td><td>G1</td></tr>
+        <tr><td class="k">Door-graph pose graph (own design)</td><td>Door-pair term, non-overlap, compass prior; spanning tree + LM</td><td>None published; Block Assembly's pair term is the precedent</td><td>TS native; Clipper in repo</td><td class="num">8–12</td><td>medium</td><td>G4</td></tr>
+        <tr><td class="k">Room segmentation (morphological / distance / Voronoi)</td><td>Split a storey raster into rooms at narrow passages</td><td>Voronoi P 94.8 / R 95.0 (Bormann)</td><td>IPA code non-commercial; reimplement in TS</td><td class="num">3–5</td><td>medium</td><td>G7</td></tr>
+        <tr><td class="k">Section-slice level histogram + stair-core XY match</td><td>Slab levels from vertical slices; storey XY via Clipper</td><td>None; the topic is "rarely discussed"</td><td>TS native</td><td class="num">6–8</td><td>med-high</td><td>G5</td></tr>
+        <tr><td class="k">WMM2025 declination + compass consistency</td><td>Correct magnetic north; flag rooms off by more than 15°</td><td>0.38° model error; 12° indoor error</td><td><code>geomagnetism</code> Apache-2.0</td><td class="num">1–2</td><td>low</td><td>G6</td></tr>
+        <tr><td class="k">SALVe · Block Assembly · Floorplan-Jigsaw</td><td>Read for ideas</td><td>81 % / 35 % wrong / 85 %</td><td>NC / no code / no code</td><td class="num">1–2</td><td>—</td><td>G4</td></tr>
+        <tr><td class="k">TEASER++, small_gicp, KISS-ICP, pcl.js</td><td>3D feature registration</td><td>Need overlapping 3D clouds</td><td>MIT; C++; pcl.js archived</td><td class="num">0</td><td>skip</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="walls">
+  <h2>Area 2 · Walls</h2>
+  <p class="lead2">Thickness is a registration problem; type is a catalogue snap; exterior thickness without a drone model has a free consistency check but no measurement.</p>
+  <div class="area a2">
+    <h3>Choosing between outline hypotheses objectively <span class="chip gap">G8</span> <span class="chip gap">G10</span></h3>
+    <p>v1 versus v2 is decided by taste, Marvin defaults to v1 without reference directions (<code>editorOps/service.ts:474</code>), and the per-room confidence is hidden. The <a href="https://isprs-archives.copernicus.org/articles/XLII-4/297/2018/">ISPRS Indoor Modelling benchmark</a> supplies a ready definition without one-to-one matching: <b>completeness</b> (share of the reference within a buffer of the model), <b>correctness</b> (share of the model within the buffer of the reference) and <b>accuracy</b> (median distance), reported as curves over 1 to 15 cm; its teams reach 0.5 to 6.7 cm. Ported to a single room (inference): completeness = share of cloud points within the buffer of the outline, correctness = share of outline length with point support (Marvin's existing <code>measuredEdgeSupport</code> rule: 30 mm corridor, 100 mm bins, coverage ≥ 0.7), accuracy = RMS point-to-segment distance, plus a visibility test (the scanner origin must lie inside and no ray may cross the polygon) and a vertex-count penalty so the convex-hull fallback cannot win. Compute for v1, v2 and the hull, pick the best per room, show it as the confidence. 2 to 3 days. Write it once as a pure function that Marvin, Calvin and the scorecard share.</p>
+
+    <h3>Thickness: every pipeline pairs the two faces, nobody reports an error <span class="chip gap">G12</span> <span class="chip gap">G13</span></h3>
+    <p><a href="https://arxiv.org/html/2503.11498v2">Cloud2BIM</a> (MIT, Python, CPU) slices a density histogram, pairs opposite parallel wall surfaces, adds a virtual face where the outer side is unscanned, and bounds thickness by min/max parameters; it found 24 of 25 zones with deviations up to 25 mm and, by its authors' own words, reports no thickness error because "no uniform benchmark exists". Ochmann 2019 does the same pairing inside a 3D cell complex solved with Gurobi and sometimes splits one thick wall into two thin ones; Bassier gives walls seen from one side a 100 mm default. <b>For us (inference):</b> the two faces of an interior wall come from two rooms' rings, so thickness equals the gap between the puzzled inner faces, which <code>boundaryWallThicknessAnalysis.ts</code> already measures, and its accuracy is bounded by the puzzle registration (100 mm grid in sorting, 50 mm in fine-tune), not by the estimator. Improving thickness means improving area 1. The generator's blind spot (walls never look at the cloud) is best closed by running the cloud-support score on every wall face <em>before</em> acceptance; <code>auditDesiredCloudWalls</code> already does it after the fact.</p>
+
+    <h3>Type: "snap to the nearest catalogue width" <span class="chip gap">G14</span></h3>
+    <p>No published rule set or classifier infers masonry versus drywall or load-bearing from scans. The one precedent is <a href="https://isprs-archives.copernicus.org/articles/XLII-2-W17/53/2019/isprs-archives-XLII-2-W17-53-2019.pdf">Bassier 2019</a>: snap the measured width to the user's catalogue, <code>argmin |d_w − d_r|</code>. The German catalogue follows <a href="https://www.baunetzwissen.de/mauerwerk/fachwissen/planungsgrundlagen/steinformat-und-massordnung-162694">DIN 4172</a> (12.5 cm module minus a 1 cm joint: 11.5, 24, 36.5 cm, with 17.5 and 30 cm as standard widths). Gründerzeit buildings need a second catalogue: the Vienna rules run in 0.15 m steps (0.30, 0.45, 0.60, 0.75 m), thickening by one step per storey downwards; the North German 38 / 51 / 64 cm series is plausible but has no source. The drywall list (75, 100, 125, 150 mm) is unverified against any Knauf or Rigips sheet. A measured face-to-face distance includes plaster on both sides, so the rule should <b>propose, not auto-apply</b>, unless neighbouring walls agree. Position gives the rest: on the slab outline = exterior; ≥ 30 cm exterior = masonry; 17.5 to 24 cm interior = likely load-bearing; ≤ 12.5 cm = ambiguous; vertical continuity across storeys raises load-bearing probability; the capture app's door-reveal <code>Thickness</code> is an independent measurement per opening. 2 days as a Wall Type Organizer proposer.</p>
+
+    <h3>Exterior thickness without drone model or outside scan <span class="chip gap">G12</span></h3>
+    <p>About 20 % of buildings have neither; today every exterior wall is the 40 cm slab offset. Three designs, all inference. <b>Airteam mesh:</b> thickness per facade is the offset between the interior wall line and the nearest facade plane (<code>roofMesh.ts</code> already fits planes), never the eave, because roof outlines include overhangs; registration literature only claims "promising" results, so expect 5 to 20 cm lateral error. <b>Reveal depth:</b> a door-frame scan or a scan through an open window gives both jamb faces; one study matched tape within ±6 mm, but glass produces ghost points. <b>Cadastre:</b> the NRW ALKIS buildings are live and free: WFS <code>wfs_nw_alkis_vereinfacht</code>, feature type <code>ave:GebaeudeBauwerk</code>, licence "Datenlizenz Deutschland – Zero" (verified from GetCapabilities), one GeoPackage per Kreis (Cologne 177 MB), LoD2 roofs from <a href="https://ogc-api.nrw.de/3dg/v1">ogc-api.nrw.de</a>. No text says whether plaster or insulation is inside the line, and no NRW accuracy class was found (Bavaria demands 3 cm for clear corners). So the footprint fixes orientation and the outer outline to roughly ±10 cm plus an unknown render offset: enough to flag a facade at 24 or 55 cm instead of 40, not enough to set 36.5 versus 42.5. OpenStreetMap is not an alternative: <a href="https://publications.neis-one.org/2014_Fan_et_al_QualityAssessmentBuildingFootprintsOpenStreetMap_ijgis_pre.pdf">about 4 m average offset</a> against official footprints in Munich; the <code>~/Documents/lumoview/osm</code> experiments carry that error.</p>
+
+    <h3>Slanted walls and joints <span class="chip gap">G9</span> <span class="chip gap">G15</span> <span class="chip gap">G16</span></h3>
+    <p>Cheapest step for slanted walls: a length-weighted mean-shift over all <code>rawEdges</code> directions per building, proposing every well-supported cluster beyond the dominant orthogonal pair as a reference plane; <code>generateBuildingMainGuidelines()</code> already clusters directions and is unused (1 to 2 days). A "2D kinetic partition" (wall segments grow as rays that stop at their first or second hit; the planar analogue of CGAL's GPL 3D version) would cut the spurious cells of v1's full arrangement, 300 to 600 lines, untested. For joints and generator robustness the literature has nothing; the one thing to port is the ISPRS score as the acceptance gate for regenerated walls, so "cannot create an outer wall loop" becomes a measured regression. All geometry packages involved are permissive and small (<code>clipper2-js</code> Boost, <code>polygon-clipping</code> MIT, <code>@flatten-js/core</code> MIT, <code>robust-predicates</code> Unlicense, <code>delaunator</code> / <code>earcut</code> ISC); the platform already ships <code>clipper-lib</code>.</p>
+
+    <h4>Candidates for area 2</h4>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Candidate</th><th>What it is</th><th>Evidence</th><th>Licence / language</th><th>Days</th><th>Risk</th><th>Gap</th></tr></thead>
+      <tbody>
+        <tr><td class="k">ISPRS-style outline score</td><td>Completeness, correctness, accuracy + visibility + vertex penalty; pick v1 / v2 / hull per room</td><td>0.5 to 6.7 cm as benchmark context</td><td>TS native</td><td class="num">2–3</td><td>low</td><td>G8, G10, G26</td></tr>
+        <tr><td class="k">Cloud2BIM opposite-face pairing</td><td>Thickness from paired faces with a virtual outer face</td><td>24/25 zones, ≤ 25 mm; no thickness error</td><td>MIT, Python; algorithm portable</td><td class="num">3–4</td><td>medium</td><td>G12–G14</td></tr>
+        <tr><td class="k">Cloud-support gate on wall faces</td><td><code>measuredEdgeSupport</code> on every generated face before acceptance</td><td>Marvin rule exists</td><td>TS</td><td class="num">2</td><td>low</td><td>G13, G20</td></tr>
+        <tr><td class="k">Catalogue snap + position rules</td><td>Propose <code>wallTypeId</code> from nearest width, exterior/interior, continuity, reveal depth</td><td>Snap rule published, no tolerance; DIN 4172 series</td><td>TS</td><td class="num">2</td><td>low</td><td>G14</td></tr>
+        <tr><td class="k">Facade-plane thickness from Airteam OBJ</td><td>Interior wall line to registered facade plane</td><td>None; registration "promising"</td><td>TS</td><td class="num">3–5</td><td>medium</td><td>G12</td></tr>
+        <tr><td class="k">Reveal depth at door-frame / window scans</td><td>Jamb-to-jamb offset along the wall normal</td><td>±6 mm vs tape in one study; glass ghosts</td><td>TS</td><td class="num">3</td><td>medium</td><td>G12</td></tr>
+        <tr><td class="k">NRW ALKIS footprint via WFS / GeoPackage</td><td>Free cadastre outline as orientation + thickness consistency check</td><td>dl-de/zero-2.0 verified; accuracy rule not found</td><td>Free; TS</td><td class="num">2 + 3</td><td>medium</td><td>G12, G6</td></tr>
+        <tr><td class="k">Direction clustering → reference planes</td><td>Mean-shift over <code>rawEdges</code> directions</td><td>Standard non-Manhattan trick</td><td>TS</td><td class="num">1–2</td><td>low</td><td>G9</td></tr>
+        <tr><td class="k">Learned floor-plan nets (RoomFormer MIT; HEAT, FRI-Net, CAGE)</td><td>Whole-floor density image to room polygons</td><td>97 to 99 room F1 synthetic; 52 to 74 IoU cross-domain</td><td>RoomFormer MIT; HEAT GPL+NC; CUDA</td><td class="num">5–10</td><td>high</td><td>second opinion only</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="openings">
+  <h2>Area 3 · Doors and windows</h2>
+  <p class="lead2">Measure with LiDAR rays, map the panorama masks we already have onto the wall, classify with EU-hosted vision models, and never let a model be the measuring instrument.</p>
+  <div class="area a3">
+    <h3>Width and position come from the ring, not the picture <span class="chip gap">G17</span></h3>
+    <p>The classic scan-based detectors (Adan and Huber 2011, Xiong 2013) label every wall cell as occupied, occluded or empty by ray tracing from the scanner position. Collapsed to one dimension for a ring (inference): along each <code>rawEdges</code> wall line, a run of azimuths where the ray passes through the wall into the next room is an open doorway, and its width follows from the two edge intersections. Limits are physical: a closed door is a flush plane and invisible to the scan; windows return hits or nothing depending on the glass; sills and lintels need a section scan or the panorama. Door-frame scans see both rooms and are the best cross-room evidence. 2 to 4 days, scored against capture widths and the approved openings in the hand-in backups.</p>
+
+    <h3>Map the existing panorama masks onto the wall before training anything</h3>
+    <p>Every panorama already has server-side masks for door, window, floor, ceiling and radiator (<code>objectTags</code>, 2048 × 4096), today "a visualisation only". Nothing in the literature maps a panorama detection to a wall position, so the geometry is stated as inference: a mask's left and right columns give azimuths, corrected by the measurement rotation and the device offset; cast each ray from the scanner position and intersect it with the wall line; the two hits give position and width in millimetres, the vertical extent gives sill and head. The error budget is dominated by yaw, not pixels: one pixel is 4.6 mm at 3 m, while a 0.5° yaw error adds 26 mm at 3 m, and grazing incidence multiplies errors about six-fold. Expect 1 to 3 cm width error with good yaw; fuse several panoramas by least squares. Deduplicate the same door seen from both rooms with <code>doorLeadsTo</code> as the pairing prior; a Hungarian assignment matches detections to the hand-measured capture openings, which Marvin's <code>openingPlacement/capture.ts</code> can then place. 3 to 5 days, medium risk because nobody has measured the mask quality. This is the audit's "openings proposer" without any new model.</p>
+
+    <h3>Detectors and vision-language models</h3>
+    <p>If the masks prove weak, the open-vocabulary detectors with usable licences are <a href="https://huggingface.co/IDEA-Research/grounding-dino-base">Grounding DINO 1.0</a> (Apache-2.0, 52.5 AP zero-shot on COCO), OWLv2 (Apache-2.0) and Florence-2 (MIT); RT-DETR (Apache-2.0) is the fine-tuning target that avoids Ultralytics' AGPL. No paper reports door or window accuracy for any of them on indoor images; the nearest numbers are exterior facades (F1 0.85). The commercial path is auto-labelling about 300 perspective crops of our own panoramas, hand-correcting, and fine-tuning RT-DETR on an EU GPU. Browser deployment is a non-starter (Grounding DINO tiny is 151 to 719 MB); panoramas are uploaded anyway, so detection stays server-side.</p>
+    <div class="callout block">
+      <p><b>Vision-language models classify; they must never measure.</b> On the hard <a href="https://arxiv.org/html/2512.17495v1">GroundingME</a> benchmark the best open model (Qwen3-VL-235B) reaches 45.1 %, Gemini-2.5-Pro 20.7 %, and the rejection score is 0.0: the models draw a box even when the object is absent. Counting doors and windows on floor plans plateaus at 0.40 to 0.55 exact match (AECV-Bench, search summary). No source reports accuracy for door width, sill height, swing side or glazing. The role that survives: closed questions on a crop that already contains one opening (door or window, hinge side, glazing, side light, archway) with an explicit "none" option and a human confirm, tested first on 100 labelled doors from approved models.</p>
+    </div>
+    <p><b>EU hosting, ranked by legal simplicity:</b> Scaleway Generative APIs in Paris (zero data retention by default, Apache-2.0 vision models Qwen3-VL and Mistral Small 3.2; prices unverified) &gt; Mistral's EU endpoint (10 % upcharge, zero retention on request) &gt; AWS Bedrock EU cross-region profiles (verify per model) and Azure Data Zone &gt; OpenRouter, Marvin's current route, which keeps prompts in-region only on Business and Enterprise plans. <b>Marvin as configured is not EU-pinned</b>; that is a decision for Milton, not a default.</p>
+
+    <h3>Consistency, swing, semantics <span class="chip gap">G18</span> <span class="chip gap">G19</span></h3>
+    <p>The 88.5 / 85.5 / 84.5 cm window spacing is a layout-regularisation problem with a solved formulation (<a href="https://3d.bk.tudelft.nl/liangliang/publications/2016/layout_regularization/layout.pdf">Jiang, Nan et al. 2016</a>: detect alignment, equal-size and equal-spacing constraints, then move each element minimally). In one dimension: cluster openings of a wall by width and type, fit a pitch and offset, snap a centre only if its residual is below about 3 cm and never above 5 cm, otherwise flag; share the along-facade coordinate across storeys. About 100 lines, propose rather than apply. <b>Swing side</b> has no benchmark anywhere; the ring helps: an open leaf appears as a short segment nearly perpendicular to the wall ending at the hinge. For closed doors, a vision question plus "swings into the smaller room" are low-confidence proposals. The semantics are already modelled (<code>NOTDEFINED</code> = deliberate open doorway; the <code>OpeningFeatures</code> pset); what is missing is the client symbol sign-off, which no research supplies.</p>
+
+    <h4>Candidates for area 3</h4>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Candidate</th><th>What it is</th><th>Evidence</th><th>Licence / language / EU</th><th>Days</th><th>Risk</th><th>Gap</th></tr></thead>
+      <tbody>
+        <tr><td class="k">1D ray-cast gap detector along wall lines</td><td>Open doorway width and position from rays through the wall</td><td>Ray-labelling family; closed doors invisible</td><td>TS, own</td><td class="num">2–4</td><td>low</td><td>G17</td></tr>
+        <tr><td class="k"><code>objectTags</code> mask columns → ray-wall intersection</td><td>Position, width, sill, head from existing masks</td><td>None published; 1 to 3 cm budget (inference)</td><td>TS/Node, no GPU</td><td class="num">3–5</td><td>medium</td><td>G17</td></tr>
+        <tr><td class="k">Hungarian matching + door-graph dedupe</td><td>Link detections to the hand-measured record Marvin can place</td><td>—</td><td>TS</td><td class="num">1–2</td><td>low</td><td>G17</td></tr>
+        <tr><td class="k">Grounding DINO 1.0 / OWLv2 auto-label → RT-DETR fine-tune</td><td>Own door/window detector on perspective crops</td><td>52.5 AP COCO; facade F1 0.85</td><td>Apache-2.0; Python worker, EU GPU</td><td class="num">6–10</td><td>medium</td><td>G17</td></tr>
+        <tr><td class="k">Qwen3-VL / Mistral Small 3.2 on Scaleway</td><td>Closed questions: door vs window, hinge, glazing, archway</td><td>45.1 % hard grounding, 0 % rejection; no swing numbers</td><td>Apache-2.0; Paris, zero retention</td><td class="num">3–5</td><td>medium</td><td>G19</td></tr>
+        <tr><td class="k">1D pitch fit / layout regularisation</td><td>Equal spacing and cross-storey alignment within tolerance</td><td>QP formulation (Jiang/Nan 2016)</td><td>TS, ~100 lines</td><td class="num">1–2</td><td>low</td><td>G18</td></tr>
+        <tr><td class="k">Open-leaf hinge detection in the ring</td><td>Swing side from the leaf segment</td><td>None (patents only)</td><td>TS</td><td class="num">2</td><td>medium</td><td>G19</td></tr>
+        <tr><td class="k">SAM 3 · DQ-HorizonNet · in-browser ONNX</td><td>—</td><td>—</td><td>licence unread / no licence / too big</td><td class="num">0</td><td>skip for now</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="agents">
+  <h2>Area 4 · The agent layer: Marvin and Calvin</h2>
+  <p class="lead2">Deterministic checkers gate, typed tools write, code stays in Calvin.</p>
+  <div class="area a4">
+    <h3>What LLMs actually do to geometry <span class="chip gap">G20</span></h3>
+    <p>The benchmarks all point the same way. <a href="https://arxiv.org/abs/2606.20146">BIM-Edit</a> (324 natural-language edits on IFC models): the best model averages 49.5 % and <b>no model fully solves more than 3.4 %</b> of tasks. <a href="https://arxiv.org/pdf/2504.01786">BlenderGym</a>: humans beat every model 3 to 30× on every metric, open models fail to produce a runnable script in over 75 % of geometry edits beyond 80 lines, and vision verifiers agree with human judgments 0.66 at best against 0.79 human-to-human. <a href="https://lab-spell.github.io/SceneCritic/">SceneCritic</a>: a rule-based layout checker agrees with humans <b>94 % versus 59 %</b> for a vision judge, which also flips its ranking with the camera viewpoint. The two published BIM authoring agents (Text2BIM, MCP4IFC) both put a deterministic checker in the loop. Our readiness report, which passes when slab minus rooms equals walls within 1 mm² while <code>pointCloudAgreement.verified</code> has never been true, is exactly the failure CAD-bench warns about: "an artifact can compile and render yet be wrong".</p>
+    <div class="callout">
+      <p><b>The practical reading.</b> Marvin's design (typed propose tools, a human Approve on every card, writes through editor events in one undo batch, never running code) is the one the evidence supports. The missing piece: the deterministic checker (cloud-support, origin containment, the ISPRS score) must run on every proposal <em>before</em> the card is shown and annotate it ("edge 3 unsupported, 41 % coverage"), with failing edges returned to the model as the repair prompt, as Text2BIM does. The one attempt at an LLM drawing an outline from a rendered cloud image ("Flur 32") was rejected, consistent with all of the above.</p>
+    </div>
+
+    <h3>Tool design for 84 tools and an 81,331-character prompt <span class="chip gap">G27</span></h3>
+    <p>Anthropic's <a href="https://www.anthropic.com/engineering/advanced-tool-use">Tool Search</a> (definitions loaded on demand) moved Opus 4 from 49 % to 74 % on an internal MCP evaluation with about 85 % fewer tokens, recommended above ten tools or 10k tokens of definitions; whether it exists through OpenRouter for non-Anthropic models is unverified. On prompt length, <a href="https://arxiv.org/abs/2507.11538">IFScale</a> shows the best frontier model following about 68 % of 500 simultaneous instructions, and SCALEDIF attributes much of the loss to <em>conflicts</em> between instructions; Marvin's prompt is known to contain contradictions, so resolve those before shortening. Session memory should stay structured (proposal ids, approved or rejected with reasons, entities touched), not free-text summaries: AMA-Bench finds many memory designs underperform plain long context. Splitting Marvin into several LLM agents is not supported: Anthropic's own multi-agent gains come with the statement that domains needing shared context "are not a good fit", and the MAST taxonomy attributes 44 % of multi-agent failures to system design. One proposer, deterministic checker tools, and at most a read-subagent that summarises heavy point-cloud context.</p>
+
+    <h3>Approval telemetry and Calvin</h3>
+    <p>Acceptance rate alone is a weak signal (Copilot: 27 % acceptance predicted <em>perceived</em> productivity; Jellyfish argues the metric lost meaning once agents edit many lines). Marvin should log per card: shown, approved unchanged, approved then edited within N minutes (traceable through the undo batch id), rejected with a one-tap reason (today rejections carry none), and time to decision. That is the "human edits after the pass" number of the scorecard. For <b>Calvin</b>, the measured case for code-as-action is real but conditional: <a href="https://arxiv.org/pdf/2405.15793">SWE-agent</a>'s interface raised GPT-4 by 64 % relative, with lint-on-edit, a dedicated edit command and a short observation window each worth points; BlenderGym's lesson is that long hand-wired scripts defeat most models. The design: a reviewed lab-module registry where a module is promoted to a tool only after a golden-set regression run, Calvin's G1/G4 scores plus the outline score as the feedback after each edit. The demo's floor-sorting algorithm written "in about a minute" that "may be overfitted" is precisely what that gate exists to catch.</p>
+
+    <h4>Candidates for area 4</h4>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Candidate</th><th>What it is</th><th>Evidence</th><th>Days</th><th>Risk</th><th>Gap</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Deterministic check before every card</td><td>Run cloud-support, origin and outline score on each proposal; annotate the card; failing edges become the repair prompt</td><td>Rule checkers 94 % vs 59 % (SceneCritic); Text2BIM pattern</td><td class="num">3–5</td><td>low</td><td>G20, G26</td></tr>
+        <tr><td class="k">Tool search + <code>response_format</code></td><td>About 10 core tools loaded, the rest on demand; concise/detailed reads</td><td>49 → 74 % (Anthropic); OpenRouter support unverified</td><td class="num">3–5</td><td>medium</td><td>G27</td></tr>
+        <tr><td class="k">Prompt conflict audit, then shortening</td><td>Remove contradictions before cutting length</td><td>Conflicts drive degradation (SCALEDIF)</td><td class="num">2</td><td>low</td><td>G27</td></tr>
+        <tr><td class="k">Card telemetry</td><td>Shown / unchanged / edited / rejected with reason / time</td><td>Acceptance alone is weak</td><td class="num">2</td><td>low</td><td>G26, G27</td></tr>
+        <tr><td class="k">Structured session state</td><td>Ids and decisions, no free-text summaries; include a scan inventory</td><td>Lossy memory underperforms (AMA-Bench)</td><td class="num">3</td><td>medium</td><td>G27</td></tr>
+        <tr><td class="k">Read-only sandboxed query API</td><td>Filter/aggregate loops over entities in one call; the only code-as-action in Marvin</td><td>150k → 2k tokens (Anthropic)</td><td class="num">5</td><td>medium</td><td>G27</td></tr>
+        <tr><td class="k">Calvin lab-module registry with golden-set gate</td><td>Promote a lab tool only after regression passes; keep modules short</td><td>SWE-agent guardrail ablations</td><td class="num">2</td><td>low</td><td>G1, G4</td></tr>
+        <tr><td class="k">VLM judge of rendered overlays · multi-agent Marvin</td><td>—</td><td>0.66 vs 0.79 agreement; shared-context misfit</td><td class="num">0</td><td>do not build</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="golden">
+  <h2>Golden set and scorecard: measure at building level or measure nothing</h2>
+  <p class="lead2">The scorecard is the first deliverable, not the last: its outline and wall score is the same function that gates Marvin's cards.</p>
+  <div class="grid2">
+    <div class="panel"><h3>WHICH METRICS, IN MILLIMETRES</h3>
+      <ul>
+        <li>The learned-floor-plan papers (MonteFloor, HEAT, RoomFormer) match rooms by IoU and count corners within 10 <em>pixels</em> on 256 × 256 images. Nothing in millimetres. Transfer the geometric protocols instead: the ISPRS completeness / correctness / accuracy triple with buffer curves, and the USIBD <a href="https://github.com/USIBD/RealityMapping2FloorPlan">RealityMapping2FloorPlan</a> challenge (room IoU, endpoint precision/recall at several distances, wall-orientation similarity, topology errors).</li>
+        <li>USIBD Level of Accuracy, at 95 % confidence (two independent academic quotations; spec itself behind an account): LOA30 = 5 to 15 mm, LOA20 = 15 to 50 mm, LOA10 = 50 to 150 mm. Our 30 mm corridor straddles LOA20 and LOA30, so report a 95th percentile of edge error, not a mean. At 1:100 a 0.25 mm pen line is 25 mm: 30 mm is a defensible bar by arithmetic alone.</li>
+        <li>Scorecard v1 (inference): outline agreement per room (one-to-one Hungarian match at IoU ≥ 0.5, corner recall at 30/50/100 mm, Chamfer and 95th-percentile Hausdorff, split/merge counts for G7); per-edge cloud support as a distribution with "explained gaps" and a signed median offset; walls by the ISPRS triple plus thickness error and type match; openings in wall coordinates plus door-graph precision/recall against <code>spaceConnections</code>; sorting as pose error over five seeds; areas as DIN 277 and WoFlV deltas; human effort as an HTER-style edit count per element plus the untouched share.</li>
+        <li>Two conventions to fix first: inner wall face or centre line as ground truth, and which area rule each customer uses. WoFlV §3 and §4 were read from the law (clear dimensions from the cladding; 1 to 2 m height counts half; balconies "in der Regel zu einem Viertel, höchstens jedoch zur Hälfte").</li>
+      </ul></div>
+    <div class="panel"><h3>ROOMS ARE NOT INDEPENDENT</h3>
+      <ul>
+        <li>Rooms in one building share the builder, the scanner session and the walls. A researcher's own Monte Carlo (600 runs per cell, not a published result): six buildings of fifteen rooms, a true 10 mm improvement, between-building spread 10 mm and within-building 20 mm. A cluster-bootstrap lower bound detects the gain with <b>power 0.67</b>; an exact sign-flip permutation on six building means only 0.27; a naive t-test over 90 rooms gives <b>31 % false positives</b> at a nominal 5 %. More rooms per building barely help; more buildings do.</li>
+        <li>Operating rule: report effect sizes with building-level intervals and "improved in k of 6 buildings" (k = 6 is p = 0.031 under a sign test), estimate the spreads from the first two scored buildings and re-plan, aim for 10 to 12 buildings over time, McNemar for binary outcomes such as "needed an edit".</li>
+        <li><b>Tiers:</b> gold (hand-verified, frozen, never tuned on; Hohental first, then a building with slanted walls and a corridor-heavy floor, growing to 6 to 8 stratified by age, construction, evidence available, use, roof), silver (the hand-in backups: scans, boundaries and observations but no walls or doors, so sorting and outlines only), synthetic (a TypeScript ray-caster with exact ground truth, calibrated on a flat wall from a real scan).</li>
+        <li><b>Practice:</b> a fixed split file at building level, a noise floor from a second architect re-tracing 20 % of one building, annotation inside LumoCad itself, DVC (Apache-2.0) to a Scaleway bucket or Git LFS for the clouds, and the golden version, tool commit and random seed stored in every scorecard output.</li>
+      </ul></div>
+  </div>
+</section>
+
+<section id="first">
+  <h2>What to try first, by owner</h2>
+  <p class="lead2">Nothing can be claimed until the scorecard exists; the two biggest algorithmic bets are upstream and therefore Piotr's. Days are the researchers' estimates and have not been validated.</p>
+
+  <h3 style="color:var(--a1)">Piotr · upstream (sorting, golden set, wall boundary)</h3>
+  <div class="table-scroll"><table>
+    <thead><tr><th>#</th><th>Item</th><th>Gap</th><th>Days</th><th>First step</th><th>Depends on</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td class="k">Scorecard v1 + building-level statistics, run on Hohental and three hand-in backups</td><td>G26, G2</td><td class="num">5–8</td><td>Port the ISPRS triple and MonteFloor matching in mm as a pure module; store golden version, commit and seed</td><td>Backup/restore system</td></tr>
+      <tr><td>2</td><td class="k">Branch-and-bound correlative matcher replacing the random search</td><td>G1</td><td class="num">4–6</td><td>Open <code>deprecated/csmAlignment.ts</code>, then port <code>FastCorrelativeScanMatcher2D</code> into the worker; compare to DE over 5 seeds</td><td>1</td></tr>
+      <tr><td>3</td><td class="k">ISPRS-style outline score choosing v1 / v2 / hull and exposing confidence</td><td>G8, G10</td><td class="num">2–3</td><td>Completeness / correctness / accuracy + visibility + vertex penalty on top of <code>measuredEdgeSupport</code></td><td>—</td></tr>
+      <tr><td>4</td><td class="k">Door-graph pose graph prototype</td><td>G4</td><td class="num">8–12</td><td>Spanning tree from <code>spaceConnections</code>, pair term with thickness shift, Clipper non-overlap, LM solver from <code>pointToLineGlobalICP.ts</code>; score vs backups</td><td>1, 2</td></tr>
+      <tr><td>5</td><td class="k">Cloud-support gate on generated wall faces before acceptance</td><td>G13</td><td class="num">2</td><td>Move <code>auditDesiredCloudWalls</code> ahead of the accept step; list failing faces</td><td>3</td></tr>
+      <tr><td>6</td><td class="k">Cloud2BIM-style face pairing on a stitched Hohental storey</td><td>G12–G14</td><td class="num">3–4</td><td>Compare thickness with Revit/IFC walls</td><td>4</td></tr>
+      <tr><td>7</td><td class="k">Room split/merge detector</td><td>G7</td><td class="num">3–5</td><td>Rasterise one puzzled storey; flag mismatches vs IfcSpaces</td><td>4</td></tr>
+      <tr><td>8</td><td class="k">Section-slice level histogram + stair-core XY stacking</td><td>G5</td><td class="num">6–8</td><td>Test on the demo building with known Revit levels</td><td>4</td></tr>
+      <tr><td>9</td><td class="k">WMM2025 declination + per-storey compass check</td><td>G6</td><td class="num">1–2</td><td><code>geomagnetism</code> in <code>processImuData.ts</code>, gated on magnetometer calibration status</td><td>Geocoded address</td></tr>
+      <tr><td>10</td><td class="k">TS ray-cast synthetic room generator as fixtures</td><td>G1, G8</td><td class="num">2–3</td><td>Calibrate noise on a flat wall from a real scan</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 style="color:var(--a2)">Milton · downstream (wall types, doors, windows)</h3>
+  <div class="table-scroll"><table>
+    <thead><tr><th>#</th><th>Item</th><th>Gap</th><th>Days</th><th>First step</th><th>Depends on</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td class="k"><code>objectTags</code> masks → azimuth edges → ray-wall intersection → opening position, width, sill</td><td>G17</td><td class="num">3–5</td><td>Node script over one Hohental storey; score vs capture widths and backup openings; fuse several panoramas</td><td>Yaw correction (<code>vanishPoints</code>)</td></tr>
+      <tr><td>2</td><td class="k">1D ray-cast gap detector along <code>rawEdges</code> wall lines</td><td>G17</td><td class="num">2–4</td><td>Same storey; compare the two evidence sources; door-frame scans as cross-check</td><td>—</td></tr>
+      <tr><td>3</td><td class="k">Hungarian matching + door-graph dedupe → Marvin <code>openingPlacement/capture.ts</code></td><td>G17</td><td class="num">1–2</td><td>Cost = along-wall offset + width + type; count auto-placed openings needing no edit</td><td>1, 2; puzzled rooms</td></tr>
+      <tr><td>4</td><td class="k">Wall Type Organizer proposer: catalogue snap + exterior/interior + continuity + reveal depth</td><td>G14</td><td class="num">2</td><td>Per-building editable catalogue (DIN 4172 series, Gründerzeit series); propose, confirm</td><td>Thickness from Piotr's 6</td></tr>
+      <tr><td>5</td><td class="k">Reveal-depth exterior thickness at door-frame / open-window scans</td><td>G12</td><td class="num">3</td><td>Extend <code>boundaryWallThicknessDoorComparison.ts</code>; per-facade table on Hohental; watch glass ghosts</td><td>—</td></tr>
+      <tr><td>6</td><td class="k">ALKIS footprint overlay as orientation + thickness consistency check</td><td>G12, G6</td><td class="num">2 + 3</td><td>Geocode, WFS <code>ave:GebaeudeBauwerk</code>, four-rotation IoU fit with Clipper; flag facades off by more than 10 cm</td><td>—</td></tr>
+      <tr><td>7</td><td class="k">1D pitch fit for equal spacing / cross-storey alignment</td><td>G18</td><td class="num">1–2</td><td>Apply to the 88.5 / 85.5 / 84.5 case; propose, never force</td><td>—</td></tr>
+      <tr><td>8</td><td class="k">Facade-plane thickness from the Airteam OBJ</td><td>G12</td><td class="num">3–5</td><td>2D opening-segment registration; compare with the 35 cm demo value</td><td><code>roofMesh.ts</code> planes</td></tr>
+      <tr><td>9</td><td class="k">100-door labelled test: hinge side, glazing, archway via Qwen3-VL on Scaleway + ring open-leaf rule</td><td>G19</td><td class="num">3–5</td><td>Build the label set from approved models first; then prompts with a "none" option</td><td>EU-hosting decision</td></tr>
+      <tr><td>10</td><td class="k">Grounding DINO / OWLv2 auto-label → RT-DETR fine-tune (only if masks are weak)</td><td>G17</td><td class="num">6–10</td><td>300 crops, measure precision and recall</td><td>1 shows mask quality</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 style="color:var(--a4)">Arne · Marvin</h3>
+  <div class="table-scroll"><table>
+    <thead><tr><th>#</th><th>Item</th><th>Gap</th><th>Days</th><th>First step</th><th>Depends on</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td class="k">Deterministic check on every propose card, failing edges as the repair prompt</td><td>G20, G26</td><td class="num">3–5</td><td>Call the shared outline/wall score before rendering the card; show "N of M points within 30 mm" per edge</td><td>Piotr's 3</td></tr>
+      <tr><td>2</td><td class="k">Card telemetry: shown / approved unchanged / edited within N min / rejected with reason / time</td><td>G26, G27</td><td class="num">2</td><td>One-tap rejection reasons; join on undo batch id</td><td>—</td></tr>
+      <tr><td>3</td><td class="k">Prompt conflict audit, then tool search with ~10 core tools and <code>response_format</code> on big reads</td><td>G27</td><td class="num">5–7</td><td>A 20-task held-out set from real approved sessions; measure accuracy, calls, tokens before and after</td><td>OpenRouter feature check</td></tr>
+      <tr><td>4</td><td class="k">Fix Marvin's outline default to v2 with reference directions, and request a missing RotLidar analysis instead of failing silently</td><td>G8, G11</td><td class="num">1–2</td><td>Mirror what the human button passes (<code>service.ts:474</code>)</td><td>Piotr's 3</td></tr>
+      <tr><td>5</td><td class="k">Structured session digest (ids, decisions, scan inventory)</td><td>G27</td><td class="num">3</td><td>Replace free-text summaries</td><td>—</td></tr>
+      <tr><td>6</td><td class="k">Read-only sandboxed query API for the dozen read helpers</td><td>G27</td><td class="num">5</td><td>Start with "rooms whose outline has an edge below 70 % support"</td><td>—</td></tr>
+      <tr><td>7</td><td class="k">EU routing for any customer image (Scaleway or Bedrock eu.)</td><td>—</td><td class="num">1–2</td><td>Swap the OpenRouter route for image calls once Milton decides</td><td>Milton's decision</td></tr>
+      <tr><td>8</td><td class="k">Calvin promotion gate (with Piotr): lab module → tool only after a golden-set regression</td><td>G1, G4</td><td class="num">2</td><td>First candidate: the branch-and-bound matcher</td><td>Piotr's 1, 2</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout warn" style="margin-top:22px">
+    <p><b>Not worth effort now:</b> dimension lines (G21, by decision), learned floor-plan networks as a primary fitter, SALVe or any ZInD-trained weights, YOLO-World / Ultralytics, DQ-HorizonNet, layout networks for walls, a vision model as a plan judge, a multi-agent Marvin, in-browser detectors.</p>
+  </div>
+</section>
+
+<section id="open">
+  <h2>Open questions that still need a human answer</h2>
+  <div class="table-scroll"><table>
+    <thead><tr><th>#</th><th>Question</th><th>Who</th><th>Why it matters</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td class="k">Is the ground truth the inner wall face or the wall centre line, and at what tolerance?</td><td>Piotr with the architects</td><td>Every outline and wall metric depends on it</td></tr>
+      <tr><td>2</td><td class="k">Do customers contractually name a USIBD LOA, a HOAI phase or a drawing scale?</td><td>Rio, Elias</td><td>Fixes "good enough" once (LOA20 15 to 50 mm vs LOA30 5 to 15 mm)</td></tr>
+      <tr><td>3</td><td class="k">WoFlV balconies: keep 0.5 (the legal ceiling) or the legal default 0.25? Which customers use DIN 277 instead?</td><td>Architects, Milton</td><td><code>inferWofivFactor()</code> default; two room books already disagree (G23)</td></tr>
+      <tr><td>4</td><td class="k">May customer panoramas or clouds leave the EU at all, and which EU route is acceptable?</td><td>Milton</td><td>Decides every vision item and Marvin's OpenRouter route</td></tr>
+      <tr><td>5</td><td class="k">May non-commercial datasets (ZInD, Matterport3D, ISPRS) be used for internal pre-tests by a company?</td><td>Counsel</td><td>Most terms bind for-profit employers even for internal use</td></tr>
+      <tr><td>6</td><td class="k">What are the RotLidar magnetometer's heading accuracy and the meaning of <code>calibration_status.magnetometer</code>?</td><td>Piotr (device)</td><td>Sets the compass prior window</td></tr>
+      <tr><td>7</td><td class="k">Flat-wall residual (noise sigma) and dropout of the RotLidar ring?</td><td>Piotr</td><td>Calibrates the synthetic generator and the 30 mm corridor</td></tr>
+      <tr><td>8</td><td class="k">Which wall catalogues per building: DIN 4172 series, drywall 75/100/125/150 (unverified), Gründerzeit 30/45/60 or 38/51/64?</td><td>Architects (Burak)</td><td>The catalogue snap is only as good as the list</td></tr>
+      <tr><td>9</td><td class="k">Does the NRW ALKIS outline include render or external insulation?</td><td>Geobasis NRW</td><td>Decides whether the cadastre check is ±10 cm or ±25 cm</td></tr>
+      <tr><td>10</td><td class="k">Does OpenRouter expose tool search for the models Marvin uses?</td><td>Arne</td><td>Config change or Go implementation</td></tr>
+      <tr><td>11</td><td class="k">Which wall-generator fix ships, Arne's or Piotr's, and can regeneration stop deleting walls and detaching openings?</td><td>Piotr, Arne, Milton</td><td>G15 blocks measuring walls at all</td></tr>
+      <tr><td>12</td><td class="k">Client symbol convention for sliding and elevator doors; the Revit plugin parameter manual</td><td>Elias, Timi</td><td>G19; no research replaces the sign-off</td></tr>
+      <tr><td>13</td><td class="k">Is the per-room <code>PanoVggtCloudView</code> 3D package worth registering to the building frame as a second evidence source?</td><td>Piotr, Milton</td><td>It would give the 3D wall surfaces the ray-labelling literature assumes</td></tr>
+      <tr><td>14</td><td class="k">Will the headless loader (G25) be built, and when?</td><td>Milton, Arne</td><td>Until then every scorer and batch run needs an open browser tab</td></tr>
+      <tr><td>15</td><td class="k">Who pays for a Python/GPU worker if detectors are fine-tuned, and is RunPod (used by <code>PROCESS_PANORAMA</code>) EU-hosted?</td><td>Milton</td><td>The only GPU in the stack has an unverified region</td></tr>
+    </tbody>
+  </table></div>
+  <p style="margin-top:22px">The surprise of this survey is how little of the field's recent progress applies and how much of its older, smaller work does. A 2009 scan matcher, a 2016 portal-assembly paper, a 2019 catalogue-snap rule and a 2018 benchmark metric each solve one of our gaps almost verbatim, in a few hundred lines of TypeScript, and the door graph the capture app has recorded all along removes the one combinatorial problem the best of those papers could not. Our data, not any model, is the edge.</p>
+</section>
+
+</main>
+<footer><div class="wrap">Method: a context brief built from the platform, api, types, lumoplan and lumoagent repos plus the team's pages and memory notes; six research agents in round one and five gap-closing agents in round two (about 230 cited links, licences checked through GitHub, npm and Hugging Face where possible); one synthesis pass. Full report: <code>~/Documents/lumoview/reports/Agentic building modeling research.md</code>. Earlier pages: <a href="../lumocad-agent-workforce/">agent workforce audit</a>, <a href="../revit-workflow-transcripts/">Revit workflow transcripts</a>, <a href="../marvin-2d-pipeline-gaps/">ten pipeline gaps</a>, <a href="../workbench-calvin-marvin-lumocad/">Workbench, Calvin, Marvin, LumoCad</a>.</div></footer>
+</body>
+</html>
