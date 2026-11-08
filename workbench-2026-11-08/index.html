@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="project" content="miltonmannarino/workbench">
+<meta name="robots" content="noindex, nofollow">
+<title>Workbench 0.6.0, 2 to 8 November: hand a chat over, pick things in the browser, see every server</title>
+<meta name="description" content="What Workbench gained between 2 and 8 November 2026, released as version 0.6.0: handing a chat to another agent, the browser extension, every listening server, Night shift and Actions, review details, and Work Hub's Sync prep.">
+<style>
+:root {
+  --bg: #f8f7f3; --panel: #f2f0ea; --surface: #fffefb; --ink: #1f1e1b; --ink2: #3d3b36;
+  --muted: #6e6a61; --faint: #a29e94; --line: #e4e0d6; --line2: #d6d1c4;
+  --accent: #c15f3c; --accent-soft: #f6e3da; --accent-ink: #ffffff;
+  --code-bg: #f1eee6; --ok: #2f8a4c; --warn: #9a6110;
+  --shadow: 0 1px 2px rgba(30,25,15,.06), 0 8px 24px rgba(30,25,15,.07);
+  --sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --serif: Charter, 'Iowan Old Style', 'Source Serif 4', Georgia, serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b1a18; --panel: #211f1c; --surface: #282623; --ink: #eceae3; --ink2: #d3d0c7;
+    --muted: #a7a398; --faint: #76726a; --line: #34312c; --line2: #45413a;
+    --accent: #e27d58; --accent-soft: #3b2a22; --accent-ink: #1b1a18;
+    --code-bg: #24221f; --ok: #6fcf8b; --warn: #e2b25c;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+code, kbd { font-family: var(--mono); font-size: .86em; font-variant-ligatures: none; }
+p code, li code, td code { background: var(--code-bg); padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
+kbd { border: 1px solid var(--line2); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; background: var(--surface); }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+header.top { padding: 56px 0 24px; }
+.kicker { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.kicker b { color: var(--accent); font-weight: 600; }
+h1 { font: 400 clamp(34px, 5vw, 50px)/1.08 var(--serif); letter-spacing: -.015em; margin: 14px 0 18px; max-width: 18ch; }
+.lead { font: 400 clamp(18px, 2vw, 21px)/1.6 var(--serif); color: var(--ink2); max-width: 64ch; margin: 0; }
+.status { font-size: 14px; color: var(--muted); max-width: 70ch; border-left: 3px solid var(--line2); padding: 2px 0 2px 12px; margin: 22px 0 0; }
+
+nav.toc { margin: 30px 0 0; border-top: 1px solid var(--line2); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+nav.toc a { display: block; padding: 14px 16px 16px 0; text-decoration: none; color: var(--ink); border-right: 1px solid var(--line); margin-right: 16px; }
+nav.toc a:last-child { border-right: 0; }
+nav.toc .n { font: 600 12px var(--mono); color: var(--accent); }
+nav.toc .q { display: block; font: 400 18px/1.3 var(--serif); margin-top: 4px; }
+
+h2 { font: 400 clamp(26px, 3.4vw, 34px)/1.2 var(--serif); margin: 0 0 6px; letter-spacing: -.01em; }
+.part { padding: 52px 0 8px; }
+.part > .wrap > .sub { color: var(--muted); margin: 0 0 26px; max-width: 66ch; }
+
+/* one feature: words left, a drawn piece of the app right */
+.feat { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 34px; padding: 30px 0; border-top: 1px solid var(--line); align-items: start; }
+.feat h3 { font: 600 19px/1.3 var(--sans); margin: 0 0 4px; }
+.feat h3 .n { font: 600 13px var(--mono); color: var(--accent); margin-right: 8px; }
+.feat .why { color: var(--muted); margin: 0 0 12px; }
+.feat p { margin: 0 0 12px; max-width: 62ch; }
+.feat ul { margin: 0 0 12px; padding-left: 20px; }
+.feat li { margin: 4px 0; }
+.files { font-size: 13px; color: var(--muted); }
+.files code { font-size: 12px; }
+
+/* the drawn app pieces */
+.mock { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; box-shadow: var(--shadow); font-size: 13px; overflow-x: auto; }
+.mock .cap { font: 500 11px var(--mono); color: var(--faint); margin: 0 0 10px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line2); border-radius: 999px; padding: 4px 11px; background: var(--surface); color: var(--ink2); white-space: nowrap; }
+.chip.on { border-color: var(--accent); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.arrow { color: var(--faint); font-family: var(--mono); }
+.box { background: var(--surface); border: 1px solid var(--line2); border-radius: 12px; padding: 10px 12px; }
+.box .ph { color: var(--faint); }
+.box .typed { color: var(--ink); }
+.tabs { display: flex; gap: 4px; margin-bottom: -1px; position: relative; }
+.tabs span { border: 1px solid var(--line2); border-bottom-color: var(--line2); border-radius: 8px 8px 0 0; padding: 4px 10px; background: var(--panel); color: var(--muted); }
+.tabs span.cur { background: var(--surface); border-bottom-color: var(--surface); color: var(--ink); font-weight: 500; }
+.answer { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.answer .fold { color: var(--faint); font-size: 12px; border-left: 2px solid var(--line2); padding-left: 8px; margin-bottom: 8px; }
+.answer .fold.said { text-decoration: line-through; text-decoration-color: var(--line2); }
+.answer .final { color: var(--ink); background: var(--accent-soft); border-radius: 6px; padding: 4px 6px; margin: 0 -6px; }
+.foot { display: flex; gap: 12px; align-items: center; margin-top: 10px; color: var(--muted); font-size: 12px; }
+.foot .b { border-radius: 6px; padding: 2px 7px; }
+.foot .b.live { color: var(--accent); background: var(--accent-soft); font-weight: 500; }
+.tray { background: var(--surface); border: 1px solid var(--line2); border-bottom: 0; border-radius: 12px 12px 0 0; margin: 0 12px; padding: 4px 8px 4px 12px; }
+.qi { display: flex; align-items: center; gap: 8px; min-height: 30px; }
+.qi .tag { font: 600 11px var(--sans); color: var(--accent); flex: none; }
+.qi .tag.held { color: var(--warn); }
+.qi .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink2); }
+.qi .a { flex: none; font-size: 12px; color: var(--muted); padding: 2px 6px; border-radius: 6px; }
+.qi .a.hot { color: var(--accent); background: var(--accent-soft); font-weight: 500; }
+.composer { background: var(--surface); border: 1px solid var(--line2); border-radius: 14px; padding: 10px 12px; }
+.crow { display: flex; justify-content: flex-end; gap: 6px; margin-top: 10px; }
+.sq { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-size: 13px; }
+.sq.out { color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); }
+.sq.fill { background: var(--accent); color: var(--accent-ink); }
+.timeline { list-style: none; padding: 0; margin: 14px 0 0; font-size: 12.5px; }
+.timeline li { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 8px; padding: 3px 0; border-top: 1px dashed var(--line); }
+.timeline li:first-child { border-top: 0; }
+.timeline b { font: 600 11px var(--mono); color: var(--muted); }
+
+/* how to test */
+.steps { counter-reset: s; list-style: none; padding: 0; margin: 0; }
+.steps > li { counter-increment: s; position: relative; padding: 14px 0 14px 44px; border-top: 1px solid var(--line); }
+.steps > li::before { content: counter(s); position: absolute; left: 0; top: 14px; width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font: 600 13px var(--mono); display: grid; place-items: center; }
+.steps b { display: block; margin-bottom: 2px; }
+.steps .exp { color: var(--muted); }
+.checks { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 18px; }
+.checks th, .checks td { text-align: left; padding: 9px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+.checks th { font-weight: 600; color: var(--muted); font-size: 12px; border-top: 0; }
+.ok { color: var(--ok); font-weight: 600; white-space: nowrap; }
+.warn { color: var(--warn); font-weight: 600; white-space: nowrap; }
+.tablewrap { overflow-x: auto; }
+
+/* what's missing */
+.gaps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 34px; }
+.gap { padding: 14px 0; border-top: 1px solid var(--line); }
+.gap h4 { margin: 0 0 4px; font-size: 15px; }
+.gap p { margin: 0; color: var(--ink2); font-size: 14.5px; }
+.gap .who { display: inline-block; font: 600 11px var(--mono); color: var(--accent); margin-top: 6px; }
+
+footer { padding: 46px 0 60px; color: var(--muted); font-size: 13px; }
+
+@media print {
+  .mock { box-shadow: none; }
+}
+.scr { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; height: 230px; padding-top: 16px; position: relative; overflow: hidden; }
+.scr .lbl { position: absolute; right: 8px; top: 6px; font: 500 10px var(--mono); color: var(--faint); }
+.scr .u { margin: 12px 12px 8px auto; width: fit-content; background: var(--panel); border-radius: 12px; padding: 4px 10px; color: var(--ink); }
+.scr .ln { height: 7px; border-radius: 4px; background: var(--line2); margin: 9px 12px; }
+.scr .ln.first { background: var(--accent); opacity: .55; }
+.scr .eye { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--accent); }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pair .t { font-size: 12px; color: var(--muted); margin: 0 0 6px; }
+.hl { background: var(--accent-soft); color: var(--accent); border-radius: 4px; padding: 0 3px; }
+.bar { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; color: var(--ink2); }
+.bar .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+.bar .dot.w { background: var(--warn); }
+.bar s { color: var(--faint); }
+
+/* this page */
+.wrap { max-width: 1120px; }
+h1 { max-width: 22ch; }
+nav.toc a { border-right: 1px solid var(--line); }
+nav.toc a:nth-child(4n), nav.toc a:last-child { border-right: 0; }
+nav.toc a:nth-child(n+5) { border-top: 1px solid var(--line); }
+.facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin: 26px 0 0; border: 1px solid var(--line2); border-radius: 12px; background: var(--surface); }
+.facts div { padding: 14px 18px; border-right: 1px solid var(--line); }
+.facts div:last-child { border-right: 0; }
+.facts b { display: block; font: 400 28px/1.1 var(--serif); color: var(--accent); }
+.facts span { font-size: 13px; color: var(--muted); }
+.vlist { list-style: none; margin: 0; padding: 0; }
+.vlist li { display: flex; gap: 10px; align-items: baseline; padding: 6px 0; border-top: 1px solid var(--line); }
+.vlist li:first-child { border-top: 0; }
+.vlist b { font: 600 12px var(--mono); }
+.vlist .cur { color: var(--accent); font-weight: 600; }
+.vlist .tag { margin-left: auto; font: 600 10px var(--mono); color: var(--accent); }
+.small { width: 100%; border-collapse: collapse; font-size: 14px; }
+.small th, .small td { text-align: left; padding: 8px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+.small th { font-weight: 600; color: var(--muted); font-size: 12px; border-top: 0; }
+.opt { display: flex; gap: 10px; align-items: center; padding: 7px 10px; border: 1px solid var(--line2); border-radius: 10px; background: var(--surface); margin-bottom: 6px; }
+.opt.sel { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.opt.off { color: var(--faint); }
+.opt .sub2 { margin-left: auto; font-size: 12px; color: var(--muted); }
+.pg { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; height: 170px; overflow: hidden; }
+.pg .ln { height: 7px; border-radius: 4px; background: var(--line2); margin: 8px 0; }
+.pg .el { position: absolute; left: 14px; top: 58px; width: 150px; height: 34px; border: 2px solid #d4452f; border-radius: 6px; background: rgba(212,69,47,.1); }
+.pg .note { position: absolute; left: 14px; top: 98px; background: var(--panel); border: 1px solid var(--line2); border-radius: 10px; padding: 6px 9px; box-shadow: var(--shadow); }
+.pg .rec { position: absolute; right: 10px; top: 10px; font: 600 11px var(--mono); color: #d4452f; }
+.pg .rec::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #d4452f; margin-right: 5px; }
+.rows { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.rows th, .rows td { text-align: left; padding: 6px 8px; border-top: 1px solid var(--line); white-space: nowrap; }
+.rows th { font: 500 11px var(--mono); color: var(--faint); border-top: 0; }
+.rows .stop { color: var(--accent); }
+.rows .noown { color: var(--warn); font-weight: 600; }
+.man { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 4px 10px; padding: 7px 0; border-top: 1px solid var(--line); }
+.man:first-of-type { border-top: 0; }
+.man b { font: 600 12px var(--mono); color: var(--muted); }
+.ticks li { margin: 3px 0; }
+.steps b { display: inline; margin: 0; }
+.steps > li > b:first-child { display: block; margin-bottom: 2px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="kicker"><b>miltonmannarino/workbench</b><span>Work from 2 to 8 November 2026</span><span>Version <b>0.6.0</b></span><span>Latest commit <code>ca92f9f</code> on <code>main</code>, not pushed</span></div>
+    <h1>Hand a chat to another agent, pick things in the browser, see every server</h1>
+    <p class="lead">Workbench is the local web app that runs coding agents (Claude, Codex, local models) on your projects. This week it learned to move a chat from one agent to another, to take what is broken in your running app straight from the browser, and to show every server left running on the computer. Work Hub, its team-planning side, now prepares the daily sync by itself. All of it is now released as <b>version 0.6.0</b>.</p>
+    <p class="status">Status: the version change (the release list, <code>package.json</code>) is in the working copy and not committed. The 15 commits of the week are on <code>main</code>, which is 2 ahead of GitHub. Type check and all 449 automated tests pass; of the screens, only Settings → Releases was driven in a hidden browser today (details under How to test).</p>
+    <div class="facts" aria-label="The week in numbers">
+      <div><b>15</b><span>commits, 2 to 8 November</span></div>
+      <div><b>150</b><span>files touched (+14,273, −1,200 lines)</span></div>
+      <div><b>449</b><span>automated tests, all passing</span></div>
+      <div><b>0.5 → 0.6</b><span>release shown in Settings → Releases</span></div>
+    </div>
+    <nav class="toc" aria-label="The seven areas">
+      <a href="#relay"><span class="n">01</span><span class="q">Hand a chat to another agent</span></a>
+      <a href="#extension"><span class="n">02</span><span class="q">The browser extension</span></a>
+      <a href="#servers"><span class="n">03</span><span class="q">Every server, and a way to stop it</span></a>
+      <a href="#night"><span class="n">04</span><span class="q">Night shift and Actions</span></a>
+      <a href="#review"><span class="n">05</span><span class="q">Review and chat details</span></a>
+      <a href="#hub"><span class="n">06</span><span class="q">Work Hub prepares the sync</span></a>
+      <a href="#version"><span class="n">07</span><span class="q">Version 0.6.0</span></a>
+    </nav>
+  </div>
+</header>
+<main>
+<section class="part" aria-labelledby="changed">
+  <div class="wrap">
+    <h2 id="changed">What changed</h2>
+    <p class="sub">Grouped by what you see on screen. The drawings are mock-ups, not screenshots. File names are where the code lives, for whoever reviews it.</p>
+
+    <article class="feat" id="relay">
+      <div>
+        <h3><span class="n">01</span>Hand a chat to another agent</h3>
+        <p class="why">Before: a chat belonged to one agent for good. When Claude hit its usage limit (the cap on how much you can use in a time window), the chat sat there until the window reset.</p>
+        <p><b>Relay</b> moves a chat to another agent without starting over. Click the agent chip under the message box, pick an agent that is ready, its model and effort, and optionally what it should do next. The chat stays one chat, in the same folder and worktree. The thread shows “Handed over from Claude to Codex”.</p>
+        <p>The new agent has no memory of the old one, so Workbench gives it a <b>brief</b>, written without any model call: your last 8 messages, how the last turn ended, the last 12 tool steps, the last answer, and the commits and changed files since the chat began. The brief rides along with the first message and is not shown in the thread.</p>
+        <ul>
+          <li><b>Usage limits.</b> A chat that hits a limit now says “Usage limit · retry …” in the top bar and resumes in the same chat when the window resets. The arrow button next to that text hands the chat over instead, and cancels the wait.</li>
+          <li>Also under <kbd>⌘</kbd>+<kbd>K</kbd> → “Hand this chat to another agent…”. Only an idle chat can be handed over.</li>
+        </ul>
+        <p class="files"><code>server/relay.ts</code>, <code>server/usageRecovery.ts</code>, <code>web/src/HandOver.tsx</code>; tests <code>relay.test.ts</code>, <code>relay-server.test.ts</code>, <code>usageRecovery.test.ts</code>.</p>
+      </div>
+      <div class="mock" role="img" aria-label="Drawing: a hand-over dialog listing Claude greyed out until 6 am, Codex selected and ready, and a local model. Below it, a note field and a Hand over button.">
+        <p class="cap">hand this chat to another agent</p>
+        <div class="opt off"><b>Claude</b><span class="sub2">usage limit until 6:00</span></div>
+        <div class="opt sel"><b>Codex</b><span class="sub2">ready</span></div>
+        <div class="opt"><b>Local model</b><span class="sub2">ready</span></div>
+        <div class="box" style="margin:10px 0"><span class="ph">What should it do next? (optional)</span></div>
+        <div class="row"><span class="chip on">Hand over</span><span class="arrow">then, in the thread:</span></div>
+        <div class="answer" style="margin-top:10px"><div class="fold">Handed over from Claude to Codex</div>Continue where Claude left off.</div>
+      </div>
+    </article>
+
+    <article class="feat" id="extension">
+      <div>
+        <h3><span class="n">02</span>The browser extension</h3>
+        <p class="why">Describing “the blue button on the right” to an agent is slow and often wrong. The <b>Workbench picker</b> is a small Chrome-style extension (it also loads in Brave and Edge) that sends the agent what you are looking at. It went from 0.1.0 to 0.2.0 this week and does four things.</p>
+        <ul>
+          <li><b>Pick an element</b> (<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>, then click). The chat gets the file and line where it was written, the components around it, a CSS selector, its HTML and two screenshots. A small box asks what should change: <kbd>Enter</kbd> puts it in the message box, <kbd>⌘</kbd>+<kbd>Enter</kbd> also sends it.</li>
+          <li><b>Send what’s broken</b> (<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd>). Console errors, uncaught errors, failed files and failed requests, with the app file and line. Never headers or request bodies. Nothing leaves the page until you press it.</li>
+          <li><b>Record a repro</b> (<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>, again to stop). Your clicks, typing (password and card fields always hidden), page changes and errors, in order, with a storyboard of up to 12 pictures.</li>
+          <li><b>Show on the running page.</b> A live link to Workbench adds an eye button on each changed file in the Changes panel. It brings your running page forward and outlines every element written in that file.</li>
+        </ul>
+        <p class="files"><code>extension/</code> (<code>picker.js</code>, <code>recorder.js</code>, <code>show.js</code>, <code>background.js</code>), <code>server/picker.ts</code>, <code>server/pagelog.ts</code>, <code>server/extlive.ts</code>; tests <code>picker.test.ts</code>, <code>extension.test.ts</code>.</p>
+      </div>
+      <div class="mock" role="img" aria-label="Drawing: a web page with one element outlined in red and a small note box beside it, and a recording indicator in the corner.">
+        <p class="cap">your running app, after pressing Alt+Shift+P and clicking</p>
+        <div class="pg"><span class="rec">REC 00:12</span><div class="ln" style="width:60%"></div><div class="ln" style="width:40%"></div><div class="el"></div><div class="note">Make this button blue <span class="arrow">⏎ add · ⌘⏎ send</span></div></div>
+        <div class="row" style="margin-top:10px"><span class="chip">Header.tsx:48</span><span class="chip">Button &gt; Toolbar &gt; Header</span><span class="chip">2 screenshots</span></div>
+      </div>
+    </article>
+
+    <article class="feat" id="servers">
+      <div>
+        <h3><span class="n">03</span>Every server, and a way to stop it</h3>
+        <p class="why">Before: the Server tab only knew servers started by its own ▶ Run button, in the open folder, and forgot them when Workbench restarted. A server started by an agent, from a terminal, or left behind by a closed chat kept its port with no way to see or stop it.</p>
+        <p>The tab now has <b>Other servers on this computer</b>: every program listening on a port that was started from your home folder, a temp folder or a project. Each row shows the port (a link), the command, the folder and how long it has run. <b>No owner</b> means whatever started it has exited, so nothing else will stop it. <b>Stop</b> asks for a second click, then ends the program and whatever it started.</p>
+        <ul>
+          <li>It looks only while the tab is on screen, every 5 seconds, with <code>lsof</code> and <code>ps</code>. No model call.</li>
+          <li>When Workbench stops it waits for its servers to exit (a forced kill after 5 seconds). It also remembers them in <code>running.json</code>, so one that outlived a crashed Workbench is ended at the next start. The start time is checked first, so a reused process number is never touched.</li>
+          <li>Removing a worktree with its chat ends whatever still runs in that folder.</li>
+        </ul>
+        <p class="files"><code>server/ports.ts</code>, <code>web/src/OtherServers.tsx</code>; test <code>ports.test.ts</code>.</p>
+      </div>
+      <div class="mock" role="img" aria-label="Drawing: a table of listening servers with port, command, folder, running time and a Stop button; one row marked No owner.">
+        <p class="cap">Server tab → Other servers on this computer</p>
+        <table class="rows">
+          <thead><tr><th>port</th><th>command</th><th>folder</th><th>up</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><a href="#servers">:3000</a></td><td>next dev</td><td>shop</td><td>2 h</td><td class="stop">Stop</td></tr>
+            <tr><td><a href="#servers">:5173</a></td><td>vite</td><td>admin</td><td>41 min</td><td class="stop">Stop</td></tr>
+            <tr><td><a href="#servers">:8123</a></td><td>http.server</td><td>~</td><td>3 d</td><td class="noown">No owner</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="feat" id="night">
+      <div>
+        <h3><span class="n">04</span>Night shift and Actions</h3>
+        <p class="why"><b>Night shift</b> queues tasks for agents to run unattended, each in its own worktree (a separate copy of the project folder on its own branch), with a morning report. <b>Actions</b> are one-click jobs a skill offers for the open folder.</p>
+        <ul>
+          <li><b>Only if this fails.</b> A task can carry a command that runs first. If it passes, no agent starts (no usage spent), the task reads “All clear” and the empty worktree is removed. If it fails, the output goes to the agent as “What the check found”.</li>
+          <li><b>Repeat: Every week.</b> A task with a weekday and time queues a copy when it is due and moves on a week.</li>
+          <li><b>Usage limits.</b> A limit pauses the shift until the window resets; then the same chat carries on, and Night shift no longer restarts the task.</li>
+          <li><b>Actions tab</b> in the right panel (or <kbd>⌘</kbd>+<kbd>K</kbd> → Show actions): jobs that run a command, start an agent chat, or fill in a Night shift task. The auto-heal skill offers its weekly health check here.</li>
+          <li>Also from 3 November: a <b>code tree</b> and <b>file focus</b> view in the right panel, the <b>Panda</b> theme, and <b>Claude login</b>, which opens your own Terminal at the project and runs the Claude CLI’s official login. Workbench never sees the token.</li>
+        </ul>
+        <p class="files"><code>server/nightshift.ts</code>, <code>server/actions.ts</code>, <code>server/claudeLogin.ts</code>, <code>web/src/NightShift.tsx</code>, <code>web/src/ActionsPanel.tsx</code>, <code>web/src/CodeTreePanel.tsx</code>; tests <code>nightshift.test.ts</code>, <code>actions.test.ts</code>.</p>
+      </div>
+      <div class="mock" role="img" aria-label="Drawing: a Night shift task with an 'Only if this fails' command and a repeat setting, and the result 'All clear, no agent started'.">
+        <p class="cap">Night shift → new task</p>
+        <div class="box"><span class="ph">What to do</span> <span class="typed">Fix whatever pnpm audit reports</span></div>
+        <div class="box" style="margin-top:8px"><span class="ph">Only if this fails</span> <code>pnpm audit</code></div>
+        <div class="row" style="margin:8px 0"><span class="chip">Repeat: Every Monday 07:00</span></div>
+        <div class="bar"><span class="dot"></span>All clear <s>agent not started, worktree removed</s></div>
+      </div>
+    </article>
+
+    <article class="feat" id="review">
+      <div>
+        <h3><span class="n">05</span>Review and chat details</h3>
+        <p class="why">Smaller changes to the chat screen and the Changes panel, one line each.</p>
+        <div class="tablewrap">
+        <table class="small">
+          <thead><tr><th>Where</th><th>What</th></tr></thead>
+          <tbody>
+            <tr><td>Soft-fact bar</td><td>Stays on for a chat whose agent wrote a spec, so the sign-off bar shows until you sign off.</td></tr>
+            <tr><td>Files and diffs</td><td>Changed-file markers, and a Diff view inside the file viewer.</td></tr>
+            <tr><td>Top bar</td><td>The background jobs list shows each job’s command and start time.</td></tr>
+            <tr><td>Diff review</td><td>Diff review gets a reviewer menu.</td></tr>
+            <tr><td>Safety</td><td>Agents cannot read <code>.marvin.env</code> files, and env-file detection covers prefixed names.</td></tr>
+            <tr><td>Suggested replies</td><td>Follow the language you write in, English or Spanish, not the answer’s. Output in other languages is dropped.</td></tr>
+            <tr><td>The thread</td><td>Live activity status while an agent works; a Claude subagent’s own steps are shown; clearer Claude and Codex error text.</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p class="files"><code>web/src/BackgroundJobs.tsx</code>, <code>web/src/FactoryBar.tsx</code>, <code>web/src/FileFocus.tsx</code>, <code>server/suggest.ts</code>; tests <code>suggest.test.ts</code>, <code>activity.test.ts</code>, <code>background.test.ts</code>, <code>factory.test.ts</code>.</p>
+      </div>
+      <div class="mock" role="img" aria-label="Drawing: a top bar with a background jobs list showing two commands with their start times, and a row of suggested replies in Spanish.">
+        <p class="cap">top bar → background jobs</p>
+        <div class="answer"><div class="man"><b>14:02</b><code>pnpm dev</code></div><div class="man"><b>14:19</b><code>pnpm test --watch</code></div></div>
+        <p class="cap" style="margin-top:14px">suggested replies, after you wrote in Spanish</p>
+        <div class="row"><span class="chip">Sí, adelante</span><span class="chip">Muéstrame el diff</span><span class="chip">Ejecuta las pruebas</span></div>
+      </div>
+    </article>
+
+    <article class="feat" id="hub">
+      <div>
+        <h3><span class="n">06</span>Work Hub prepares the sync</h3>
+        <p class="why"><b>Work Hub</b> is the planning app next to Workbench (the “Work Hub” tab top left). It now serves a three-person team with a 20-minute daily sync. There is one continuous key result, “Agentic modeling” (no deadline, never behind); the streams under it (Marvin, Calvin, golden set and so on) are <b>topics</b>, not key results. The Obsidian notes vault is the source of truth; Notion is only a mirror.</p>
+        <ul>
+          <li><b>Meetings become items.</b> Pasted or vault notes are analysed into decisions, actions (owner, due date, open or done), open questions, new facts and what changed since the last meeting. Each item has a topic, free tags and a <b>confirmed</b> flag, because transcripts often blame the wrong person. A correction is written back into the note and kept when a note is analysed again.</li>
+          <li><b>Topic pages</b> are built from those items without Claude, into <code>Topics/</code> in the vault: current decisions (newest wins, older ones struck through), open questions, gaps, owners with their open actions, facts. Every line links to its place in the meeting note.</li>
+          <li><b>Sync prep</b> replaces Next up as the home screen: per person, what they said they would do, what is still open, what got done; the new decisions; open questions; where the notes disagree with the repos; and a branch map. “Prepare the sync” in the chat hands Claude the same prep.</li>
+          <li><b>Notion mirror.</b> Review gets a new proposal, <code>kr_update</code>: a decisions log and a task list for the key result page, applied only after you accept it.</li>
+          <li>A topic, decision or gap can start a Workbench chat with the topic page, the last meetings and branch status attached.</li>
+        </ul>
+        <p class="files"><code>workhub/lib/hub/knowledge.ts</code>, <code>vault.ts</code>, <code>topics.ts</code>, <code>next.ts</code>; tests <code>workhub-knowledge.test.ts</code>, <code>workhub-notes.test.ts</code>, <code>workhub-sync.test.ts</code>, <code>workhub-okr.test.ts</code>.</p>
+      </div>
+      <div class="mock" role="img" aria-label="Drawing: a Sync prep screen with a row per person listing what they said they would do, what is open and what is done, plus a decisions list and a disagreement between the notes and the repos.">
+        <p class="cap">Work Hub → Sync prep</p>
+        <div class="answer"><b>Arne</b>
+          <div class="man"><b>said</b><span>Check wall-type merge</span></div>
+          <div class="man"><b>open</b><span>Golden set review <span class="warn">overdue</span></span></div>
+          <div class="man"><b>done</b><span>Deployment notes</span></div>
+        </div>
+        <div class="answer" style="margin-top:8px"><b>Notes and repos disagree</b>
+          <div class="man"><b>branch</b><span>Notes call <code>doors-v2</code> merged; it is not.</span></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="feat" id="version">
+      <div>
+        <h3><span class="n">07</span>Version 0.6.0</h3>
+        <p class="why">The app keeps its own release list, shown under Settings (the gear, top right) → Releases. It stopped at 0.5.0 on 3 November.</p>
+        <ul>
+          <li>Added <b>0.6.0, “Hand over and look closer”</b>, with four lines covering the areas above. It is marked <b>Current</b>.</li>
+          <li>The “current” label and the “N milestones so far” sentence now come from the last entry of the list, so the next release is one entry, not three edits. (<code>web/src/App.tsx</code>.)</li>
+          <li>Fixed a layout glitch there: the version number broke onto its own line (“You’re on / 0.5.0 / .”) because a general rule made bold text a block. It is a normal sentence now.</li>
+          <li><code>package.json</code> said 0.1.0 since the first commit. It now says <b>0.6.0</b>, matching the app. The extension’s own version (0.2.0) and Work Hub’s (<code>workhub/package.json</code>, 0.1.0) were left alone.</li>
+          <li>Housekeeping from 2 November, by the auto-heal skill: <code>next</code> 15.5.28, <code>sharp</code> 0.35.5, <code>zod</code> 4.6.7 and a <code>postcss</code> 8.5.32 override.</li>
+        </ul>
+      </div>
+      <div class="mock" role="img" aria-label="Drawing: the Releases tab with version 0.6.0 marked current above 0.5.0, 0.4.0 and older.">
+        <p class="cap">Settings → Releases</p>
+        <p style="margin:0 0 10px">6 milestones so far. You’re on <b>0.6.0</b>.</p>
+        <ul class="vlist">
+          <li><b class="cur">v0.6.0</b><span>Hand over and look closer</span><span class="tag">CURRENT</span></li>
+          <li><b>v0.5.0</b><span>Reliable momentum</span></li>
+          <li><b>v0.4.0</b><span>Connected work</span></li>
+          <li><b>v0.3.0</b><span>A calmer workspace</span></li>
+          <li><b>v0.2.0</b><span>Review and ship</span></li>
+          <li><b>v0.1.0</b><span>The workbench</span></li>
+        </ul>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="part" aria-labelledby="test">
+  <div class="wrap">
+    <h2 id="test">How to test</h2>
+    <p class="sub">In your own Workbench. First get the new code on screen: <b>Settings → System → Restart Workbench</b>, and when it is back, reload the tab once with <kbd>⌘</kbd>+<kbd>R</kbd>.</p>
+    <ol class="steps">
+      <li><b>Version.</b> Settings (the gear, top right) → <b>Releases</b>. <span class="exp">“6 milestones so far. You’re on 0.6.0.” on one line, and v0.6.0 “Hand over and look closer” at the top, marked Current.</span></li>
+      <li><b>Hand a chat over.</b> In an idle chat click the agent chip under the message box, pick another agent that is ready, type “continue with the tests”, confirm. <span class="exp">The thread shows “Handed over from Claude to Codex” (your agents’ names), and the new agent answers knowing what was done before. Check that the chat is still the same one in the sidebar.</span></li>
+      <li><b>Browser extension.</b> <code>chrome://extensions</code> → Developer mode → Load unpacked → the <code>extension</code> folder (or reload it if it is already there; it should say 0.2.0). Settings → System → Browser extension → <b>Show pairing token</b>, paste it in the extension’s options and press Test. Open your app on localhost, press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>, click an element, type a note, press <kbd>Enter</kbd>. <span class="exp">A chip with the file and line, and two screenshots, waits in the message box with your note.</span> Then <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>, click around, press it again. <span class="exp">One chip with the numbered steps and a storyboard picture.</span></li>
+      <li><b>Show on the running page.</b> With the extension connected, open the Changes panel and click the eye on a changed file. <span class="exp">Your running page comes forward with the elements from that file outlined, and a count.</span></li>
+      <li><b>Other servers.</b> In a terminal: <code>cd ~ &amp;&amp; python3 -m http.server 8123</code>. Open the right panel’s <b>Server</b> tab. <span class="exp">“Other servers on this computer” lists :8123 with its command, folder and age. Click Stop twice: the row goes and the terminal command ends.</span></li>
+      <li><b>Night shift “Only if this fails”.</b> Sidebar → Night shift → new task, any folder, any text, “Only if this fails” = <code>true</code>, start it. <span class="exp">The task finishes at once as “All clear”, with no agent started and no worktree left.</span> With <code>false</code> instead, the agent starts and gets the output.</li>
+      <li><b>Actions.</b> <kbd>⌘</kbd>+<kbd>K</kbd> → Show actions in a git project. <span class="exp">The tab lists the one-click jobs your skills offer (auto-heal’s, for instance).</span></li>
+      <li><b>Spanish suggestions.</b> Send a short message in Spanish. <span class="exp">The suggested replies under the answer are in Spanish. (Uses a little Claude usage.)</span></li>
+      <li><b>Work Hub.</b> Open the Work Hub tab. <span class="exp">The home screen is Sync prep, with a row per person; the Topics screen has one card per topic; “Start a chat in Workbench” on a topic opens a chat with the topic page attached. It is empty until meetings are saved in the Inbox.</span></li>
+    </ol>
+    <div class="tablewrap">
+      <table class="checks">
+        <thead><tr><th>Automated check</th><th>What it covers</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Type check (<code>pnpm typecheck</code>)</td><td>The working copy with the version change</td><td class="ok">passes</td></tr>
+          <tr><td>Full suite (<code>pnpm test</code>, 36 s)</td><td>All 449 tests, including relay, usage recovery, ports, picker and extension, Night shift, Actions, suggestions, and the Work Hub tests</td><td class="ok">449 / 449</td></tr>
+          <tr><td>Private Workbench in hidden Chrome, 1440×900</td><td>Settings → Releases: six entries newest first, v0.6.0 marked Current, the sentence on one line (checked before and after the layout fix; a screenshot was looked at)</td><td class="ok">as expected</td></tr>
+          <tr><td>Everything else on this page</td><td>Not driven in a browser today. Covered by the tests above. By my notes, the extension and Work Hub were also tried in private copies when they were built; I did not repeat that</td><td class="warn">not re-run today</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="part" aria-labelledby="missing">
+  <div class="wrap">
+    <h2 id="missing">What’s missing</h2>
+    <div class="gaps">
+      <div class="gap"><h4>Not committed, not pushed</h4><p>The version change is in the working copy only. <code>main</code> is 2 commits ahead of GitHub. Nothing was committed or pushed, because that was not asked.</p><span class="who">Owner: you, to commit and push</span></div>
+      <div class="gap"><h4>Version numbers are kept by hand</h4><p>Nothing ties <code>package.json</code> to the release list in <code>App.tsx</code>, so they can drift again, as they did since 0.1.0. The extension (0.2.0) and Work Hub (0.1.0) have their own numbers.</p><span class="who">Open decision: you</span></div>
+      <div class="gap"><h4>Relay is always your click</h4><p>Nothing hands a chat over by itself when an agent hits its limit, and the brief has no summary of the code the old agent had read, so the new one re-reads files.</p><span class="who">Open decision: you</span></div>
+      <div class="gap"><h4>Extension limits</h4><p>File and line need React in development; a production build gives only the element, selector and screenshots. Pictures need the tab to stay visible. A headless browser cannot press the toolbar button, so that gesture is not covered by an automated check.</p><span class="who">Follow-up: you, by hand once</span></div>
+      <div class="gap"><h4>Do Piotr and Arne read Notion?</h4><p>The Notion mirror exists because they read Notion and do not run Work Hub. If they do not read it daily, it reaches nobody, and a shared repo or a published page would serve better. Still unanswered.</p><span class="who">Open decision: you</span></div>
+      <div class="gap"><h4>Codex and CI gaps, unchanged</h4><p>Codex subagents are not shown step by step, and the CI tab has no Re-run button. Listed in the README’s “Not done yet”.</p><span class="who">Follow-up: not scheduled</span></div>
+      <div class="gap"><h4>Usage-limit resume not seen live</h4><p>It needs a real limit to trigger. The logic is under test, but nobody watched a real chat pause and resume.</p><span class="who">You, when it next happens</span></div>
+      <div class="gap"><h4>A flaky test to watch</h4><p><code>workhub-build.test.ts</code> has hung the whole suite before. It did not this time. If a run stalls, rerun that file alone.</p><span class="who">Follow-up: not scheduled</span></div>
+    </div>
+  </div>
+</section>
+</main>
+<footer><div class="wrap">Workbench, a local web app for running coding agents. Page for <code>miltonmannarino/workbench</code>, 8 November 2026.</div></footer>
+</body>
+</html>
