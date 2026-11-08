@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="project" content="Lumoview-Building-Analytics-GmbH/platform">
-<meta name="description" content="How Calvin (Piotr's local harness and the coding agent that works through it) and Marvin (the chat inside LumoCad) will work together, in plain terms: who does what, how a tool travels from one to the other, and what is not built yet.">
+<meta name="description" content="How Calvin (the coding-agent harness inside LumoCad's dev server) and Marvin (the chat inside LumoCad, backed by the standalone marvin service) work together, as of 8 November 2026: one shared branch agentic-dev, Calvin can drive Marvin, backups and restore points, the first scorecard, and what is still missing.">
 <title>Calvin and Marvin: two helpers, two jobs</title>
 <style>
 :root{
@@ -59,11 +59,14 @@ p{max-width:860px}
 .card li{margin:0 0 5px}
 .next{border-left:6px solid var(--accent);background:var(--accent-soft)}
 .next h3{color:var(--accent)}
+.changed{border-left:6px solid var(--calvin);background:var(--calvin-soft);margin-top:14px}
+.changed h3{color:var(--calvin)}
 .chip{display:inline-block;font-family:var(--display);font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap;vertical-align:middle}
 .chip.ok{background:var(--ok-soft);color:var(--ok)}
 .chip.warn{background:var(--warn-soft);color:var(--warn)}
 .chip.none{background:var(--none-soft);color:var(--none)}
 .chip.block{background:var(--block-soft);color:var(--block)}
+.chip.part{background:var(--part-soft);color:var(--part)}
 table{border-collapse:collapse;width:100%;margin:12px 0 6px;font-size:15.5px}
 th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid var(--line)}
 th{font-family:var(--display);font-size:13px;color:var(--muted)}
@@ -92,17 +95,26 @@ footer{padding:28px 0 48px;color:var(--muted);font-size:14px;border-top:1px soli
 <body>
 <nav class="topnav" aria-label="Sections"><div class="wrap">
   <a href="#answer">The idea</a><a href="#compare">Side by side</a><a href="#loop">How a tool travels</a><a href="#example">An example</a><a href="#today">Where it stands</a><a href="#missing">What's missing</a><a href="#glossary">Glossary</a>
-  <span class="asof">6 Nov 2026</span>
+  <span class="asof">Updated 8 Nov 2026</span>
 </div></nav>
 
 <header class="hero"><div class="wrap">
-  <p class="eyebrow">Lumoview · LumoCad · how the two helpers fit together</p>
+  <p class="eyebrow">Lumoview · LumoCad · how the two helpers fit together · first written 6 Nov, updated 8 Nov 2026</p>
   <h1>Calvin and Marvin: two helpers, two jobs</h1>
-  <p class="lede">LumoCad is about to get two kinds of AI helper. <b>Calvin</b> is our name for Piotr's local harness and the coding agent that works through it: it helps an engineer <em>improve LumoCad itself</em>, trying changes on a real building in seconds. <b>Marvin</b> is the chat inside LumoCad that helps a person <em>operate a building</em>, with a preview and an Approve button for every change. They never do each other's job. Calvin sharpens the tools; Marvin uses them.</p>
+  <p class="lede">LumoCad has two kinds of AI helper. <b>Calvin</b> is the harness inside the dev server that lets a coding agent (Claude Code or Codex) see and drive the LumoCad tab an engineer has open: it helps the engineer <em>improve LumoCad itself</em>, trying changes on a real building in seconds. <b>Marvin</b> is the chat inside LumoCad that helps a person <em>operate a building</em>, with a preview and an Approve button for every change. They do not do each other's job. Calvin sharpens the tools; Marvin uses them. Since 8 November both live on one shared branch, <code>agentic-dev</code>, and Calvin can talk to Marvin.</p>
   <div class="panel next"><h3>In one sentence each</h3>
     <ul>
       <li><b>Calvin:</b> "I change the program and test it on live data, and I measure whether it got better."</li>
       <li><b>Marvin:</b> "I use the program's tools on this building for you, and I never change anything without your approval."</li>
+    </ul></div>
+  <div class="panel changed"><h3>What changed between 6 and 8 November</h3>
+    <ul>
+      <li><b>One branch.</b> Piotr created <code>agentic-dev</code>: Marvin, Calvin, all recent <code>development</code> and the backup work. Our Marvin branch is fully inside it. Milton's checkout moved there on 8 Nov; the typecheck is clean.</li>
+      <li><b>Calvin is the name in the code now</b>, not only ours: <code>pnpm calvin</code>, <code>tools/calvin/</code>, a dashboard, and a skill a coding agent installs (Arne, 7 Nov).</li>
+      <li><b>Marvin's service moved</b> out of <code>lumoagent</code> into its own repository, <code>marvin</code>. Browser and service now speak protocol version 31 (was 28 on 6 Nov).</li>
+      <li><b>Calvin can see and drive Marvin:</b> send a message, read the transcript, wait for a proposal, approve or reject it, on allow-listed dev buildings only.</li>
+      <li><b>Backups.</b> Piotr's full building backup (reset and restore of sorting, CAD, roof, floor plans, stairs) runs on every hand-in; Marvin got a <code>create_building_backup</code> tool.</li>
+      <li><b>The first scorecard exists:</b> a headless benchmark for the wall generator (<code>pnpm wall-bench</code>). Outlines and openings are still unscored.</li>
     </ul></div>
 </div></header>
 
@@ -112,28 +124,30 @@ footer{padding:28px 0 48px;color:var(--muted);font-size:14px;border-top:1px soli
   <p class="lead2">A good way to hold it in your head.</p>
   <p>Think of LumoCad as a machine that turns scans into floor plans. <b>Marvin is the operator</b> sitting at the machine: he presses its existing buttons for you, tells you what he is about to do, and waits for your OK. He cannot rebuild the machine. <b>Calvin is the mechanic in the workshop next door</b>: he takes the machine apart, tests a better part on a real building, checks the numbers, and if the new part is better it goes back into the machine. After that, the operator simply has a better machine to drive.</p>
   <p>That split is the same one agreed on 5 Nov: the team and a coding agent change LumoCad and its tools; Marvin sits inside LumoCad with no access to the code, and he gets better through better tools and his own setup (instructions, limits, model).</p>
+  <p><b>New since 7 Nov:</b> the mechanic can also sit beside the operator. Through Calvin, a coding agent can give Marvin a task, watch what he proposes, and approve or reject it, so Marvin's own tools can be tested from the terminal. This works only on a developer's machine, only on dev buildings on an allow-list, with a restore point taken first. In the product nothing changed: the Marvin service has no apply endpoint, and Approve is a button a person clicks in the browser.</p>
 </div></section>
 
 <section id="compare"><div class="wrap">
   <h2>Side by side</h2>
   <div class="duo">
     <div class="card calvin"><h3>Calvin</h3><p class="tag">the harness · for the person improving LumoCad</p>
-      <p><b>Who talks to it:</b> an engineer, through a coding agent (Claude Code or Codex) in the repository.</p>
+      <p><b>Who talks to it:</b> an engineer, through a coding agent in the repository. The agent runs <code>pnpm calvin &lt;command&gt;</code>; each command runs inside the LumoCad tab the engineer has open, against the live state machines and stores, and answers in compact JSON (millimetres and degrees).</p>
       <ul>
-        <li>Sees the building you have open as data: floors, rooms, scans, selection, errors.</li>
-        <li>Measures: for example which scan in a room disagrees with the others (a score called G1), or how well two rooms line up (G4).</li>
-        <li>Runs LumoCad's own tools (room autosort, fine alignment, boundary fitting) and can write new ones.</li>
-        <li>Changes <b>code and data</b>. Edit an algorithm, and the next run uses it in about 12 milliseconds, without reloading the building.</li>
-        <li>Safety: writes only on dev buildings you list, one undo step per run, a checkpoint first. It never commits or pushes by itself.</li>
+        <li>Sees the building you have open as data: floors, rooms, scans and poses, selection, dialogs, toasts, errors, screenshots.</li>
+        <li>Measures: which scan in a room disagrees with the others (a score called G1), how well two rooms line up (G4), and now how good a set of generated walls is (the wall benchmark).</li>
+        <li>Runs LumoCad's own tools (room autosort, floor autosort, fine alignment, boundary fitting) and agent-written lab scripts; edits to lab code apply without reloading the tab.</li>
+        <li>Talks to Marvin: <code>marvin send</code>, <code>transcript</code>, <code>wait</code>, <code>approve</code>, <code>reject</code>, <code>budget</code>.</li>
+        <li>Safety: writes only on dev buildings you list, one undo step per run, a checkpoint first, a session log and a read-only dashboard. It never commits or pushes by itself.</li>
       </ul></div>
     <div class="card marvin"><h3>Marvin</h3><p class="tag">the chat in LumoCad · for the person using LumoCad</p>
-      <p><b>Who talks to it:</b> an architect or modeller, in the Assistant pane of the editor.</p>
+      <p><b>Who talks to it:</b> an architect or modeller, in the Assistant pane of the editor. Behind the pane is a Go service (the <code>marvin</code> repository) that keeps the chat history, runs the model and enforces the spending cap.</p>
       <ul>
         <li>Answers questions about the building, navigates, explains plan problems.</li>
         <li>Prepares changes as a preview ("Original" against "New"), with exact numbers.</li>
         <li>Changes <b>building data only</b>, and only after a person clicks Approve. The model cannot approve its own proposal.</li>
+        <li>Can now write a restore point (<code>create_building_backup</code>) before risky work; those backups show as "Marvin" in the backup history.</li>
         <li>After saving, he reads the server back and says "saved" or "unconfirmed". The editor's normal Undo restores it.</li>
-        <li>No access to code. Gets better through his tools and instructions, which live in the Go service.</li>
+        <li>No access to code. Gets better through his tools (browser) and instructions (service); a tool change ships to both sides at once and bumps the protocol version.</li>
       </ul></div>
   </div>
   <div class="scroll"><table>
@@ -141,11 +155,12 @@ footer{padding:28px 0 48px;color:var(--muted);font-size:14px;border-top:1px soli
     <tbody>
       <tr><td class="k">Main question</td><td>"Does this algorithm do better on this building?"</td><td>"Do this for me on this building."</td></tr>
       <tr><td class="k">Speed of a try</td><td>Seconds. Edit, run, read the score, undo.</td><td>Minutes. Ask, wait for the model, review the preview, approve.</td></tr>
-      <tr><td class="k">Who approves</td><td>The engineer, by reading the diff and the scores. The building is protected by the allow-list and one undo per run.</td><td>The user, on every proposal, in the chat.</td></tr>
-      <tr><td class="k">How a new tool is added</td><td>Create one file in <code>src/lumocad/lab/tools/</code>; it registers itself.</td><td>Ship code in both the browser and the Go service, and bump the contract version.</td></tr>
-      <tr><td class="k">Runs without a person?</td><td>No. Needs a developer's open tab.</td><td>No. Needs a user in the chat.</td></tr>
-      <tr><td class="k">Lives on</td><td>Piotr's branch <code>lumocad/local-harness-piotr</code>, off <code>development</code>.</td><td>Arne's branch <code>development_ai-chat</code> and our <code>marvin/native-apply-milton</code>; the service is the separate <code>lumoagent</code> repository.</td></tr>
-      <tr><td class="k">Best for</td><td>Improving algorithms; prototyping tools on real data.</td><td>Getting a floor completed with preview, approval and undo.</td></tr>
+      <tr><td class="k">Who approves</td><td>The engineer, by reading the diff and the scores. The building is protected by the allow-list, a checkpoint and one undo per run.</td><td>The user, on every proposal, in the chat. In the dev setup Calvin may approve on the engineer's behalf, under the same allow-list and checkpoint.</td></tr>
+      <tr><td class="k">How a new tool is added</td><td>A lab script under <code>src/lumocad/lab/</code> (hot-reloaded) or a tool in <code>src/lumocad/utils/debug/calvin/</code>.</td><td>Code in both the browser (<code>src/lumocad/features/assistant/</code>) and the <code>marvin</code> service, and a new protocol version on both sides.</td></tr>
+      <tr><td class="k">Runs without a person?</td><td>No. Needs a developer's open, logged-in tab (<code>wait-ready</code> waits for the building to be idle; a hidden tab no longer drops out since 8 Nov).</td><td>No. Needs a user in the chat, or Calvin on a dev machine.</td></tr>
+      <tr><td class="k">Lives on</td><td colspan="2">Both on the shared branch <code>agentic-dev</code> of the platform repository (since 8 Nov). The service is the separate <code>marvin</code> repository (branch <code>development</code>), protocol version 31 on both sides.</td></tr>
+      <tr><td class="k">Where to read</td><td><code>tools/calvin/skill/SKILL.md</code> (using it), <code>manuals/dev-tools/README_CALVIN_PIOTR.md</code> (how it is built), <code>manuals/lumocad-plans/calvin/</code> (goal, decisions)</td><td><code>src/lumocad/features/assistant/AGENTS.md</code> (rules), <code>marvin/README.md</code> and <code>MARVIN.md</code> (service)</td></tr>
+      <tr><td class="k">Best for</td><td>Improving algorithms; prototyping tools on real data; driving Marvin in tests.</td><td>Getting a floor completed with preview, approval and undo.</td></tr>
     </tbody>
   </table></div>
 </div></section>
@@ -158,21 +173,18 @@ footer{padding:28px 0 48px;color:var(--muted);font-size:14px;border-top:1px soli
       <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" style="fill:var(--muted)"/></marker></defs>
       <text class="s-l" x="20" y="28" style="fill:var(--calvin)">CALVIN · the workshop</text>
       <text class="s-l" x="20" y="198" style="fill:var(--accent)">MARVIN · the operator</text>
-      <!-- calvin boxes -->
       <rect x="20" y="42" width="200" height="86" rx="10" style="fill:var(--calvin-soft);stroke:var(--calvin);stroke-width:2"/>
       <text class="s-t" x="34" y="66">1 · Spot a weak step</text><text class="s-s" x="34" y="86">A tool gives a poor result</text><text class="s-s" x="34" y="104">on a real building</text>
       <rect x="280" y="42" width="220" height="86" rx="10" style="fill:var(--calvin-soft);stroke:var(--calvin);stroke-width:2"/>
       <text class="s-t" x="294" y="66">2 · Try and measure</text><text class="s-s" x="294" y="86">Change the code, run it live,</text><text class="s-s" x="294" y="104">read the score, undo, repeat</text>
       <rect x="560" y="42" width="220" height="86" rx="10" style="fill:var(--calvin-soft);stroke:var(--calvin);stroke-width:2"/>
       <text class="s-t" x="574" y="66">3 · Put it into LumoCad</text><text class="s-s" x="574" y="86">The logic moves into a normal</text><text class="s-s" x="574" y="104">function, with a test</text>
-      <!-- marvin boxes -->
       <rect x="560" y="212" width="220" height="86" rx="10" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:2"/>
       <text class="s-t" x="574" y="236">4 · Marvin gets the tool</text><text class="s-s" x="574" y="256">A plan tool and a propose tool</text><text class="s-s" x="574" y="274">calling that function</text>
       <rect x="820" y="212" width="200" height="86" rx="10" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:2"/>
       <text class="s-t" x="834" y="236">5 · A user approves</text><text class="s-s" x="834" y="256">Preview, Approve, save,</text><text class="s-s" x="834" y="274">read back, Undo</text>
-      <rect x="280" y="212" width="220" height="86" rx="10" style="fill:var(--surface);stroke:var(--muted);stroke-width:2;stroke-dasharray:6 4"/>
-      <text class="s-t" x="294" y="236">6 · Score on a gold building</text><text class="s-s" x="294" y="256">Did it help? (not built yet)</text><text class="s-s" x="294" y="274">Outline, walls, openings, fixes</text>
-      <!-- arrows -->
+      <rect x="280" y="212" width="220" height="86" rx="10" style="fill:var(--part-soft);stroke:var(--part);stroke-width:2;stroke-dasharray:6 4"/>
+      <text class="s-t" x="294" y="236">6 · Score on a gold building</text><text class="s-s" x="294" y="256">Walls: benchmark built 8 Nov</text><text class="s-s" x="294" y="274">Outlines, openings: not yet</text>
       <line x1="220" y1="85" x2="278" y2="85" stroke="var(--muted)" stroke-width="2.5" marker-end="url(#ah)"/>
       <line x1="500" y1="85" x2="558" y2="85" stroke="var(--muted)" stroke-width="2.5" marker-end="url(#ah)"/>
       <path d="M670 128 L670 210" stroke="var(--muted)" stroke-width="2.5" fill="none" marker-end="url(#ah)"/>
@@ -183,40 +195,43 @@ footer{padding:28px 0 48px;color:var(--muted);font-size:14px;border-top:1px soli
       <text class="s-s" x="690" y="176">human gate 1: the engineer reads the diff and scores</text>
       <text class="s-s" x="822" y="205">human gate 2: the user approves</text>
     </svg>
-    <figcaption>Gate 1 is the engineer reviewing what Calvin produced. Gate 2 is the user approving what Marvin proposes. Steps 1 to 5 can be done today in pieces; step 6, the scoring loop, is the missing link.</figcaption>
+    <figcaption>Gate 1 is the engineer reviewing what Calvin produced. Gate 2 is the user approving what Marvin proposes. Steps 1 to 5 can be done today; step 6 exists for walls (the wall benchmark) and is still missing for outlines and openings.</figcaption>
   </figure>
-  <div class="step c"><div class="n">1</div><div><h4>Spot a weak step</h4><p>Someone sees a bad result, or the scorecard shows one: an outline that sits off the scan, a wall that does not match, a door in the wrong place.</p></div></div>
-  <div class="step c"><div class="n">2</div><div><h4>Try and measure (Calvin)</h4><p>On the building already open in the tab, Calvin runs the current tool, reads the score, changes the algorithm, runs again, and undoes what did not help. Each try takes seconds, because edits to algorithm files reach the next run without reloading the building.</p></div></div>
+  <div class="step c"><div class="n">1</div><div><h4>Spot a weak step</h4><p>Someone sees a bad result, or a scorecard shows one: an outline that sits off the scan, a wall that does not match, a door in the wrong place.</p></div></div>
+  <div class="step c"><div class="n">2</div><div><h4>Try and measure (Calvin)</h4><p>On the building already open in the tab, Calvin runs the current tool, reads the score, changes the algorithm, runs again, and undoes what did not help. Each try takes seconds, because edits to lab code reach the next run without reloading the building. Since 7 Nov the same loop works for Marvin's tools: Calvin sends Marvin the request, waits for the proposal, and approves or rejects it on the dev building.</p></div></div>
   <div class="step c"><div class="n">3</div><div><h4>Put it into LumoCad</h4><p>What worked stops being a lab script. Its logic moves into a normal LumoCad function with a test, so every button and every user gets it. This is also Arne's rule: use LumoCad's own functions, do not duplicate them as tools.</p></div></div>
-  <div class="step"><div class="n">4</div><div><h4>Marvin gets the tool</h4><p>Marvin's tool is a thin wrapper that calls that function: a "plan" tool that prepares a candidate and a preview, and a "propose" tool that offers it for approval. Marvin's instructions are updated to say when to use it.</p></div></div>
-  <div class="step"><div class="n">5</div><div><h4>A user approves</h4><p>In the chat the user sees Original and New, clicks Approve, the editor saves it through its normal path as one undo step, and Marvin reads the server back to confirm.</p></div></div>
-  <div class="step"><div class="n">6</div><div><h4>Score it on a gold building</h4><p>A "gold" building is one a human has already finished and approved, so the right answer is known. Running a tool on a copy and comparing it with that answer turns "it looks better" into a number. This step does not exist yet.</p></div></div>
+  <div class="step"><div class="n">4</div><div><h4>Marvin gets the tool</h4><p>Marvin's tool is a thin wrapper that calls that function: a "plan" tool that prepares a candidate and a preview, and a "propose" tool that offers it for approval. The service's instructions are updated to say when to use it, and the protocol version is bumped in both repositories.</p></div></div>
+  <div class="step"><div class="n">5</div><div><h4>A user approves</h4><p>In the chat the user sees Original and New, clicks Approve, the editor saves it through its normal path as one undo step, and Marvin reads the server back to confirm. A restore point can be written first with <code>create_building_backup</code>.</p></div></div>
+  <div class="step"><div class="n">6</div><div><h4>Score it on a gold building</h4><p>A "gold" building is one a human has already finished and approved, so the right answer is known. Running a tool on a copy and comparing it with that answer turns "it looks better" into a number. For walls this exists since 8 Nov: a fixture is one floor as the generator reads it, <code>pnpm wall-bench</code> runs it through Marvin's path or the editor's path without a browser, and the scorecard reports coverage, open material, polygon IoU against reference walls and timings, with a baseline file to compare against. For outlines and openings it does not exist yet, and the gold buildings themselves (Hohental first) start on 9 Nov.</p></div></div>
 </div></section>
 
 <section id="example"><div class="wrap">
   <h2>An example, in plain steps</h2>
-  <p class="lead2">Using a real finding from this week. It is an illustration of how the loop would run; it has not been run end to end.</p>
+  <p class="lead2">A real finding, still open on 8 Nov. It is an illustration of how the loop would run; it has not been run end to end.</p>
   <div class="panel">
     <h3>The finding</h3>
-    <p>To draw a room outline from the scan, the editor has a button that uses the newer fitting method (v2). Marvin's outline tool uses the older one (v1) by default, and leaves out the building's reference lines for slanted walls. So Marvin draws worse outlines than a person clicking the button.</p>
+    <p>To draw a room outline from the scan, the editor has a button that uses the newer fitting method (v2, <code>fit-line-intersections</code>). Marvin's outline tool still uses the older one (v1, <code>merged-edge-arrangement</code>) by default (<code>editorOps/service.ts:475</code> on <code>agentic-dev</code>), and leaves out the building's reference lines for slanted walls. So Marvin draws worse outlines than a person clicking the button.</p>
   </div>
-  <div class="step c" style="margin-top:18px"><div class="n">1</div><div><h4>Calvin measures both</h4><p>On a room that looks wrong, Calvin runs the fitter with v1 and with v2 (his <code>fit-boundaries</code> tool already offers both), and compares how well each outline sits on the scan.</p></div></div>
-  <div class="step c"><div class="n">2</div><div><h4>Calvin tunes it</h4><p>If v2 with the reference lines wins on the rooms checked, the fix is small and lives in LumoCad: the function that runs the fit.</p></div></div>
-  <div class="step"><div class="n">3</div><div><h4>Marvin follows</h4><p>Marvin's <code>plan_room_outline_fit</code> is changed to use the same function with the same settings. His instructions do not change at all: he simply asks for a better outline and gets one. The user still sees the preview and clicks Approve.</p></div></div>
+  <div class="step c" style="margin-top:18px"><div class="n">1</div><div><h4>Calvin measures both</h4><p>On a room that looks wrong, Calvin runs <code>pnpm calvin preview boundaries --method fit-line-intersections</code> and the same with <code>merged-edge-arrangement</code> (nothing is applied), and compares how well each outline sits on the scan.</p></div></div>
+  <div class="step c"><div class="n">2</div><div><h4>Calvin tunes it</h4><p>If v2 with the reference lines wins on the rooms checked, the fix is small and lives in LumoCad: the function that runs the fit. The research of 7 Nov adds the missing piece, an objective outline score (how many scan points lie within 30 mm of the outline, and how much of the outline has support), so "wins" becomes a number.</p></div></div>
+  <div class="step"><div class="n">3</div><div><h4>Marvin follows</h4><p>Marvin's <code>plan_room_outline_fit</code> is changed to use the same function with the same settings. His instructions do not change at all: he simply asks for a better outline and gets one. The user still sees the preview and clicks Approve. Calvin can run exactly this through <code>pnpm calvin marvin send</code> on a dev building before anyone else sees it.</p></div></div>
   <div class="step"><div class="n">4</div><div><h4>Both are checked on the gold building</h4><p>The score before and after goes on the scorecard. If it dropped on some building, Calvin sees it and goes again.</p></div></div>
 </div></section>
 
 <section id="today"><div class="wrap">
-  <h2>Where it stands today</h2>
+  <h2>Where it stands on 8 November</h2>
   <div class="scroll"><table>
     <thead><tr><th>Piece</th><th>State</th><th>Evidence</th></tr></thead>
     <tbody>
-      <tr><td class="k">Calvin (harness)</td><td><span class="chip ok">built</span> <span class="chip warn">young</span></td><td>Piotr's branch has the command line, the live bridge, lab mode and 15 tools. Reads, measures, tool runs, undo, reload and the lab loop were checked live on one building (1126 ImpactHub) on 5 Nov. Three more commits on 6 Nov.</td></tr>
-      <tr><td class="k">Marvin chat</td><td><span class="chip ok">first real chat works</span></td><td>On 5 Nov a first chat ("Summarise the building") ran end to end, with a model call and a tool call.</td></tr>
-      <tr><td class="k">Marvin's native room move</td><td><span class="chip ok">built, tested</span> <span class="chip warn">real-app run pending</span></td><td>Tested with the real room machines; a move through the chat has not been tried yet.</td></tr>
-      <tr><td class="k">The two on one branch</td><td><span class="chip warn">not yet</span></td><td>Calvin is on a branch off <code>development</code>; Marvin is on Arne's line. <code>development</code> was merged into the Marvin line locally on 6 Nov (not pushed). Piotr's merge of that line then has one conflict of its own.</td></tr>
-      <tr><td class="k">Calvin calling Marvin's read tools</td><td><span class="chip none">idea</span></td><td>Piotr's document says it "still needs checking" once the branches meet.</td></tr>
-      <tr><td class="k">Gold building and scorecard</td><td><span class="chip none">not built</span></td><td>Hohental is expected from Piotr the week of 9 Nov. Piotr's plan puts the gold set after the first harness goal; his document lists it as the next step.</td></tr>
+      <tr><td class="k">Calvin (harness)</td><td><span class="chip ok">built, in the shared branch</span></td><td>Command line, live bridge, lab mode, dashboard, skill, session reports; tabs can be targeted by building and <code>wait-ready</code> waits for an idle building (Arne, 8 Nov). Verified live on 7 Nov driving Marvin with the Astra model: send, spending approval, wait, transcript, dashboard agree. Bridge answers on Milton's machine on 8 Nov.</td></tr>
+      <tr><td class="k">Marvin service</td><td><span class="chip ok">standalone repo</span> <span class="chip warn">rebuild floated</span></td><td>Extracted from <code>lumoagent</code> into the <code>marvin</code> repository on 7 Nov (4 commits, protocol 29 → 31). Arne floats rebuilding it from scratch; not decided. Milton's local stack now builds and runs it (healthy on 8 Nov).</td></tr>
+      <tr><td class="k">Marvin chat</td><td><span class="chip ok">first chat worked on 5 Nov</span> <span class="chip warn">not yet on protocol 31</span></td><td>The 5 Nov chat ran on protocol 28. The first chat against the new service is still to be done; it needs a logged-in browser.</td></tr>
+      <tr><td class="k">Marvin's native room move</td><td><span class="chip ok">in agentic-dev</span> <span class="chip warn">real-app run pending</span></td><td>Tested with the real room machines; a move through the chat has not been tried yet.</td></tr>
+      <tr><td class="k">The two on one branch</td><td><span class="chip ok">yes, agentic-dev</span></td><td>Piotr merged Marvin, Calvin and <code>development</code> on 7 to 8 Nov; our Marvin branch is fully contained (0 commits ahead). <code>pnpm exec tsc -b</code> is clean on 8 Nov.</td></tr>
+      <tr><td class="k">Calvin driving Marvin</td><td><span class="chip ok">built</span></td><td><code>pnpm calvin marvin status | transcript | send | wait | approve | reject | budget | stop | new-chat</code>; the dashboard shows a Marvin card and Marvin events; Marvin's header has a dev-only link to the dashboard (Arne, 7 Nov).</td></tr>
+      <tr><td class="k">Backups and restore points</td><td><span class="chip ok">built</span></td><td>Piotr's full building backup (reset and restore of sorting, CAD, roof, floor plans, stairs) works on <code>development</code> and <code>agentic-dev</code> and runs on every preprocessing and QC hand-in; "reset / restore core work" in experimental mode covers the preprocessing data only. Marvin's <code>create_building_backup</code> shares the same code (7 Nov).</td></tr>
+      <tr><td class="k">Gold building and scorecard</td><td><span class="chip part">partly</span></td><td>Wall benchmark built 8 Nov (fixtures from backups or the open tab, baseline, SVG, report under <code>artifacts/wall-benchmark</code>). No outline or opening score yet. Hohental, the first gold building, is Piotr's work from 9 Nov.</td></tr>
+      <tr><td class="k">Marvin's slab and wall tools on the merged generator</td><td><span class="chip block">still failing</span></td><td>Run of 8 Nov on <code>agentic-dev</code>: 138 assistant tests fail in 25 files (wall refinement lifecycle, wall creation, removal and edit apply, wall generation service, ring replace with slabs). It was 145 after our merge on 6 Nov.</td></tr>
     </tbody>
   </table></div>
 </div></section>
@@ -226,32 +241,38 @@ footer{padding:28px 0 48px;color:var(--muted);font-size:14px;border-top:1px soli
   <div class="scroll"><table>
     <thead><tr><th>Item</th><th>Why it matters</th><th>Owner</th></tr></thead>
     <tbody>
-      <tr><td>A gold building and a scorecard</td><td>It is step 6 of the loop and the first of the ten improvements: without a number nobody can say a change helped. Calvin's scores today measure sorting, not outlines, walls or openings.</td><td>Piotr (building), Milton</td></tr>
-      <tr><td>Calvin and Marvin on one branch</td><td>Until then Calvin cannot touch Marvin's code and Marvin's tools cannot be tried in the lab. Needs Arne to bring his branch up to date and Piotr to merge.</td><td>Arne, Piotr</td></tr>
-      <tr><td>Calvin pointed at the architect layer</td><td>The scores and the first examples were about sorting and the room puzzle; the 4 Nov decision is to automate the architect layer (outlines, walls, openings, readiness). The harness itself is general; it needs measure tools for those steps.</td><td>Piotr, Milton</td></tr>
-      <tr><td>The two instruction files do not mention each other</td><td>A coding agent should find both the harness skill and the Marvin <code>AGENTS.md</code>. Piotr's skill is installed per clone and not in git; ours is in the repository.</td><td>Milton</td></tr>
-      <tr><td>A way to feed the user's feedback back</td><td>Piotr's goal includes "a place for the user to give feedback" next to the fast loop. Marvin's chat has none for rejected proposals: a rejection carries no reason.</td><td>Piotr, Arne</td></tr>
-      <tr><td>Marvin's slab and wall tools on top of <code>development</code></td><td>After the merge, 145 tests that Arne's branch added still fail. Until they are ported, those Marvin tools should not be shown as working.</td><td>Arne</td></tr>
+      <tr><td>First chat and the room move on protocol 31</td><td>The stack runs; nobody has typed a message to the new service yet. A move through the chat with Approve and Undo would also close the native-move check open since 5 Nov.</td><td>Milton</td></tr>
+      <tr><td>Gold buildings and an outline and opening score</td><td>Step 6 of the loop exists for walls only. Without a number for outlines and openings nobody can say a change helped; the research of 7 Nov names the metric (cloud support within 30 mm) and asks for scoring at building level.</td><td>Piotr (buildings), Milton (openings)</td></tr>
+      <tr><td>A rule on Calvin approving Marvin</td><td>Today a coding agent may approve a Marvin proposal through Calvin on allow-listed dev buildings, with a checkpoint. The team has not said whether that is wanted in every test, or only when the engineer watches.</td><td>Arne, Piotr, Milton</td></tr>
+      <tr><td>The 138 failing assistant tests</td><td>Until the slab and wall tools are ported to the merged generator, those Marvin tools should not be shown as working.</td><td>Arne</td></tr>
+      <tr><td>Marvin's outline default</td><td>Still v1 without reference directions; the fix is a few lines (<code>service.ts:475</code>). Research estimate: 1 to 2 days with the per-room score.</td><td>Arne</td></tr>
+      <tr><td>The Marvin instructions are out of date</td><td><code>features/assistant/AGENTS.md</code> still names <code>lumoagent</code> as the service and protocol 29; the service is the <code>marvin</code> repository at 31. A newcomer following it would start the wrong program.</td><td>Milton, Arne</td></tr>
+      <tr><td>A reason for every rejection</td><td>Marvin's chat has no field for why a proposal was rejected (research of 7 Nov). Card telemetry (shown, approved unchanged, edited, rejected with reason) is the human-effort number of the scorecard.</td><td>Arne</td></tr>
+      <tr><td>Unattended runs</td><td>Calvin still needs an open, logged-in tab; a reload (when the state-machine tree changes) needs someone to have the tab visible. The hidden-tab timer problem was fixed on 8 Nov, but overnight runs are not possible yet.</td><td>Piotr</td></tr>
+      <tr><td>Rebuild the Marvin service or not</td><td>Arne's 8 Nov note: "maybe we should rebuild this from scratch". A decision, not yet taken, that changes where the prompt and tool contract live.</td><td>Arne, team</td></tr>
     </tbody>
   </table></div>
-  <p><b>Sources.</b> Piotr's harness document of 5 Nov and his branch (read 6 Nov); the Marvin tool map and plan; the ten-places audit; the 4 Nov meeting; the merge of 6 Nov. Companion pages: <a href="https://miltonmannarino.github.io/marvin-agent-architecture/">Marvin: the AI architect inside LumoCad</a>, <a href="https://miltonmannarino.github.io/marvin-2d-pipeline-gaps/">Ten places to improve</a>, <a href="https://miltonmannarino.github.io/marvin-pull-from-arne/">What to pull from Arne's branch</a>.</p>
+  <p><b>Sources.</b> Arne's commits on <code>agentic-dev</code> of 7 and 8 Nov (rename to Calvin and the Marvin bridge, <code>create_building_backup</code>, the wall benchmark, tab targeting and <code>wait-ready</code>); Piotr's mail of 8 Nov (branch and backups); Arne's mail of 8 Nov; <code>tools/calvin/skill/SKILL.md</code> and <code>README_CALVIN_PIOTR.md</code>; the <code>marvin</code> repository README; the test run and typecheck on Milton's machine on 8 Nov. Companion pages: <a href="https://miltonmannarino.github.io/marvin-agent-architecture/">Marvin: the AI architect inside LumoCad</a>, <a href="https://miltonmannarino.github.io/workbench-calvin-marvin-lumocad/">Workbench, Calvin, Marvin, LumoCad</a>, <a href="https://miltonmannarino.github.io/agentic-building-modeling-research/">the research survey of 7 Nov</a>, <a href="https://miltonmannarino.github.io/marvin-2d-pipeline-gaps/">Ten places to improve</a>.</p>
 </div></section>
 
 <section id="glossary"><div class="wrap">
   <h2>Glossary</h2>
   <dl class="gloss">
-    <dt>Harness</dt><dd>A control panel that lets a coding agent see and drive the LumoCad tab you have open, from the command line (<code>pnpm harness</code>).</dd>
-    <dt>Lab mode</dt><dd>The harness setting that applies code edits to the next run without reloading the building, so a try takes seconds.</dd>
-    <dt>Tool</dt><dd>One named action: for Calvin a file in <code>src/lumocad/lab/tools/</code>; for Marvin a command the chat model may request.</dd>
+    <dt>Calvin</dt><dd>The harness: a control panel that lets a coding agent see and drive the LumoCad tab you have open, from the command line (<code>pnpm calvin</code>). It runs inside the Vite dev server; the browser part is a dev-only module.</dd>
+    <dt>Lab mode</dt><dd>Calvin's setting that applies code edits to the next run without reloading the building, so a try takes seconds.</dd>
+    <dt>Tool</dt><dd>One named action: for Calvin a lab script or a tool module; for Marvin a command the chat model may request, implemented in the browser and declared in the service.</dd>
     <dt>Plan tool / propose tool</dt><dd>Marvin's two-step pattern: the plan tool prepares a candidate and a preview and changes nothing; the propose tool offers it for approval.</dd>
-    <dt>G1 / G4</dt><dd>Calvin's two scores: G1 shows which scan in a room disagrees with the rest; G4 shows how well two rooms line up. Both measure how well scans overlap.</dd>
+    <dt>Protocol version</dt><dd>A number both halves of Marvin carry (31 on 8 Nov). The pane refuses a service with a different number, so a tool change ships to both repositories at once.</dd>
+    <dt>G1 / G4</dt><dd>Calvin's two sorting scores: G1 shows which scan in a room disagrees with the rest; G4 shows how well two rooms line up. Both measure how well scans overlap.</dd>
+    <dt>Wall benchmark</dt><dd>The first scorecard: one floor as the wall generator reads it, run without a browser through Marvin's or the editor's path, scored for coverage, open material, IoU against reference walls and timing.</dd>
     <dt>Gold building</dt><dd>A finished, human-approved building kept as the right answer to measure tools against. Hohental is the first planned.</dd>
-    <dt>Allow-list</dt><dd>The file where the engineer lists which dev buildings Calvin may write to. Anything else is read-only.</dd>
+    <dt>Restore point / backup</dt><dd>A snapshot of the whole building (sorting, CAD, roof, floor plans, stairs) that can be restored. Taken on every hand-in, by the Backups panel, or by Marvin's <code>create_building_backup</code>.</dd>
+    <dt>Allow-list</dt><dd>The file where the engineer lists which dev buildings Calvin may write to, including approving Marvin's proposals. Anything else is read-only.</dd>
     <dt>Undo step</dt><dd>One Ctrl+Z. Both helpers are built so that one run is one undo step.</dd>
-    <dt>Branch</dt><dd>A separate line of changes in git. Calvin and Marvin are on different ones for now.</dd>
+    <dt>agentic-dev</dt><dd>The shared git branch of the platform repository where Marvin, Calvin and the agent work live since 8 Nov. Kept off <code>development</code> and <code>main</code> so hotfixes stay clean.</dd>
   </dl>
 </div></section>
 </main>
-<footer><div class="wrap">6 November 2026 · project Lumoview-Building-Analytics-GmbH/platform (also covers lumoagent) · "Calvin" is the team's name for Piotr's local harness and the coding agent that works through it.</div></footer>
+<footer><div class="wrap">Updated 8 November 2026 (first version 6 November) · project Lumoview-Building-Analytics-GmbH/platform (also covers the <code>marvin</code> service repository) · "Calvin" started as the team's nickname for Piotr's harness and is the name in the code since 7 November.</div></footer>
 </body>
 </html>
