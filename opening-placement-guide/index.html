@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="project" content="Lumoview-Building-Analytics-GmbH/platform">
+<title>Opening placement guide: how the workflow works</title>
+<style>
+  :root {
+    --paper: #f7f5f0; --ink: #1c2433; --muted: #5b6475; --rule: #d9d4c7; --card: #ffffff;
+    --blue: #2563eb; --blue-soft: #e6eefe; --amber: #b45309; --amber-soft: #fdf3e2; --green: #15803d; --green-soft: #e7f5ec;
+    --red: #b91c1c; --code: #f0ede4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper: #14171d; --ink: #e8eaee; --muted: #a2a9b6; --rule: #2c323d; --card: #1b1f27;
+      --blue: #6b9cff; --blue-soft: #1c2740; --amber: #f0a64a; --amber-soft: #2d2416; --green: #4cc27a; --green-soft: #17291f; --red: #f07171; --code: #222731; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.6 -apple-system, "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 56px 48px 96px; }
+  h1, h2, h3 { font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif; font-weight: 600; line-height: 1.2; }
+  h1 { font-size: 42px; margin: 8px 0 12px; letter-spacing: -0.01em; }
+  h2 { font-size: 28px; margin: 64px 0 16px; padding-top: 24px; border-top: 1px solid var(--rule); }
+  h3 { font-size: 20px; margin: 32px 0 8px; }
+  p, li { max-width: 74ch; }
+  a { color: var(--blue); }
+  a:focus-visible, summary:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 3px; }
+  code { font: 13.5px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--code); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+  .kicker { font-size: 14px; color: var(--muted); margin: 0; }
+  .lede { font-size: 19px; max-width: 70ch; }
+  .meta { display: flex; gap: 24px; flex-wrap: wrap; font-size: 14px; color: var(--muted); margin-top: 20px; }
+  .meta b { color: var(--ink); font-weight: 600; }
+  .answer { background: var(--card); border: 1px solid var(--rule); border-left: 5px solid var(--blue); padding: 20px 24px; margin: 32px 0 0; border-radius: 6px; }
+  .answer p { margin: 0 0 10px; } .answer p:last-child { margin: 0; }
+  figure { margin: 24px 0 0; }
+  figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; }
+  .flow { width: 100%; height: auto; display: block; background: var(--card); border: 1px solid var(--rule); border-radius: 8px; }
+  .flow text { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; fill: var(--ink); }
+  .flow .sub { fill: var(--muted); font-size: 12px; }
+  ol.steps { list-style: none; padding: 0; margin: 16px 0 0; counter-reset: step; }
+  ol.steps > li { counter-increment: step; position: relative; padding: 4px 0 18px 56px; max-width: none; }
+  ol.steps > li::before { content: counter(step); position: absolute; left: 0; top: 2px; width: 36px; height: 36px; border-radius: 50%;
+    border: 2px solid var(--blue); color: var(--blue); font-weight: 700; display: grid; place-items: center; background: var(--card); }
+  ol.steps > li::after { content: ""; position: absolute; left: 18px; top: 40px; bottom: 0; border-left: 2px dotted var(--rule); }
+  ol.steps > li:last-child::after { display: none; }
+  .ui { font-weight: 600; white-space: nowrap; }
+  .pill { display: inline-block; font-size: 12.5px; font-weight: 600; padding: 1px 8px; border-radius: 999px; vertical-align: 1px; }
+  .pill.blue { background: var(--blue-soft); color: var(--blue); } .pill.amber { background: var(--amber-soft); color: var(--amber); }
+  .pill.green { background: var(--green-soft); color: var(--green); } .pill.grey { background: var(--code); color: var(--muted); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
+  .panel { background: var(--card); border: 1px solid var(--rule); border-radius: 8px; padding: 18px 20px; }
+  .panel h3 { margin-top: 0; }
+  .panel ul { padding-left: 20px; margin: 8px 0 0; }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 15px; background: var(--card); border: 1px solid var(--rule); }
+  th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--rule); }
+  th { font-size: 13px; color: var(--muted); font-weight: 600; background: var(--code); }
+  td:first-child { white-space: nowrap; }
+  .tablewrap { overflow-x: auto; }
+  .callout { border-radius: 8px; padding: 16px 20px; margin-top: 20px; }
+  .callout.amber { background: var(--amber-soft); border: 1px solid color-mix(in srgb, var(--amber) 35%, transparent); }
+  .callout.blue { background: var(--blue-soft); border: 1px solid color-mix(in srgb, var(--blue) 30%, transparent); }
+  .callout p { margin: 0 0 8px; } .callout p:last-child { margin: 0; }
+  details { background: var(--card); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 18px; margin-top: 12px; }
+  summary { cursor: pointer; font-weight: 600; }
+  .owner { color: var(--muted); font-size: 14px; }
+  footer { margin-top: 72px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 16px; }
+</style>
+</head>
+<body>
+<main>
+  <p class="kicker">LumoCad · CAD: Structure · Review openings</p>
+  <h1>The opening placement guide, end to end</h1>
+  <p class="lede">How captured doors and windows get from the surveyor's records onto the right wall: what the computer proposes, what you check, and what only a person may confirm.</p>
+  <div class="meta">
+    <span><b>Repository</b> Lumoview-Building-Analytics-GmbH/platform</span>
+    <span><b>Branch</b> agentic-dev-milton (work not yet committed)</span>
+    <span><b>As of</b> 10 November 2026</span>
+    <span><b>Verified on</b> Hohental Pilot Osnabrück [Milton], Level 1 (OG01)</span>
+  </div>
+
+  <div class="answer">
+    <p><strong>In one paragraph.</strong> The surveyor captures each door and window as a record with its size and the rooms it connects, but not its position on a wall. The 360 photos carry AI masks that outline doors and windows. The placement engine combines the two: it finds the wall between the linked rooms where the masks say the opening is, then runs safety checks. Openings that pass become <em>positions to check</em>. The guide walks you through them one by one, with Top View and the 360 photo both showing the same blue proposal. Nothing is saved until you confirm it in LumoCad's own <span class="ui">Attach Door</span> or <span class="ui">Attach Window</span> dialog.</p>
+    <p>On the test level, the guide first showed <strong>0 positions to check</strong>. The engine had in fact found 10 of 11 positions, and all were blocked only because the finished rooms were locked. After one click on <span class="ui">Unlock rooms and show positions</span>, there were 9 proposals, plus a 10th marked by hand.</p>
+  </div>
+
+  <h2 id="flow">The workflow at a glance</h2>
+  <figure>
+    <svg class="flow" viewBox="0 0 1112 300" role="img" aria-labelledby="flowTitle flowDesc">
+      <title id="flowTitle">Opening placement pipeline</title>
+      <desc id="flowDesc">Capture records and photo masks feed the placement engine, then the safety checks, then your check in both views, then the native attach dialog which saves.</desc>
+      <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#8a8f99"/></marker></defs>
+      <rect x="16" y="56" width="184" height="108" rx="8" fill="none" stroke="#8a8f99" stroke-width="1.5"/>
+      <text x="108.0" y="92" text-anchor="middle" font-weight="600" font-size="15">Capture</text>
+      <text x="108.0" y="114" text-anchor="middle" class="sub">records: size, rooms</text>
+      <text x="108.0" y="132" text-anchor="middle" class="sub">360 photos + masks</text>
+      <text x="108.0" y="150" text-anchor="middle" class="sub">walls, room outlines</text>
+      <path d="M202 110 H236" stroke="#8a8f99" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+      <rect x="240" y="56" width="184" height="108" rx="8" fill="none" stroke="#8a8f99" stroke-width="1.5"/>
+      <text x="332.0" y="92" text-anchor="middle" font-weight="600" font-size="15">Placement engine</text>
+      <text x="332.0" y="114" text-anchor="middle" class="sub">mask edges → rays</text>
+      <text x="332.0" y="132" text-anchor="middle" class="sub">rays → wall fit</text>
+      <text x="332.0" y="150" text-anchor="middle" class="sub">views must agree</text>
+      <path d="M426 110 H460" stroke="#8a8f99" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+      <rect x="464" y="56" width="184" height="108" rx="8" fill="none" stroke="#b45309" stroke-width="1.5"/>
+      <text x="556.0" y="92" text-anchor="middle" font-weight="600" font-size="15">Safety checks</text>
+      <text x="556.0" y="114" text-anchor="middle" class="sub">on the wall, rooms match</text>
+      <text x="556.0" y="132" text-anchor="middle" class="sub">rooms unlocked</text>
+      <text x="556.0" y="150" text-anchor="middle" class="sub">clear view, no overlap</text>
+      <path d="M650 110 H684" stroke="#8a8f99" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+      <rect x="688" y="56" width="184" height="108" rx="8" fill="none" stroke="#2563eb" stroke-width="2"/>
+      <text x="780.0" y="92" text-anchor="middle" font-weight="600" font-size="15">You check</text>
+      <text x="780.0" y="114" text-anchor="middle" class="sub">Top View + 360 photo</text>
+      <text x="780.0" y="132" text-anchor="middle" class="sub">same blue proposal</text>
+      <text x="780.0" y="150" text-anchor="middle" class="sub">or mark the frame</text>
+      <path d="M874 110 H908" stroke="#8a8f99" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+      <rect x="912" y="56" width="184" height="108" rx="8" fill="none" stroke="#15803d" stroke-width="2"/>
+      <text x="1004.0" y="92" text-anchor="middle" font-weight="600" font-size="15">Attach dialog</text>
+      <text x="1004.0" y="114" text-anchor="middle" class="sub">LumoCad’s own dialog</text>
+      <text x="1004.0" y="132" text-anchor="middle" class="sub">the only step that saves</text>
+      <text x="1004.0" y="150" text-anchor="middle" class="sub">native Undo works</text>
+      <path d="M556.0 168 V190" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="556.0" y="208" text-anchor="middle" font-size="13" fill="#b45309">fails → Needs information</text>
+      <text x="556.0" y="226" text-anchor="middle" class="sub">reason + one next action</text>
+      <path d="M780.0 168 V190" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="780.0" y="208" text-anchor="middle" font-size="13" fill="#2563eb">2 frame clicks → draft</text>
+      <text x="780.0" y="226" text-anchor="middle" class="sub">checked like any proposal</text>
+      <text x="556" y="276" text-anchor="middle" class="sub">Everything left of the attach dialog is read-only: it reads the building and draws previews, but writes nothing.</text>
+    </svg>
+    <figcaption>The engine only proposes. A person checks every opening and the existing dialog saves it.</figcaption>
+  </figure>
+
+  <h2 id="using">Using it, step by step</h2>
+  <ol class="steps">
+    <li><strong>Open the level in the right mode.</strong> Pick the level, switch the left rail to <span class="ui">CAD: Structure</span>, and keep <span class="ui">Top View</span> and <span class="ui">360 Image</span> open. The guide arranges the two side by side.</li>
+    <li><strong>Press <span class="ui">Review openings</span></strong> at the top of the right sidebar. The guide reads the photo masks for the level. It then lists <em>captured openings</em>, <em>positions to check</em> and <em>needs information</em>. Photo detections that aren't linked to a captured record are counted separately; they are not extra openings.</li>
+    <li><strong>If a yellow banner appears, unlock first.</strong> It reads something like <span class="pill amber">10 openings have a position, but their rooms are locked</span>. Finished rooms are locked against edits, so their positions can be neither shown nor placed. <span class="ui">Unlock rooms and show positions</span> does the same as the room padlock in the left sidebar. It changes editor state only and saves nothing, then recalculates.</li>
+    <li><strong>Check the numbered proposal in both views.</strong> Each opening gets a stable label: D01, D02… for doors and W01, W02… for windows. Both cameras move to it. Top View frames the proposed opening on its wall (<span class="pill blue">Proposed W05 · Wall 13</span>), and the 360 photo shows a blue frame over the opening. Compare the blue frame with the real door or window in the photo.</li>
+    <li><strong>Confirm or adjust.</strong> <span class="ui">Review placement</span> opens LumoCad's <span class="ui">Attach Door</span> or <span class="ui">Attach Window</span> dialog, prefilled with the captured size. <span class="ui">Attach</span> saves; <span class="ui">Cancel</span> leaves everything as it was. If the position is slightly off, press <span class="ui">Adjust frame</span> and mark the frame yourself (step 7).</li>
+    <li><strong>Press <span class="ui">Next opening</span>.</strong> After a save the guide stays on the same opening and shows <span class="pill green">Placement saved</span>. It moves on only when you ask, so the camera never jumps on its own. When the list is done it says <em>No more positions to check</em> and points to the records that still need information.</li>
+    <li><strong>For an opening without a proposal, mark its frame.</strong> Choose it under <span class="ui">Needs information</span> and press <span class="ui">Mark door frame</span> or <span class="ui">Mark window frame</span>. Both views first go to a photo that sees the opening from a useful distance. Then:
+      <ul>
+        <li><span class="ui">Step 1 of 2</span>: click one vertical edge of the frame, where the fixed frame meets the wall, not the swinging door. A blue line appears where you clicked. Dragging still turns the view.</li>
+        <li><span class="ui">Step 2 of 2</span>: click the opposite edge. A draft position is calculated. If it fits, the opening joins <em>positions to check</em> and both views show it. If not, the box stays open and says why, for example that the wall doesn't join the linked rooms.</li>
+      </ul></li>
+    <li><strong>Other help actions.</strong> <span class="ui">Enter dimensions</span> opens a form when the captured width is missing. <span class="ui">Show in both views</span> takes the cameras to a help record's photo and wall without starting anything. Records whose room outline is missing tell you to fix the outline in the normal editor; they never ask you to draw an invented one.</li>
+  </ol>
+
+  <div class="callout blue">
+    <p><strong>What "nothing is saved" means here.</strong> Browsing, unlocking rooms, choosing photos, changing the suggestion setting, marking a frame and creating a draft never write to the building. The only write is the native attach dialog, and its normal Undo still applies. The guide's own <span class="ui">Undo last placement</span> goes through that same editor Undo.</p>
+  </div>
+
+  <h2 id="engine">What happens under the hood</h2>
+  <div class="grid2">
+    <div class="panel">
+      <h3>1. Reading the level</h3>
+      <p>For the active level, the guide collects walls, room outlines, captured door and window records, and every horizontal 360 scan. For each scan it takes the position, height and rotation, plus the door and window masks and the photo's alignment angle. Openings already attached to a wall count as occupied space.</p>
+    </div>
+    <div class="panel">
+      <h3>2. From mask to wall</h3>
+      <p>The left and right edges of a mask become two rays from the camera. Where the rays hit a wall between the opening's linked rooms gives an observed width and centre. A fit counts when the observed width is close enough to the captured width. If several photos see the same opening, their centres must agree.</p>
+    </div>
+    <div class="panel">
+      <h3>3. Safety checks</h3>
+      <ul>
+        <li>The opening stays within the wall.</li>
+        <li>The wall really joins the captured rooms.</li>
+        <li>No linked room is locked.</li>
+        <li>An aligned photo has a clear view of both ends.</li>
+        <li>It doesn't overlap another opening.</li>
+      </ul>
+      <p>The first check that fails becomes the reason shown under <span class="ui">Advanced → Why this result?</span></p>
+    </div>
+    <div class="panel">
+      <h3>4. Sorting into lists</h3>
+      <p>Each record lands in exactly one list: <span class="pill blue">positions to check</span>, <span class="pill amber">needs information</span> (with one next action), <span class="pill green">placed</span> or <span class="pill grey">set aside</span>. The suggestion setting under <span class="ui">Advanced</span> can show weaker, tentative positions. It never lets an unsafe one through.</p>
+    </div>
+  </div>
+
+  <h3>How the two views follow the selected opening</h3>
+  <p><strong>Top View</strong> gets a "frame this area" command right away. If its camera isn't ready yet, the view keeps the command until it is. <strong>The 360 photo</strong> switches through the editor's normal photo selection. First it leaves a room scope that would hide the photo; then it waits until the photo is actually shown before turning the camera.</p>
+  <p>For a proposal, the camera aims at all four corners of the opening and zooms to fit them. For a help record, it prefers the aligned photo 1.5 to 7 m away, aims nearly level (between 20° down and 10° up), and uses a 100° view, so the vertical frame edges you need to click are visible. Choosing another opening, closing the guide or picking another photo cancels any pending move.</p>
+
+  <div class="tablewrap">
+  <table>
+    <caption class="owner" style="caption-side: bottom; text-align: left; padding-top: 8px;">The main files, all under src/lumocad/</caption>
+    <thead><tr><th>Part</th><th>File</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td>Engine</td><td><code>utils/openings/place.ts</code>, <code>maskEvidence.ts</code>, <code>wallFit.ts</code></td><td>Masks to rays to wall fits; scored by the Hohental grader.</td></tr>
+      <tr><td>Review</td><td><code>features/openingReview/utils/buildReview.ts</code>, <code>geometry.ts</code>, <code>session.ts</code></td><td>Safety checks, reasons, save and undo through the native dialog.</td></tr>
+      <tr><td>Guide</td><td><code>features/openingGuide/utils/model.ts</code>, <code>session.ts</code>, <code>scene.ts</code></td><td>Labels D01/W01, the lists, the exact proposal shape for both views.</td></tr>
+      <tr><td>Cameras</td><td><code>features/openingGuide/utils/liveFocus.ts</code>, <code>focusPlace.ts</code></td><td>Where each view goes, which photo, how to aim.</td></tr>
+      <tr><td>Frame marking</td><td><code>features/openingReview/components/OpeningFrameControls.tsx</code>, <code>utils/panoClick.ts</code></td><td>Reads clicks on the 360 view and turns them into photo columns.</td></tr>
+      <tr><td>Panels</td><td><code>features/openingGuide/components/*</code>, <code>openingReview/components/OpeningReviewHost.tsx</code></td><td>Sidebar guide, the locked-rooms banner, recalculation.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="changed">What changed</h2>
+  <h3>Guide and help records</h3>
+  <ul>
+    <li><strong>Locked rooms are named, not hidden.</strong> A position blocked only by a locked room used to be shown as "No safe position found, mark the frame", which was a dead end. It now says which rooms are locked, and one banner unlocks them all and recalculates.</li>
+    <li><strong>Help records can be shown.</strong> <span class="ui">Show in both views</span>, <span class="ui">Mark … frame</span> and the repair actions first bring both views to the record's photo and wall. Merely selecting a help record still moves nothing, as the signed spec requires.</li>
+    <li>Wording: "window" for windows; clearer step texts; the wall picker says it is highlighted in Top View.</li>
+  </ul>
+  <h3>Both views follow the selection</h3>
+  <ul>
+    <li><strong>Top View moves at once</strong>, instead of waiting for the photo switch, which could silently fail.</li>
+    <li><strong>The 360 photo switches through the editor's normal selection.</strong> It leaves a foreign room scope first, and says plainly when a drawing tool blocks the switch.</li>
+    <li><strong>Help views are usable.</strong> The guide picks a photo at a useful distance with a level, wide view. It no longer points at the floor from a photo standing in the doorway.</li>
+  </ul>
+  <h3>Frame marking in the 360 photo</h3>
+  <ul>
+    <li><strong>Clicks register.</strong> They are read on the 360 view itself, so no 3D overlay in front of the photo can swallow them. Previously every click was dropped.</li>
+    <li><strong>Blue lines are visible.</strong> The 360 photo is drawn as see-through, so solid lines were painted over by the photo. The guide's lines are now see-through too, at full opacity. This also made the guide's blue proposal outline visible in the live app.</li>
+    <li>Crosshair cursor, <span class="ui">Step 1 of 2</span> and <span class="ui">Step 2 of 2</span> texts, a blue line per clicked side, and the failure reason shown in the box.</li>
+  </ul>
+  <h3>Testing support</h3>
+  <ul>
+    <li><span class="ui">Reset doors and windows</span> in Settings → Building backups. It writes a safety backup, deletes doors and windows drawn in LumoCad, and takes captured ones off their walls, back to capture state. Everything else stays. <span class="ui">Restore full model</span> of that safety backup undoes it.</li>
+    <li>The placement engine now places 12 of 17 Hohental openings within 50 mm, up from 8 (commit <code>cc7ef5f03</code>).</li>
+  </ul>
+
+  <h2 id="test">How to test</h2>
+  <h3>In the app</h3>
+  <ol>
+    <li>Open <em>Hohental Pilot Osnabrück [Milton]</em> → Level 1 → <span class="ui">CAD: Structure</span>.</li>
+    <li>Press <span class="ui">Review openings</span>. Expect 11 captured openings and the yellow banner about 10 positions in locked rooms.</li>
+    <li>Press <span class="ui">Unlock 6 rooms and show positions</span>. Expect 9 positions to check, starting at W05 in Bad, with blue proposals in both views.</li>
+    <li>Press <span class="ui">Next opening</span> through the list: W05, D04, W02, W04, D06, W01, W03, D02, D03. Each should show <em>Proposed … · Wall n</em> in Top View and a blue frame on the real opening in the photo.</li>
+    <li>Press <span class="ui">Review placement</span> on any one. Expect the <span class="ui">Attach Door</span> or <span class="ui">Attach Window</span> dialog prefilled with the captured size. <span class="ui">Cancel</span> should leave the guide on the same opening with no "Placement saved".</li>
+    <li>Under <span class="ui">Needs information</span>, pick D05 and press <span class="ui">Mark door frame</span>. A corridor photo opens. Click the left, then the right edge of the closed white door's frame. Expect a blue line after the first click, then D05 joins the positions to check.</li>
+    <li>Pick D01 and press <span class="ui">Enter dimensions</span>. Expect a width, height and sill form.</li>
+  </ol>
+  <p>All of the above was run on 10 November 2026 in a separate test browser on that building, with screenshots at every step. Only <span class="ui">Cancel</span> was pressed in the attach dialog, so nothing was saved.</p>
+  <h3>Automated checks</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Check</th><th>Result</th><th>What it covers</th></tr></thead>
+    <tbody>
+      <tr><td>Signed Soft-fact receipt <code>opening-guide</code></td><td><span class="pill green">6 / 6</span></td><td>Counts and lists, explicit Next with no surprise camera jumps, exact geometry in both views, beginner panel, headless browser in both themes at 270 px, plus a damage check (typecheck and the signed legacy review tests). Locked tests unchanged.</td></tr>
+      <tr><td>Unit tests: guide, review, panorama</td><td><span class="pill green">129 / 129</span></td><td>Includes the locked-room banner, help aiming and photo choice, click-to-photo math, drafts and failed drafts, and camera readiness and cancellation.</td></tr>
+      <tr><td>Backup and reset tests</td><td><span class="pill green">131 / 131</span></td><td>The door and window reset plan: what it deletes, keeps and puts back.</td></tr>
+      <tr><td>Typecheck <code>tsc -b</code>, lint, diff check</td><td><span class="pill green">clean</span></td><td>Whole repository typecheck; lint on the touched files.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="missing">What's missing</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Item</th><th>State</th><th>Owner</th></tr></thead>
+    <tbody>
+      <tr><td>Commit the guide</td><td>All guide work is uncommitted on <code>agentic-dev-milton</code>. Nothing is pushed.</td><td>Milton approves; then committed locally</td></tr>
+      <tr><td>A real save through the guide</td><td>Not run on the live building: only Cancel was pressed. The save path is covered by tests with a stand-in dialog.</td><td>Milton, on his copy</td></tr>
+      <tr><td>Should locked rooms block placement?</td><td>The guide respects the lock and offers the unlock. Whether finished rooms should be relocked after placing is an open decision.</td><td>Milton / QC workflow</td></tr>
+      <tr><td>Placement accuracy</td><td>12 of 17 within 50 mm on Hohental. Two openings here still need help: D05 has no photo with a clear view of both ends, and D01 has no captured width. The held-back accuracy run is still owed.</td><td>Openings engine work</td></tr>
+      <tr><td>Other levels and buildings</td><td>Only Hohental Level 1 was run live. EG00 and OG02 are not yet checked.</td><td>Next test session</td></tr>
+      <tr><td>The frame-marking box covers the top of the photo</td><td>Works, but on smaller windows it hides part of the view. A compact or movable box would help.</td><td>Follow-up</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <details>
+    <summary>Glossary</summary>
+    <ul>
+      <li><strong>Captured opening</strong>: a door or window recorded on site with size and linked rooms, but no wall position.</li>
+      <li><strong>Mask</strong>: the AI outline of a door or window in a 360 photo.</li>
+      <li><strong>Aligned photo</strong>: a 360 photo whose rotation is known relative to the plan. Only aligned photos count as evidence.</li>
+      <li><strong>Proposal</strong>: a position that passed every safety check. It is drawn in blue and is never saved on its own.</li>
+      <li><strong>Draft</strong>: a proposal made from your two frame clicks. It is checked like any other proposal.</li>
+      <li><strong>Locked room</strong>: a finished room protected against edits. You unlock it with the padlock in the left sidebar or with the guide's banner.</li>
+    </ul>
+  </details>
+
+  <footer>Lumoview-Building-Analytics-GmbH/platform · branch agentic-dev-milton at cc7ef5f03 plus uncommitted guide work · 10 November 2026</footer>
+</main>
+</body>
+</html>
