@@ -37,12 +37,13 @@ footer{margin:60px 0 40px;color:var(--muted);font-size:14px}
 </style>
 </head>
 <body>
-<nav class="topnav"><div class="wrap"><a href="#verdict">Verdict</a><a href="#today">What exists</a><a href="#measured">Measured</a><a href="#uses">Where it plugs in</a><a href="#puzzle">Sorting &amp; puzzling</a><a href="#caveats">Caveats</a><a href="#literature">Literature</a><a href="#next">Next</a><span class="asof">12 Nov 2026 · platform/agentic-dev</span></div></nav>
+<nav class="topnav"><div class="wrap"><a href="#verdict">Verdict</a><a href="#today">What exists</a><a href="#measured">Measured</a><a href="#uses">Where it plugs in</a><a href="#puzzle">Sorting &amp; puzzling</a><a href="#puzzle-built">Puzzle: built &amp; measured</a><a href="#caveats">Caveats</a><a href="#literature">Literature</a><a href="#next">Next</a><span class="asof">12 Nov 2026 · platform/agentic-dev</span></div></nav>
 
 <header class="hero"><div class="wrap">
 <p class="eyebrow">Research · Lumoview-Building-Analytics-GmbH/platform · Automatic 2D Floorplans</p>
 <h1>The building outline is not just a drawing guide. It is a second measurement of every exterior wall.</h1>
 <p class="lede">The “Building context” tab pushed on 12 November (<code>19b889034</code>) puts the official cadastre footprint under the Top View. This page asks where else that footprint helps on the way to an automatic 2D plan, and answers with numbers from a real building, Aldegundiskirchplatz 2 in Emmerich, read against the NRW cadastre.</p>
+<div class="callout"><b>Correction, same day.</b> The first version of this page parked the floor-puzzle use “by the 4 November decision”. Milton: sorting and puzzling are the main priority. So the puzzle part was built and measured the same afternoon, see <a href="#puzzle-built">Floor puzzle: built and measured</a>. The architect-layer measurements below stand as they are.</div>
 <div class="grid3">
 <div class="stat"><div class="n">48 mm</div><div class="l">RMS between the CAD exterior wall faces and the cadastre line on the ground floor after a 0.2° refinement (235 samples). Basement: 41 mm.</div></div>
 <div class="stat"><div class="n">59 cm vs 43 cm</div><div class="l">Exterior wall thickness the cadastre implies against what the CAD walls say on 6 of 7 exterior walls. The one 65 cm CAD wall lands 3 cm from the cadastre.</div></div>
@@ -61,7 +62,7 @@ footer{margin:60px 0 40px;color:var(--muted);font-size:14px}
 <li><b>Delivery check</b>: “rooms and walls cover the footprint” and “no room outside it”. Catches a parked room, a corrupt vertex 1.58 km away (the Hohental EG00 case), and unmeasured areas.</li>
 <li><b>Orientation and north</b>: the neighbour’s footprint resolves the 180° tie that a near-rectangle always leaves (the party wall side can hold neither windows nor exterior scans). Both floors agree to 0.02°. Mirrored floors are <i>not</i> detectable from a rectangle; that was measured too.</li>
 <li><b>Exterior scan and outdoor room classification</b>, out-of-square warning (this house is 3° off 90°), party-wall type, BGF cross-check, address in the title block, true georeferencing later.</li>
-<li><b>Floor puzzle prior</b>: exactly the information the puzzle README says the scans don’t hold for basements. Worth doing, but the puzzle is parked by the 4 November decision, so it is listed with its plug points and no date.</li>
+<li><b>Floor puzzle prior</b> (main priority): built as three score terms and two search moves in a scratch copy of the solver. On the failing basement the footprint makes the true layout the best-scoring one, which it was not before; the greedy search does not reach it yet. Verified only with synthetic rays on real geometry, and the synthetic harness is not representative (the ground floor fails in it too). One real floor export decides. Details in <a href="#puzzle-built">the puzzle section</a>.</li>
 </ol>
 
 <h2 id="today">What exists today (checked in code)</h2>
@@ -137,7 +138,7 @@ footer{margin:60px 0 40px;color:var(--muted);font-size:14px}
 </table>
 
 <h2 id="puzzle">Sorting and puzzling: where a footprint prior would go</h2>
-<p>The 4 November decision parks sorting automation, and the outline was asked for as the <i>start</i> of puzzling by hand. These are the places a prior fits, for when the puzzle comes back. The main structural fact: the <b>storey autosort never places rooms relative to each other</b>. It sorts scans inside one room (grid correlation, ±7 m search, IMU quarter-turn), then <code>spreadAllElements</code> lays rooms on a 10 m grid. Rooms meet each other only in the <b>floor puzzle</b>.</p>
+<p>Sorting and puzzling are the main priority (Milton, 12 Nov), and the outline was asked for as the start of puzzling. These are the places a prior fits in the existing code. The main structural fact: the <b>storey autosort never places rooms relative to each other</b>. It sorts scans inside one room (grid correlation, ±7 m search, IMU quarter-turn), then <code>spreadAllElements</code> lays rooms on a 10 m grid. Rooms meet each other only in the <b>floor puzzle</b>.</p>
 <table>
 <tr><th>Place</th><th>What the footprint adds</th><th>Where</th></tr>
 <tr><td>Floor puzzle scorer</td><td>An <code>exterior</code> raster layer (penalise own walls or core free space outside the footprint) and a <code>facadeBand</code> layer (reward outward wall points on the footprint edge), like the existing wall bands. Needs the anchor registered to the footprint, or the footprint as a fixed pseudo-room. Policy note: <code>scanPuzzle/service.ts:23</code> says “no previous outline enters the solver”; the cadastre is not a previous outline, but the exception should be written down.</td><td><code>utils/alignment/floorPuzzle/floorPuzzle.ts</code> assemble <code>:934-939</code>, <code>packAssembly :704-730</code>, <code>scorerAt :821-840</code>, hard gate next to <code>connectionFits :1082</code> used at <code>:1039</code> and <code>:963</code></td></tr>
@@ -150,6 +151,48 @@ footer{margin:60px 0 40px;color:var(--muted);font-size:14px}
 <tr><td>Floor-to-floor</td><td>Every floor fits the same footprint, so floors register to each other without stair scans (0.02° here). Reuse the bounded floor registration.</td><td><code>utils/alignment/floorPuzzle/floorRegistration.ts</code> (25–500 mm, 0.25–4.5°)</td></tr>
 <tr><td>Window walls</td><td>Every wall with a window is an exterior wall on this floor (5/5), and the only long exterior wall without one is the party wall. Window masks per room say which room edge must lie on the footprint. Noted, not used: the puzzle’s “nothing outside a window” layer is at weight 0 because the true floor broke it 1000+ times; this rule is about the wall, not the view.</td><td><code>floorPuzzle.ts</code> layers <code>:580-598</code></td></tr>
 </table>
+
+
+<h2 id="puzzle-built">Floor puzzle: built and measured (same day)</h2>
+<p>Target: the floor puzzle’s own failing case. Its README reports Aldegundis UG01 (basement storage cells) as “do not use”: 6 of 15 dependable rooms wrong, every restart agreeing on a compact wrong arrangement that scores higher than the truth (2660 against 1780), because “rooms in such floors need information the scans don’t hold”. The footprint is such information, and it is the same building this page already placed the footprint on.</p>
+
+<h3>What was built (scratch, nothing in the repo changed)</h3>
+<ul>
+<li><code>src/lumocad/lab/scripts/scratch/floorPuzzleFootprint.ts</code>: a copy of <code>utils/alignment/floorPuzzle/floorPuzzle.ts</code> with a <code>footprint</code> option (outer ring, courtyards, neighbouring buildings, in the anchor room’s input frame, carried into the solver frame by the anchor’s transform and moved with each ensemble restart). It adds one static layer per grid, <code>exterior</code>, and facade bands, and <b>three score terms that cost no extra FFT</b> because they fold into the five existing correlation products: <code>exteriorConflict</code> (a room’s own points and core free space outside the footprint, packed into the own and free products), <code>facade</code> (a room wall whose outward normal matches a footprint edge, 25–80 cm inside that edge, packed into the existing neighbour-band product with its own weight), and <code>windowOutside</code> (the region beyond a window wall landing outside the footprint).</li>
+<li>Two search moves after the repair sweeps (<code>extraMoves</code>): pairwise swaps of similar-sized rooms (the “look-alike cells permuted” failure) and “hole filling” (try each uncovered block of the footprint as a start for a room), both kept only when the floor total improves.</li>
+<li><code>footprint-puzzle-bench.test.ts</code> (ensemble benchmark, scrambled floor with the anchor kept, with and without the footprint, real export or synthetic input), <code>footprint-puzzle-diag.test.ts</code> (score of the true layout against the solver’s layout, per term), <code>footprint-puzzle-lib.ts</code> (loaders). Synthetic input: real room rings, real scan positions, real door and window positions from the held-back fixtures; 0.5° rays from each scan, rays continue through doors into the neighbouring room, 15 mm noise, door-frame and window tags.</li>
+</ul>
+
+<h3>Measured on the basement (synthetic rays on real geometry)</h3>
+<table>
+<tr><th>Run</th><th class="num">True layout total</th><th class="num">Solver’s layout total</th><th>Wrong rooms (of 5)</th><th>Reading</th></tr>
+<tr><td>Without footprint</td><td class="num">1623</td><td class="num">2029</td><td>4, two of them outside the footprint</td><td>The wrong layout scores higher than the truth: the README’s complaint, reproduced.</td></tr>
+<tr><td>Without footprint, polish from the truth</td><td class="num">1808</td><td class="num">2029</td><td>0 (it stays)</td><td>Even polished, the truth loses. A better search alone would converge on the wrong answer.</td></tr>
+<tr><td>With footprint, facade 0.6, window 0</td><td class="num"><b>3452</b></td><td class="num">3270</td><td>4, all inside the footprint</td><td><b>The truth is now the better layout.</b> Facade band: truth 9438 vs 8432. The greedy search does not reach it.</td></tr>
+<tr><td>With footprint, polish from the truth</td><td class="num"><b>3629</b></td><td class="num">3270</td><td>0</td><td>The truth is a stable optimum under the footprint terms, 11 % above the solver’s layout.</td></tr>
+<tr><td>With footprint + wider search (repair 8, shortlist 12) or + swap/hole moves</td><td class="num">3452</td><td class="num">3264–3270</td><td>4</td><td>Local moves do not get there: the layout is wrong in several rooms at once, and no single move improves the total.</td></tr>
+<tr><td>Facade weight sweep 0.3 / 0.6 / 1.0 / 1.5</td><td class="num">2538 / 3452 / 4671 / 6195</td><td class="num">2314 / 3270 / 4651 / 6364</td><td>4 each</td><td>Truth ahead at 0.3–1.0, behind at 1.5: the band must support, not dominate. 0.6 chosen.</td></tr>
+<tr><td>Window-outside term at 0.5 (first try)</td><td class="num">9488</td><td class="num">10386</td><td>3</td><td>Miscalibrated: the solver marches 1.5 m beyond every window point (≈14k cells), so it rewards wrong placements more. Set to 0.</td></tr>
+</table>
+<p>Ensemble benchmark, basement, 2 scrambles each: without the footprint 7 of 12 room placements were proposed as dependable and 5 of those were wrong; with the footprint 4 proposed, 1 wrong. Fewer, more honest proposals, but the floor is still not solved.</p>
+
+<div class="callout warn"><b>Why this is not a result yet.</b> The same synthetic harness fails on the ground floor (12 of 12 rooms wrong without the footprint, rooms scattered 4–21 m away), where the real solver places 10–13 of 14 rooms right on real clouds. So my ray-cast clouds are not a faithful stand-in for the scans: the solver relies on something the rays lack (through-door views, clutter, the real free-space shape). The numbers above show the <i>scoring</i> effect of the footprint; they say nothing reliable about the real search. Also: with the footprint the ground-floor truth scores 6225 against the solver’s 5659, the same pattern as the basement.</div>
+
+<h3>What decides it: one real export</h3>
+<p>The solver benchmark takes a floor export from Calvin, which needs the floor open in LumoCad with its scans loaded. Milton, on the Aldegundis copy <code>a9c5fdee</code>, basement open (and the ground floor afterwards):</p>
+<pre style="background:var(--soft);padding:12px 14px;border-radius:8px;overflow:auto;font-size:14px"><code>pnpm calvin tool floor-export '{"floor":"UG01","file":"floor-export-ug01.json"}'
+pnpm calvin tool floor-export '{"floor":"EG00","file":"floor-export-eg00.json"}'
+# then, with the printed path:
+FP_EXPORT=artifacts/calvin-sessions/&lt;session&gt;/lab/floor-export-ug01.json FP_FLOORS=ug01 FP_SEEDS=3 FP_FACADE=0.6 FP_MOVES=1 \
+NODE_ENV=test rtk proxy npx vitest run src/lumocad/lab/scripts/scratch/footprint-puzzle-bench.test.ts</code></pre>
+<p>The footprint placement for that frame comes from this page’s measurement (<code>/tmp/outline-research/alde-results.json</code>, same building copy, same model frame as the 10 Nov fixtures); if rooms moved since, pass <code>FP_FOOTPRINT_JSON</code> with the rings in model millimetres. Or say the word and I run the export through Calvin on your open tab.</p>
+
+<h3>If the real clouds confirm the scoring effect</h3>
+<ol>
+<li><b>Footprint-first search</b> instead of local moves: correlate every room against the footprint layers alone (facade bands + exterior) to get its candidate slots along the facades, then a small beam search over room-to-slot assignments scored with the full pairwise terms. The basement has 6 rooms and perhaps 8 slots × 4 rotations: cheap. This is the search the diagnostic says is missing.</li>
+<li>Port the terms into <code>utils/alignment/floorPuzzle/floorPuzzle.ts</code> behind the <code>footprint</code> option (they are additive and zero without a footprint), pass the placed outline from <code>floorPuzzleRunner.ts</code> and <code>scanPuzzle/service.ts</code> (with the written policy exception), and add the outline to the candidate digest so a moved outline invalidates old candidates.</li>
+<li>Keep the dependability rule as is: on the basement the footprint already cut wrong proposals from 5 of 7 to 1 of 4.</li>
+</ol>
 
 <h2 id="caveats">Caveats, so nobody over-trusts the line</h2>
 <ul>
@@ -179,12 +222,13 @@ footer{margin:60px 0 40px;color:var(--muted);font-size:14px}
 <tr><td>Look at one 43 cm wall of Aldegundis in the panorama / 3D cloud check</td><td>Milton</td><td>If it is really ~59 cm, the measured claim stands; if not, the cadastre line includes something the plan should not count</td></tr>
 <tr><td>Hohental address and a Lower Saxony registry entry (#12)</td><td>Milton (address), then code</td><td>Repeats the whole measurement on the golden building; the three Hohental fixtures are on disk</td></tr>
 <tr><td>Should coverage and inside-footprint be blockers or review?</td><td>Rio / Djunejt via Milton</td><td>Review first; the cadastre accuracy caveat argues against a blocker</td></tr>
-<tr><td>Floor puzzle prior</td><td>parked (4 Nov decision)</td><td>Plug points listed; the basement case is the test</td></tr>
+<tr><td>Floor export of Aldegundis UG01 + EG00 (one Calvin command each), then the real-cloud benchmark</td><td>Milton (export), then me</td><td>Decides whether the footprint’s scoring effect holds on real scans; everything is ready to run</td></tr>
+<tr><td>Footprint-first search (beam over facade slots) in the real solver</td><td>me, after the export</td><td>The diagnostic says scoring is fixed and search is the gap</td></tr>
 <tr><td>Policy exception for the scan puzzle (“no previous outline enters the solver”)</td><td>Piotr / Arne</td><td>The cadastre is external evidence, not a previous outline; write it down before #7-in-puzzle</td></tr>
 </table>
 
 <h3>Method and files</h3>
-<p class="small">Script: <code>src/lumocad/lab/scripts/scratch/outline-research-alde.test.ts</code> (gitignored scratch, run with <code>NODE_ENV=test npx vitest run …</code>). Inputs: NRW WFS answer saved as <code>/tmp/outline-research/alde-nrw.xml</code>; fixtures <code>~/factory-held-back/openings/aldegundis-{eg00,ug01}.json.gz</code> (anonymised rooms, walls, scans, openings; customer geometry, never in git). Figures: <code>/tmp/outline-research/figure.mjs</code> → HTML → headless Chrome screenshot, aerial from the Mapbox static API with the project token. Code maps from two read-only explorations of <code>utils/alignment</code>, <code>utils/geometry</code>, <code>features/wallThicknessReview</code>, <code>utils/floorplan</code> and <code>features/assistant</code>, hand-checked at the lines quoted. Nothing in any repository changed; no building was written to.</p>
+<p class="small">Puzzle experiment: <code>src/lumocad/lab/scripts/scratch/floorPuzzleFootprint.ts</code>, <code>footprint-puzzle-{bench,diag}.test.ts</code>, <code>footprint-puzzle-lib.ts</code> (all gitignored scratch); results in <code>/tmp/outline-research/footprint-puzzle-*.txt</code>. Outline measurement: <code>src/lumocad/lab/scripts/scratch/outline-research-alde.test.ts</code> (gitignored scratch, run with <code>NODE_ENV=test npx vitest run …</code>). Inputs: NRW WFS answer saved as <code>/tmp/outline-research/alde-nrw.xml</code>; fixtures <code>~/factory-held-back/openings/aldegundis-{eg00,ug01}.json.gz</code> (anonymised rooms, walls, scans, openings; customer geometry, never in git). Figures: <code>/tmp/outline-research/figure.mjs</code> → HTML → headless Chrome screenshot, aerial from the Mapbox static API with the project token. Code maps from two read-only explorations of <code>utils/alignment</code>, <code>utils/geometry</code>, <code>features/wallThicknessReview</code>, <code>utils/floorplan</code> and <code>features/assistant</code>, hand-checked at the lines quoted. Nothing in any repository changed; no building was written to.</p>
 
 </main>
 <footer class="wrap">Research page, 12 November 2026. Project: Lumoview-Building-Analytics-GmbH/platform, branch agentic-dev at dd66cdb45. Source data: Geobasis NRW (dl-de/zero-2.0), Mapbox satellite.</footer>
