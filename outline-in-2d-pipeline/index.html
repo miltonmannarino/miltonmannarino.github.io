@@ -4,239 +4,123 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="project" content="Lumoview-Building-Analytics-GmbH/platform">
-<meta name="description" content="Research, 12 November 2026: where the cadastre building outline (Building context tab) helps the automatic 2D floor plan pipeline, measured on Aldegundiskirchplatz 2.">
-<title>The building outline in the 2D pipeline: where it helps, measured</title>
+<meta name="description" content="Why the building outline from the land registry helps LumoCad, in five pictures. Measured on one real building, 12 November 2026.">
+<title>Why the building outline helps</title>
 <style>
-:root{--bg:#f4f6f9;--surface:#fff;--fg:#18202c;--muted:#566173;--line:#d3d9e2;--soft:#e9edf3;--accent:#2453c0;--accent-soft:#e6ecfa;--ok:#1d7a46;--ok-soft:#e3f3ea;--warn:#9a5b00;--warn-soft:#fbf0dc;--block:#b0322b;--block-soft:#fae6e4;--display:"Archivo","Helvetica Neue",Arial,sans-serif;--body:"Source Sans 3","Segoe UI",Helvetica,Arial,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
-@media (prefers-color-scheme:dark){:root{--bg:#0f141b;--surface:#171e28;--fg:#e7ecf3;--muted:#9aa6b8;--line:#2b3544;--soft:#1f2834;--accent:#7ea3ff;--accent-soft:#1a2644;--ok:#58c98a;--ok-soft:#14301f;--warn:#e6a94f;--warn-soft:#33260f;--block:#ff8a80;--block-soft:#3a1a18}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.58}
-a{color:var(--accent)}code{font-family:var(--mono);font-size:.84em;background:var(--soft);padding:.08em .38em;border-radius:4px;overflow-wrap:anywhere}
-.wrap{max-width:1160px;margin:0 auto;padding:0 32px}
-.topnav{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
-.topnav .wrap{display:flex;gap:22px;align-items:center;height:50px;font-family:var(--display);font-size:14px}
-.topnav a{color:var(--muted);text-decoration:none;padding:4px 0;border-bottom:2px solid transparent;white-space:nowrap}.topnav a:hover{color:var(--fg);border-bottom-color:var(--accent)}.topnav .asof{margin-left:auto;color:var(--muted)}
-.hero{padding:52px 0 28px}.eyebrow{font-family:var(--display);font-size:14px;color:var(--muted);margin:0 0 10px}
-h1{font-family:var(--display);font-weight:800;font-size:48px;line-height:1.06;letter-spacing:-.02em;margin:0 0 18px;max-width:960px}
-.lede{font-size:21px;line-height:1.5;max-width:920px;margin:0 0 24px}
-h2{font-family:var(--display);font-size:30px;letter-spacing:-.015em;margin:56px 0 14px;padding-top:12px;border-top:1px solid var(--line)}
-h3{font-family:var(--display);font-size:20px;margin:28px 0 8px}
-p{margin:0 0 14px;max-width:920px}ul,ol{max-width:920px}li{margin:0 0 6px}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 24px;margin:0 0 16px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0}
-.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px}.stat .n{font-family:var(--display);font-size:34px;font-weight:800;line-height:1;margin:0 0 6px}.stat .l{color:var(--muted);font-size:14px}
-table{border-collapse:collapse;width:100%;font-size:15px;margin:10px 0 20px;background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
-th,td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}th{background:var(--soft);font-family:var(--display);font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
-.tag{display:inline-block;font-family:var(--display);font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
-.tag.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}.tag.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}.tag.block{background:var(--block-soft);color:var(--block);border-color:transparent}.tag.acc{background:var(--accent-soft);color:var(--accent);border-color:transparent}
-figure{margin:22px 0 28px}figure img{width:100%;height:auto;border:1px solid var(--line);border-radius:8px;display:block}figcaption{font-size:14px;color:var(--muted);margin-top:8px;max-width:1000px}
-.callout{border-left:4px solid var(--accent);background:var(--accent-soft);padding:14px 18px;border-radius:0 8px 8px 0;margin:18px 0}
-.callout.warn{border-color:var(--warn);background:var(--warn-soft)}
-.small{font-size:14px;color:var(--muted)}
-footer{margin:60px 0 40px;color:var(--muted);font-size:14px}
+:root{color-scheme:light;--page:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#898781;--grid:#e1e0d9;--axis:#c3c2b7;--border:rgba(11,11,11,.10);--blue:#2a78d6;--blue-light:#86b6ef;--gray:#898781}
+@media (prefers-color-scheme:dark){:root{color-scheme:dark;--page:#0d0d0d;--surface:#1a1a19;--ink:#f0efec;--ink2:#c3c2b7;--muted:#898781;--grid:#2c2c2a;--axis:#383835;--border:rgba(255,255,255,.10);--blue:#3987e5;--blue-light:#86b6ef;--gray:#898781}}
+*{box-sizing:border-box}body{margin:0;background:var(--page);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:18px;line-height:1.5}
+.wrap{max-width:860px;margin:0 auto;padding:48px 32px 64px}
+h1{font-size:40px;line-height:1.1;letter-spacing:-.02em;margin:0 0 14px;font-weight:700}
+.lede{font-size:20px;color:var(--ink2);margin:0 0 36px;max-width:760px}
+section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 26px;margin:0 0 20px}
+h2{font-size:22px;margin:0 0 6px;font-weight:650}
+p{margin:0 0 12px;max-width:760px}
+.small{font-size:14px;color:var(--ink2)}
+svg{display:block;max-width:100%;height:auto}
+svg text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--ink2);font-size:13px}
+svg text.v{fill:var(--ink);font-weight:600}
+svg .grid{stroke:var(--grid);stroke-width:1}
+svg .axis{stroke:var(--axis);stroke-width:1}
+.legend{display:flex;gap:18px;font-size:14px;color:var(--ink2);margin:6px 0 0}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px;background:var(--c)}
+figure{margin:12px 0 0}figure img{width:100%;height:auto;border-radius:8px;border:1px solid var(--border);display:block}
+figcaption{font-size:14px;color:var(--ink2);margin-top:8px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+.tile{border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.tile .l{font-size:14px;color:var(--ink2)}.tile .n{font-size:34px;font-weight:650;line-height:1.1;margin:4px 0 2px}.tile .d{font-size:14px;color:var(--ink2)}
+details{margin-top:10px;font-size:14px;color:var(--ink2)}summary{cursor:pointer}
+table{border-collapse:collapse;font-size:14px;margin-top:8px}td,th{padding:4px 10px;border-bottom:1px solid var(--grid);text-align:left}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+footer{font-size:14px;color:var(--ink2);margin-top:28px}a{color:var(--blue)}
 </style>
 </head>
 <body>
-<nav class="topnav"><div class="wrap"><a href="#verdict">Verdict</a><a href="#today">What exists</a><a href="#measured">Measured</a><a href="#uses">Where it plugs in</a><a href="#puzzle">Sorting &amp; puzzling</a><a href="#puzzle-built">Puzzle: built &amp; measured</a><a href="#caveats">Caveats</a><a href="#literature">Literature</a><a href="#next">Next</a><span class="asof">12 Nov 2026 · platform/agentic-dev</span></div></nav>
-
-<header class="hero"><div class="wrap">
-<p class="eyebrow">Research · Lumoview-Building-Analytics-GmbH/platform · Automatic 2D Floorplans</p>
-<h1>The building outline is not just a drawing guide. It is a second measurement of every exterior wall.</h1>
-<p class="lede">The “Building context” tab pushed on 12 November (<code>19b889034</code>) puts the official cadastre footprint under the Top View. This page asks where else that footprint helps on the way to an automatic 2D plan, and answers with numbers from a real building, Aldegundiskirchplatz 2 in Emmerich, read against the NRW cadastre.</p>
-<div class="callout"><b>Correction, same day.</b> The first version of this page parked the floor-puzzle use “by the 4 November decision”. Milton: sorting and puzzling are the main priority. So the puzzle part was built and measured the same afternoon, first with synthetic rays, then on real clouds exported from the building, see <a href="#puzzle-built">Floor puzzle: built and measured</a>. Result in one line: as a score term inside the solver the footprint does not improve the puzzle on this building; as an absolute frame around the puzzle (outdoor scans, parked rooms, orientation, floors) it does. The architect-layer measurements stand as they are.</div>
-<div class="grid3">
-<div class="stat"><div class="n">48 mm</div><div class="l">RMS between the CAD exterior wall faces and the cadastre line on the ground floor after a 0.2° refinement (235 samples). Basement: 41 mm.</div></div>
-<div class="stat"><div class="n">59 cm vs 43 cm</div><div class="l">Exterior wall thickness the cadastre implies against what the CAD walls say on 6 of 7 exterior walls. The one 65 cm CAD wall lands 3 cm from the cadastre.</div></div>
-<div class="stat"><div class="n">14 / 14</div><div class="l">Scans outside the footprint that are the outdoor room’s scans. 0 of 78 indoor scans fall outside. A parked basement room (34.7 m²) and its 34 m² hole are both flagged.</div></div>
-</div>
-</div></header>
-
 <main class="wrap">
+<h1>Why the building outline helps</h1>
+<p class="lede">The outline is the official shape of the house from the land registry, laid under the floor in LumoCad. One real building (Aldegundiskirchplatz 2, Emmerich), measured on 12 November 2026.</p>
 
-<h2 id="verdict">Verdict</h2>
-<p>Milton’s hunch is right, and the strongest use is not in sorting. The footprint is the <b>only outside face we have for exterior walls</b>. Today the wall thickness review marks every exterior wall “uncertain, one side only”, “Create boundary walls” gives them the slab offset (40 cm by default), and the delivery check cannot tell that a wall band or a whole room is missing. The cadastre line fixes all three with one geometric fact, and it already sits in the building as an annotation.</p>
-<p>Ranked by value for the 2D north star, with the evidence on this page:</p>
-<ol>
-<li><b>Exterior wall thickness</b> as a second face in the wall thickness review (and Marvin’s <code>inspect_wall_thickness_evidence</code>, which reads the same collector). Aldegundis: 59 cm ground floor, 63 cm basement, CAD says 43 cm.</li>
-<li><b>Ground-floor slab outline = footprint</b> instead of rooms + 40 cm. Because the wall generator takes the slab as the outer face, every generated exterior wall then gets its true thickness per facade for free. On Aldegundis the missing band is 13 m² of wall.</li>
-<li><b>Delivery check</b>: “rooms and walls cover the footprint” and “no room outside it”. Catches a parked room, a corrupt vertex 1.58 km away (the Hohental EG00 case), and unmeasured areas.</li>
-<li><b>Orientation and north</b>: the neighbour’s footprint resolves the 180° tie that a near-rectangle always leaves (the party wall side can hold neither windows nor exterior scans). Both floors agree to 0.02°. Mirrored floors are <i>not</i> detectable from a rectangle; that was measured too.</li>
-<li><b>Exterior scan and outdoor room classification</b>, out-of-square warning (this house is 3° off 90°), party-wall type, BGF cross-check, address in the title block, true georeferencing later.</li>
-<li><b>Floor puzzle prior</b> (main priority): the frame part is on <code>agentic-dev</code> (<code>0a63a8f1e</code>); the score part was built as three score terms and two search moves in a scratch copy of the solver, then benchmarked on real clouds of three floors. Verdict: <b>no gain as a score term</b>. Ground floor ensemble: 0 wrong proposals with and without, slightly fewer proposals with; basement (identical cells): unchanged; first floor: 1 → 0 wrong in a single solve. What the footprint does deliver for puzzling is the frame around the solver: outdoor scans, parked rooms, the 180° orientation, floor-to-floor registration. Details and the numbers in <a href="#puzzle-built">the puzzle section</a>.</li>
-</ol>
+<section>
+<h2>1. It knows which scans were taken outside the house</h2>
+<p>A scanner position outside the line is an outdoor scan. Today a person has to mark those by hand.</p>
+<svg viewBox="0 0 760 118" width="760" height="118" role="img" aria-label="Scans outside the line: outdoor room 14 of 14, indoor rooms 0 of 78">
+  <text x="0" y="22">Outdoor room, 14 scans</text>
+  <g><title>Outdoor room: 14 of 14 scans outside the line</title><rect x="200" y="10" width="540" height="20" rx="4" fill="var(--blue)"/></g>
+  <text class="v" x="210" y="25" style="fill:#fff">14 of 14 outside</text>
+  <text x="0" y="78">Indoor rooms, 78 scans</text>
+  <g><title>Indoor rooms: 0 of 78 scans outside the line</title><rect x="200" y="66" width="540" height="20" rx="4" fill="var(--gray)"/></g>
+  <text class="v" x="210" y="81" style="fill:#fff">0 of 78 outside</text>
+  <text x="200" y="110" style="fill:var(--muted)">share of each room group’s scans that stand outside the line</text>
+</svg>
+<div class="legend"><span style="--c:var(--blue)">outside the line</span><span style="--c:var(--gray)">inside</span></div>
+</section>
 
-<h2 id="today">What exists today (checked in code)</h2>
-<div class="panel">
-<p><b>Storage.</b> One <code>IfcAnnotation</code> per building, <code>objectType</code> and property <code>buildingOutlineReference</code>, deterministic id. It holds <code>ringsMm</code> (outer ring plus courtyards, east/north millimetres of the search frame), <code>positionMm</code>, <code>rotationDegrees</code> and the full <code>source</code> (provider, source id, geographic origin, address, retrieval date). <code>referenceWorldRings()</code> gives the rings in model millimetres. Saved through <code>data.save</code> with undo and redo. Files: <code>src/lumocad/features/buildingContext/{types,store,persistence}.ts</code>, <code>utils/reference.ts</code>.</p>
-<p><b>Placement.</b> <code>utils/autoFit.ts</code> lines the outline’s dominant edge direction up with the rooms’ (or the ground-floor slab’s), centres it on their extent, and scores the four quarter turns by how much of the room outline falls inside; ties go to north. <code>utils/roomSegments.ts</code> picks the ground-floor slab as the anchor. “Use outline north” saves true north. Nothing else reads the outline: no wall, slab, check or Marvin tool.</p>
-<p><b>Sources.</b> Five state cadastres (NRW, Berlin, Hamburg, Brandenburg, Sachsen) plus OpenStreetMap as fallback (<code>src/pages/AreaTool/utils/cadastres.ts</code>). Berlin, Hamburg and Brandenburg also give the storey count. Lower Saxony (Hohental!) is not in the registry yet, but its open WFS answers the same <code>ave:GebaeudeBauwerk</code> schema as NRW, in EPSG:4326, under CC BY 4.0 (checked 12 Nov: <code>https://opendata.lgln.niedersachsen.de/doorman/noauth/alkis_wfs_einfach</code>). Adding it is one registry entry.</p>
+<section>
+<h2>2. It knows which way round the house sits</h2>
+<p>A nearly rectangular outline fits the rooms just as well turned by 180°. The neighbour’s outline settles it: nobody scans inside the neighbour’s house.</p>
+<svg viewBox="0 0 760 104" width="760" height="104" role="img" aria-label="Scans contradicting each orientation: wrong way 7, right way 0">
+  <line class="axis" x1="200" y1="6" x2="200" y2="92"/>
+  <text x="0" y="28">Turned the wrong way</text>
+  <g><title>Wrong way: 7 scans would stand inside the neighbour’s house or on the wrong side</title><rect x="200" y="14" width="420" height="20" rx="4" fill="var(--blue)"/></g>
+  <text class="v" x="630" y="29">7 scans contradict it</text>
+  <text x="0" y="74">Turned the right way</text>
+  <g><title>Right way: 0 scans contradict it</title><rect x="200" y="60" width="3" height="20" fill="var(--blue)"/></g>
+  <text class="v" x="212" y="75">0</text>
+</svg>
+</section>
+
+<section>
+<h2>3. It measures how thick the outer walls really are</h2>
+<p>Scans see only the inside face of an outer wall. The line is the outside face, so the gap between them is the wall. Here the drawn walls were 15 cm too thin.</p>
+<svg viewBox="0 0 760 300" width="760" height="300" role="img" aria-label="Outer wall thickness per wall: drawn in LumoCad versus read from the land registry line">
+  <g class="grid">
+    <line x1="200" y1="10" x2="200" y2="262"/><line x1="340" y1="10" x2="340" y2="262"/><line x1="480" y1="10" x2="480" y2="262"/><line x1="620" y1="10" x2="620" y2="262"/>
+  </g>
+  <g style="fill:var(--muted)"><text x="200" y="282" text-anchor="middle">0 cm</text><text x="340" y="282" text-anchor="middle">20</text><text x="480" y="282" text-anchor="middle">40</text><text x="620" y="282" text-anchor="middle">60</text><text x="760" y="282" text-anchor="end">80</text></g>
+  <!-- rows: y, label, cad, registry ; x = 200 + cm*7 -->
+  <g><title>Wall 1 (9.7 m, party wall): drawn 43 cm, land registry 59 cm</title><text x="0" y="29">Wall 1 · 9.7 m</text><line x1="501" y1="25" x2="613" y2="25" stroke="var(--blue)" stroke-width="2"/><circle cx="501" cy="25" r="6" fill="var(--blue-light)" stroke="var(--surface)" stroke-width="2"/><circle cx="613" cy="25" r="6" fill="var(--blue)" stroke="var(--surface)" stroke-width="2"/><text class="v" x="626" y="29">59</text></g>
+  <g><title>Wall 2 (3.8 m): drawn 43 cm, land registry 63 cm</title><text x="0" y="65">Wall 2 · 3.8 m</text><line x1="501" y1="61" x2="641" y2="61" stroke="var(--blue)" stroke-width="2"/><circle cx="501" cy="61" r="6" fill="var(--blue-light)" stroke="var(--surface)" stroke-width="2"/><circle cx="641" cy="61" r="6" fill="var(--blue)" stroke="var(--surface)" stroke-width="2"/><text class="v" x="654" y="65">63</text></g>
+  <g><title>Wall 3 (0.8 m): drawn 43 cm, land registry 58 cm</title><text x="0" y="101">Wall 3 · 0.8 m</text><line x1="501" y1="97" x2="606" y2="97" stroke="var(--blue)" stroke-width="2"/><circle cx="501" cy="97" r="6" fill="var(--blue-light)" stroke="var(--surface)" stroke-width="2"/><circle cx="606" cy="97" r="6" fill="var(--blue)" stroke="var(--surface)" stroke-width="2"/><text class="v" x="619" y="101">58</text></g>
+  <g><title>Wall 4 (9.7 m): drawn 43 cm, land registry 59 cm</title><text x="0" y="137">Wall 4 · 9.7 m</text><line x1="501" y1="133" x2="613" y2="133" stroke="var(--blue)" stroke-width="2"/><circle cx="501" cy="133" r="6" fill="var(--blue-light)" stroke="var(--surface)" stroke-width="2"/><circle cx="613" cy="133" r="6" fill="var(--blue)" stroke="var(--surface)" stroke-width="2"/><text class="v" x="626" y="137">59</text></g>
+  <g><title>Wall 5 (9.3 m): drawn 43 cm, land registry 58 cm</title><text x="0" y="173">Wall 5 · 9.3 m</text><line x1="501" y1="169" x2="606" y2="169" stroke="var(--blue)" stroke-width="2"/><circle cx="501" cy="169" r="6" fill="var(--blue-light)" stroke="var(--surface)" stroke-width="2"/><circle cx="606" cy="169" r="6" fill="var(--blue)" stroke="var(--surface)" stroke-width="2"/><text class="v" x="619" y="173">58</text></g>
+  <g><title>Wall 6 (8.8 m): drawn 43 cm, land registry 56 cm</title><text x="0" y="209">Wall 6 · 8.8 m</text><line x1="501" y1="205" x2="592" y2="205" stroke="var(--blue)" stroke-width="2"/><circle cx="501" cy="205" r="6" fill="var(--blue-light)" stroke="var(--surface)" stroke-width="2"/><circle cx="592" cy="205" r="6" fill="var(--blue)" stroke="var(--surface)" stroke-width="2"/><text class="v" x="605" y="209">56</text></g>
+  <g><title>Wall 7 (4.0 m): drawn 65 cm, land registry 68 cm. The control: drawn from both sides, and the line agrees within 3 cm</title><text x="0" y="245">Wall 7 · 4.0 m</text><line x1="655" y1="241" x2="676" y2="241" stroke="var(--blue)" stroke-width="2"/><circle cx="655" cy="241" r="6" fill="var(--blue-light)" stroke="var(--surface)" stroke-width="2"/><circle cx="676" cy="241" r="6" fill="var(--blue)" stroke="var(--surface)" stroke-width="2"/><text class="v" x="689" y="245">68</text></g>
+  <text x="490" y="29" text-anchor="end" style="fill:var(--muted)">43</text>
+</svg>
+<div class="legend"><span style="--c:var(--blue-light)">drawn in LumoCad</span><span style="--c:var(--blue)">read from the land registry line</span></div>
+<p class="small" style="margin-top:8px">Wall 7 is the check: it was drawn from both sides at 65 cm, and the line agrees within 3 cm. The line is accurate to a few centimetres where the house was surveyed, to decimetres where it was traced from old maps.</p>
+</section>
+
+<section>
+<h2>4. It finds a room left outside the house</h2>
+<p>A room whose scans all stand outside the line does not belong there. In this basement one room sat 20 m away, and the line shows the hole where it belongs.</p>
+<figure><img src="aldegundis-basement-map.jpg" alt="Basement with the land registry line: rooms inside the line, a 34 square metre uncovered block, and a note that one room sits 20 metres outside"><figcaption>Yellow: the line. Cyan: the rooms. Pink box: 34 m² of house with no room in it, the size of the room parked outside.</figcaption></figure>
+</section>
+
+<section>
+<h2>5. What it does not do</h2>
+<p>Inside the puzzle solver, as a score, the line changes nothing on real scans. Its value is around the solver, not in it.</p>
+<div class="tiles">
+  <div class="tile"><div class="l">Wrong room proposals, ground floor</div><div class="n">0 → 0</div><div class="d">without → with the line, 3 scrambles</div></div>
+  <div class="tile"><div class="l">Rooms proposed, ground floor</div><div class="n">34 → 31</div><div class="d">of 42 placements; basement unchanged</div></div>
 </div>
+</section>
 
-<h2 id="measured">Measured: Aldegundiskirchplatz 2 against the NRW cadastre</h2>
-<p>Why this building: it is the held-back opening benchmark (copy <code>a9c5fdee</code> with prod scan poses), it is in NRW, and its ground floor and basement are on disk as fixtures with rooms, walls (thickness, exterior flag), scans and openings. The CAD walls here were drawn by a person; they are not generator output. Nothing was written to the building.</p>
-<p>What ran (script in the gitignored <code>src/lumocad/lab/scripts/scratch/outline-research-alde.test.ts</code>, using the shipped <code>parseCadastre</code>, <code>createReference</code>, <code>autoFitReference</code> and <code>dominantDirection</code>):</p>
-<ol>
-<li>Fetch the cadastre around the address (106 buildings in an 80 m box, 0.3 s). The building is a 4-vertex polygon, 147.6 m², perimeter 49.2 m, last changed 2025-03-06. One neighbour, Hottomannsdeich 1, shares a 10.4 m edge.</li>
-<li>Run the shipped auto-fit against the fixture rooms. Score all four quarter turns, and the same with the rooms mirrored.</li>
-<li>Decide the 180° tie with a <b>neighbour rule</b>: the side where a neighbour touches can carry neither windows nor exterior scans.</li>
-<li>Refine: a small rigid fit of the exterior walls’ room faces onto the footprint, inset by one common thickness solved as the median gap (25 iterations, only edges parallel within 10°). Then read the gap per wall.</li>
-<li>Raster the footprint at 10 cm: which cells are covered by a room or a wall, which are not, which scans and rooms lie outside.</li>
-</ol>
-
-<figure><img src="aldegundis-ground-floor.jpg" alt="Aldegundiskirchplatz 2 ground floor: cadastre footprint, neighbour, CAD rooms, exterior walls and scans over the aerial image, correct orientation left, rejected orientation right, numbers on the right"><figcaption>Ground floor over the Mapbox aerial (headless render). Left: the orientation the neighbour rule picks. The yellow cadastre line sits on the roof edge; the red CAD exterior walls stop 13–20 cm short of it; the pink scans are the outdoor room walking around the house. Right: the orientation the shape fit picked first. Six scans would stand inside the neighbour’s house and the party wall would carry windows.</figcaption></figure>
-
-<h3>Ground floor (EG00): 13 rooms, 22 walls, 63 scans</h3>
+<details><summary>All numbers</summary>
 <table>
-<tr><th>Question</th><th>Answer</th><th>What it means</th></tr>
-<tr><td>Is the footprint a rectangle?</td><td class="num">corners 93.1° / 90.0° / 89.4° / 87.5°</td><td>The house is 3° out of square. The CAD rooms are axis-aligned to 0.2°. The footprint tells us this before any room is puzzled.</td></tr>
-<tr><td>Shape fit</td><td class="num">1.00 at two orientations 180° apart; 0.81 at the quarter turns</td><td>Direction found; the flip is undecidable from shape alone, as <code>autoFit</code> already says in its panel text.</td></tr>
-<tr><td>Mirrored floor</td><td class="num">same scores</td><td>A rectangle cannot reveal a mirrored floor; neither can the neighbour rule here, because the mirror axis is perpendicular to the party wall. Honest negative.</td></tr>
-<tr><td>Neighbour rule</td><td class="num">first choice: 6 scans in the neighbour, windows on the party wall · flipped: 0 conflicts</td><td>Decides the flip deterministically. Also: every wall with a window is an exterior wall, and the only long exterior wall without windows is the party wall.</td></tr>
-<tr><td>Refinement</td><td class="num">turned 0.20°, shifted 57 mm, RMS 48 mm over 235 face samples</td><td>The cadastre line and the hand-drawn CAD walls agree at the 5 cm level once the thickness is free. True north from the outline: 148°, to a fraction of a degree.</td></tr>
-<tr><td>Scans</td><td class="num">49 of 63 inside; all 14 outside belong to the outdoor room</td><td>“Origin outside the footprint” is a clean outdoor-scan classifier on this floor.</td></tr>
-<tr><td>Coverage</td><td class="num">rooms 117.7 m² + walls 33.3 m² = 91 %; 13.4 m² uncovered as thin strips</td><td>The uncovered area is the band of exterior wall thickness that the CAD walls lack.</td></tr>
+<tr><th>What</th><th class="n">Value</th></tr>
+<tr><td>Scans of the outdoor room outside the line</td><td class="n">14 of 14</td></tr>
+<tr><td>Scans of indoor rooms outside the line (ground floor + basement)</td><td class="n">0 of 78</td></tr>
+<tr><td>Scans contradicting the wrong orientation / the right one</td><td class="n">7 / 0</td></tr>
+<tr><td>Outer wall thickness, drawn vs line, walls 1–6</td><td class="n">43 vs 56–63 cm</td></tr>
+<tr><td>Wall 7, drawn vs line</td><td class="n">65 vs 68 cm</td></tr>
+<tr><td>Fit of the line to the drawn walls after refinement (RMS)</td><td class="n">48 mm</td></tr>
+<tr><td>Basement room outside the line / hole inside it</td><td class="n">34.7 m² / 33.8 m²</td></tr>
+<tr><td>Puzzle, ground floor, wrong among proposed: without / with</td><td class="n">0 / 0</td></tr>
+<tr><td>Puzzle, ground floor, proposed of 42: without / with</td><td class="n">34 / 31</td></tr>
 </table>
+</details>
 
-<table>
-<tr><th>Exterior wall</th><th class="num">Length</th><th>Window</th><th class="num">CAD thickness</th><th class="num">Cadastre thickness</th><th class="num">Spread along the wall</th></tr>
-<tr><td>wall-4 (party wall)</td><td class="num">9.74 m</td><td>no</td><td class="num">43 cm</td><td class="num"><b>59 cm</b></td><td class="num">27 mm</td></tr>
-<tr><td>wall-7</td><td class="num">3.82 m</td><td>yes</td><td class="num">43 cm</td><td class="num"><b>63 cm</b></td><td class="num">27 mm</td></tr>
-<tr><td>wall-9</td><td class="num">0.81 m</td><td>no</td><td class="num">43 cm</td><td class="num"><b>58 cm</b></td><td class="num">2 mm</td></tr>
-<tr><td>wall-10</td><td class="num">9.73 m</td><td>yes</td><td class="num">43 cm</td><td class="num"><b>59 cm</b></td><td class="num">70 mm</td></tr>
-<tr><td>wall-14</td><td class="num">9.31 m</td><td>yes</td><td class="num">43 cm</td><td class="num"><b>58 cm</b></td><td class="num">69 mm</td></tr>
-<tr><td>wall-17</td><td class="num">8.78 m</td><td>yes</td><td class="num">43 cm</td><td class="num"><b>56 cm</b></td><td class="num">21 mm</td></tr>
-<tr><td>wall-19</td><td class="num">4.02 m</td><td>yes</td><td class="num">65 cm</td><td class="num"><b>68 cm</b></td><td class="num">9 mm</td></tr>
-</table>
-<div class="callout">The 65 cm wall is the control: its CAD outer face lands 3 cm from the cadastre line, so the placement is right and the six 43 cm walls are the ones that are thin in CAD. Median cadastre thickness 59 cm. The wall thickness review on this building (12 Nov) reports exactly these walls as “uncertain, one side only”. The footprint is that other side.</div>
-
-<figure><img src="aldegundis-basement.jpg" alt="Aldegundiskirchplatz 2 basement: footprint, rooms, walls, scans, the uncovered block where a parked room belongs"><figcaption>Basement (UG01) against the same footprint. One room of 34.7 m² was left 20 m east of the building; the footprint shows a 33.8 m² uncovered block of 6.2 × 12.8 m where it belongs. The orientation rule gives the same answer as upstairs to 0.02°.</figcaption></figure>
-
-<h3>Basement (UG01): 8 rooms, 16 walls, 29 scans</h3>
-<ul>
-<li>The shipped auto-fit <b>fails</b> on this floor as is (score 0.04): it centres on the extent of all rooms, and room-21 sits 20 m away. Excluding rooms whose centroid is more than ¾ of a footprint diagonal from the median centroid fixes it (score 1.00). The fit needs that robustness in any case.</li>
-<li>Neighbour rule: same decision as the ground floor, rotation −147.98° against −148.00°. Two floors registered to each other through the footprint alone, with no stair scan.</li>
-<li>Refinement on the two exterior walls that have a room face: 118 samples, RMS 41 mm, cadastre thickness <b>63 cm</b> against 43 cm CAD.</li>
-<li>Coverage 71 %. The uncovered block (33.8 m²) and the parked room (34.7 m²) match. The floor-puzzle README names basement cells as its failing case because “rooms in such floors need information the scans don’t hold”. This is that information.</li>
-</ul>
-
-<h2 id="uses">Where it plugs in, with the exact places</h2>
-<p>All paths under <code>src/lumocad/</code> on <code>agentic-dev</code>. Effort is an estimate for the first working version with tests, not a promise. “Stage” says which part of the 2D pipeline the change belongs to.</p>
-<table>
-<tr><th>#</th><th>Use</th><th>Stage</th><th>Where exactly</th><th>Effort</th><th>Evidence here</th></tr>
-<tr><td>1</td><td><b>Second face for exterior wall thickness</b>. Add the footprint edges as review edges with a synthetic room id (<code>footprint</code>) and an origin outside the wall; the existing far-face search then finds them.</td><td><span class="tag acc">architect layer</span></td><td><code>features/wallThicknessReview/utils/collect.ts:46-80</code> (push into <code>readStoreySources</code>), <code>faces.ts:90,113</code> (<code>onRoomSide</code>, <code>findReviewFace</code>), <code>assess.ts:42-45</code> (today: <code>uncertain / one-side</code>; <code>same-room</code> rule needs the distinct id). Marvin’s <code>inspect_wall_thickness_evidence</code> uses the same collector, so no Go change.</td><td class="num">1–2 d</td><td>59 cm / 63 cm vs 43 cm; RMS 48 / 41 mm</td></tr>
-<tr><td>2</td><td><b>Ground-floor slab from the footprint</b>, then “Create boundary walls” gives each facade its measured thickness (the generator defines exterior thickness as slab-to-room-face distance). Upper floors: offer the footprint when the level’s rooms fit it; warn when they don’t (setbacks, overhangs).</td><td><span class="tag acc">architect layer</span></td><td><code>utils/geometry/slabBoundaryFromSpaces.ts:229-241</code> (replace or intersect the offset union), <code>constants/slabBoundaryFromSpaces.ts:1</code> (40 cm), <code>features/assistant/editorOps/slab.ts:64,75</code> (plan + “assumed offset” warning), <code>utils/geometry/boundaryExternalWallMatching.ts:80,169</code> (facades from the slab, thickness from the distance), <code>boundaryExternalWallPreview.ts:74,164</code> (median fallback for unsupported spans). Also <code>utils/reconstruction/reconstructionBoundaryStages.ts:149</code> hard-codes 20 cm.</td><td class="num">2–3 d</td><td>13 m² missing wall band; 7/7 facades parallel to the footprint within 0.4°</td></tr>
-<tr><td>3</td><td><b>Delivery check</b>: <code>footprint.coverage</code> (rooms + walls cover ≥ 95 % of the footprint, no uncovered block over 2 m²) and <code>rooms.insideFootprint</code>; both <i>review</i> class, applicable only when an outline is placed.</td><td><span class="tag acc">architect layer</span></td><td><code>utils/floorplan/floorPlanDeliveryCheck.ts:28-51</code> (id union), <code>:163-187</code> (<code>CHECKS</code>), computed case after <code>:296</code>; input via <code>features/assistant/planIssues/service.ts:206-229</code>. Closest existing rule: <code>roomsExceedSlab</code> at <code>prepareFloorPlanStorey.ts:481-491</code>.</td><td class="num">1 d</td><td>parked room 34.7 m² + 33.8 m² hole; Hohental 1.58 km vertex would fail it</td></tr>
-<tr><td>4</td><td><b>Orientation by the neighbour rule</b> in the auto-fit: when quarter turns tie, count exterior scans inside any neighbour and windows on walls that coincide with a shared edge; pick the orientation with zero conflicts, else keep the panel’s tie text. Store the neighbour rings with the reference (they are in the same WFS answer).</td><td><span class="tag acc">placement</span></td><td><code>features/buildingContext/utils/autoFit.ts:112-146</code> (<code>equallyGood</code>), <code>persistence.ts:118-126</code> (<code>fitDraftToModel</code>), <code>types.ts:5</code> (add <code>neighbourRingsMm</code>), <code>src/pages/AreaTool/utils/area.ts:25</code> (<code>sameBuildingIds</code> already groups parts).</td><td class="num">1 d</td><td>7 vs 0 conflicts on both floors</td></tr>
-<tr><td>5</td><td><b>Robust fit anchor</b>: centre on the median room centroid, drop rooms farther than ¾ diagonal, fall back to scan origins when no room exists yet (Milton’s point: the outline usually comes before rooms).</td><td><span class="tag acc">placement</span></td><td><code>features/buildingContext/utils/roomSegments.ts:60-78</code> (<code>fitAnchor</code>), <code>autoFit.ts:95-101</code> (<code>centred</code>).</td><td class="num">0.5 d</td><td>UG01 fit 0.04 → 1.00</td></tr>
-<tr><td>6</td><td><b>Exterior scan / outdoor room</b>: a scan origin outside the footprint is an outdoor scan; a room whose scans are all outside is an outdoor room. Add an <code>outside-footprint</code> placement anomaly.</td><td><span class="tag warn">sorting</span></td><td><code>utils/geometry/roomPlacementAnomalies.ts:13</code> + <code>types/roomPlacementAnomalies.ts:48</code>; consumers <code>analysis/health/roomPlacementChecks.ts:24</code>, <code>lab/roomRigidPlacementReview.ts:26</code>; outside flag in <code>utils/alignment/runners/floorPuzzleRunner.ts:119</code>.</td><td class="num">0.5 d</td><td>14/14 outdoor, 0/78 indoor misclassified</td></tr>
-<tr><td>7</td><td><b>Out-of-square warning</b>: corner angles of the footprint tell the boundary fitter and the straightener that this building is not 90°. Feed the footprint’s edge directions as the reference directions the v2 boundary fit already accepts.</td><td><span class="tag acc">architect layer</span></td><td><code>components/UI/Toolbar/ViewToolbars/TopViewToolbarCad.tsx:913</code> (reference directions into <code>fit-line-intersections</code>), <code>features/assistant/editorOps/service.ts:474</code> (Marvin still sends v1 without them).</td><td class="num">0.5 d</td><td>3° on Aldegundis; rooms drawn at 0.2°</td></tr>
-<tr><td>8</td><td><b>Party wall type</b>: a footprint edge shared with a neighbour is a <i>shared</i> wall: propose the wall type, expect no windows, no exterior scans.</td><td><span class="tag acc">architect layer</span></td><td>Organize wall types (<code>features/wallThicknessReview</code>) suggestion path; neighbour rings from #4.</td><td class="num">1 d</td><td>wall-4: 9.7 m, no windows, 10.4 m shared edge</td></tr>
-<tr><td>9</td><td><b>BGF cross-check</b>: ground-floor DIN 277 gross area vs footprint area; warn above 5 %. Never a silent fallback (the plan refuses to guess by design).</td><td><span class="tag acc">plan output</span></td><td><code>utils/floorplan/slabArea.ts:37-40</code>, printed by <code>floorPlanSheetBlocks.ts:610</code>; New Building estimator already uses footprint × floors.</td><td class="num">0.5 d</td><td>147.6 m² footprint vs 117.7 + 33.3 m²</td></tr>
-<tr><td>10</td><td><b>Address and georeference</b>: title block address from <code>source.address</code>; true north already saved. Later: the reference gives a model→EPSG transform for DXF/IFC, nothing in the exporters is georeferenced today.</td><td><span class="tag acc">plan output</span></td><td><code>utils/floorplan/floorPlanSheetBlocks.ts:86,594</code> (<code>projectAddress</code>); no <code>EPSG</code> anywhere under <code>utils/export</code>, <code>utils/floorplan</code>, <code>utils/ifc</code>.</td><td class="num">0.5 d / later</td><td>north 148° from the outline</td></tr>
-<tr><td>11</td><td><b>Marvin</b>: read tool <code>inspect_building_outline</code> (rings, area, corner angles, neighbours, per-level coverage, rooms and scans outside, thickness per facade) and a <code>footprint</code> step in the next-step planner before <code>slab</code>, routed to #2 and #4. Deterministic, no model guessing.</td><td><span class="tag acc">Marvin</span></td><td><code>features/assistant/floorDelivery/steps.ts</code> (<code>FLOOR_FIX_STEPS</code>), <code>service.ts</code> planners; marvin repo <code>floor_fix_tools.go</code> / <code>plan_tools.go</code> (protocol bump).</td><td class="num">2 d</td><td>everything above is a pure function of the stored annotation</td></tr>
-<tr><td>12</td><td><b>Lower Saxony cadastre</b> so Hohental, the golden building, gets an official outline instead of OpenStreetMap (which sits ~4 m off on average, see literature).</td><td><span class="tag ok">source</span></td><td><code>src/pages/AreaTool/utils/cadastres.ts</code> registry: URL above, layer <code>ave:GebaeudeBauwerk</code>, reader <code>readVereinfacht</code>, credit “LGLN (2026) CC BY 4.0”.</td><td class="num">0.5 d</td><td>GetCapabilities checked 12 Nov; Hohental’s address is needed from the DB to test</td></tr>
-</table>
-
-<h2 id="puzzle">Sorting and puzzling: where a footprint prior would go</h2>
-<p>Sorting and puzzling are the main priority (Milton, 12 Nov), and the outline was asked for as the start of puzzling. These are the places a prior fits in the existing code. The main structural fact: the <b>storey autosort never places rooms relative to each other</b>. It sorts scans inside one room (grid correlation, ±7 m search, IMU quarter-turn), then <code>spreadAllElements</code> lays rooms on a 10 m grid. Rooms meet each other only in the <b>floor puzzle</b>.</p>
-<table>
-<tr><th>Place</th><th>What the footprint adds</th><th>Where</th></tr>
-<tr><td>Floor puzzle scorer</td><td>An <code>exterior</code> raster layer (penalise own walls or core free space outside the footprint) and a <code>facadeBand</code> layer (reward outward wall points on the footprint edge), like the existing wall bands. Needs the anchor registered to the footprint, or the footprint as a fixed pseudo-room. Policy note: <code>scanPuzzle/service.ts:23</code> says “no previous outline enters the solver”; the cadastre is not a previous outline, but the exception should be written down.</td><td><code>utils/alignment/floorPuzzle/floorPuzzle.ts</code> assemble <code>:934-939</code>, <code>packAssembly :704-730</code>, <code>scorerAt :821-840</code>, hard gate next to <code>connectionFits :1082</code> used at <code>:1039</code> and <code>:963</code></td></tr>
-<tr><td>Coarse grid and frame</td><td>Take the 256² grid span from the footprint box instead of room areas; place the solved floor into the footprint pose; use the footprint direction instead of the axis snap.</td><td><code>:891</code>, <code>ensembleMoves :1300-1309</code>, <code>alignRotation :1415-1435</code>, <code>rotationIndices :911-917</code></td></tr>
-<tr><td>Confidence</td><td>Drop alternatives that fall outside the footprint before computing confidence; the README’s “tiny symmetric rooms” limit shrinks.</td><td><code>:1162-1182</code></td></tr>
-<tr><td>Basements</td><td>The README’s failing case (UG01, 6 of 15 dependable rooms wrong). The uncovered block is a region to search; room-21’s 34.7 m² matches the 33.8 m² hole.</td><td><code>README_FLOOR_PUZZLE_CALVINTOOL.md</code> “Results”</td></tr>
-<tr><td>Autosort layout</td><td>Seed rooms inside the footprint instead of the 10 m grid.</td><td><code>utils/alignment/storeyAutosortMainThread.ts:96-126</code> → <code>utils/layout/spreadAllElements.ts:16</code></td></tr>
-<tr><td>IMU quarter turn</td><td>With true north and the footprint rotation the model-axis rotation is absolute, so the compass choice becomes a cross-check (the compass can be 10°+ off, the 30° cluster tolerance hides it).</td><td><code>utils/alignment/imuRoomInitialization.ts:195-227,244-267</code></td></tr>
-<tr><td>Edge alignment / room links</td><td>Footprint edges as heavily weighted <code>SpaceWorldEdge</code>s so exterior walls snap to the facade minus thickness; footprint exterior as a pseudo-neighbour for points seen beyond a wall.</td><td><code>utils/alignment/roomEdgeAlignment.ts:417-429,370</code>, <code>roomLinkSelection.ts:44-49</code></td></tr>
-<tr><td>Floor-to-floor</td><td>Every floor fits the same footprint, so floors register to each other without stair scans (0.02° here). Reuse the bounded floor registration.</td><td><code>utils/alignment/floorPuzzle/floorRegistration.ts</code> (25–500 mm, 0.25–4.5°)</td></tr>
-<tr><td>Window walls</td><td>Every wall with a window is an exterior wall on this floor (5/5), and the only long exterior wall without one is the party wall. Window masks per room say which room edge must lie on the footprint. Noted, not used: the puzzle’s “nothing outside a window” layer is at weight 0 because the true floor broke it 1000+ times; this rule is about the wall, not the view.</td><td><code>floorPuzzle.ts</code> layers <code>:580-598</code></td></tr>
-</table>
-
-
-<h2 id="puzzle-built">Floor puzzle: built and measured (same day)</h2>
-<p>Target: the floor puzzle’s own failing case. Its README reports Aldegundis UG01 (basement storage cells) as “do not use”: 6 of 15 dependable rooms wrong, every restart agreeing on a compact wrong arrangement that scores higher than the truth (2660 against 1780), because “rooms in such floors need information the scans don’t hold”. The footprint is such information, and it is the same building this page already placed the footprint on.</p>
-
-<h3>What was built (scratch, nothing in the repo changed)</h3>
-<ul>
-<li><code>src/lumocad/lab/scripts/scratch/floorPuzzleFootprint.ts</code>: a copy of <code>utils/alignment/floorPuzzle/floorPuzzle.ts</code> with a <code>footprint</code> option (outer ring, courtyards, neighbouring buildings, in the anchor room’s input frame, carried into the solver frame by the anchor’s transform and moved with each ensemble restart). It adds one static layer per grid, <code>exterior</code>, and facade bands, and <b>three score terms that cost no extra FFT</b> because they fold into the five existing correlation products: <code>exteriorConflict</code> (a room’s own points and core free space outside the footprint, packed into the own and free products), <code>facade</code> (a room wall whose outward normal matches a footprint edge, 25–80 cm inside that edge, packed into the existing neighbour-band product with its own weight), and <code>windowOutside</code> (the region beyond a window wall landing outside the footprint).</li>
-<li>Two search moves after the repair sweeps (<code>extraMoves</code>): pairwise swaps of similar-sized rooms (the “look-alike cells permuted” failure) and “hole filling” (try each uncovered block of the footprint as a start for a room), both kept only when the floor total improves.</li>
-<li><code>footprint-puzzle-bench.test.ts</code> (ensemble benchmark, scrambled floor with the anchor kept, with and without the footprint, real export or synthetic input), <code>footprint-puzzle-diag.test.ts</code> (score of the true layout against the solver’s layout, per term), <code>footprint-puzzle-lib.ts</code> (loaders). Synthetic input: real room rings, real scan positions, real door and window positions from the held-back fixtures; 0.5° rays from each scan, rays continue through doors into the neighbouring room, 15 mm noise, door-frame and window tags.</li>
-</ul>
-
-<h3>Measured on the basement (synthetic rays on real geometry)</h3>
-<table>
-<tr><th>Run</th><th class="num">True layout total</th><th class="num">Solver’s layout total</th><th>Wrong rooms (of 5)</th><th>Reading</th></tr>
-<tr><td>Without footprint</td><td class="num">1623</td><td class="num">2029</td><td>4, two of them outside the footprint</td><td>The wrong layout scores higher than the truth: the README’s complaint, reproduced.</td></tr>
-<tr><td>Without footprint, polish from the truth</td><td class="num">1808</td><td class="num">2029</td><td>0 (it stays)</td><td>Even polished, the truth loses. A better search alone would converge on the wrong answer.</td></tr>
-<tr><td>With footprint, facade 0.6, window 0</td><td class="num"><b>3452</b></td><td class="num">3270</td><td>4, all inside the footprint</td><td><b>The truth is now the better layout.</b> Facade band: truth 9438 vs 8432. The greedy search does not reach it.</td></tr>
-<tr><td>With footprint, polish from the truth</td><td class="num"><b>3629</b></td><td class="num">3270</td><td>0</td><td>The truth is a stable optimum under the footprint terms, 11 % above the solver’s layout.</td></tr>
-<tr><td>With footprint + wider search (repair 8, shortlist 12) or + swap/hole moves</td><td class="num">3452</td><td class="num">3264–3270</td><td>4</td><td>Local moves do not get there: the layout is wrong in several rooms at once, and no single move improves the total.</td></tr>
-<tr><td>Facade weight sweep 0.3 / 0.6 / 1.0 / 1.5</td><td class="num">2538 / 3452 / 4671 / 6195</td><td class="num">2314 / 3270 / 4651 / 6364</td><td>4 each</td><td>Truth ahead at 0.3–1.0, behind at 1.5: the band must support, not dominate. 0.6 chosen.</td></tr>
-<tr><td>Window-outside term at 0.5 (first try)</td><td class="num">9488</td><td class="num">10386</td><td>3</td><td>Miscalibrated: the solver marches 1.5 m beyond every window point (≈14k cells), so it rewards wrong placements more. Set to 0.</td></tr>
-</table>
-<p>Ensemble benchmark, basement, 2 scrambles each: without the footprint 7 of 12 room placements were proposed as dependable and 5 of those were wrong; with the footprint 4 proposed, 1 wrong. Fewer, more honest proposals, but the floor is still not solved.</p>
-
-<div class="callout warn"><b>Why this is not a result yet.</b> The same synthetic harness fails on the ground floor (12 of 12 rooms wrong without the footprint, rooms scattered 4–21 m away), where the real solver places 10–13 of 14 rooms right on real clouds. So my ray-cast clouds are not a faithful stand-in for the scans: the solver relies on something the rays lack (through-door views, clutter, the real free-space shape). The numbers above show the <i>scoring</i> effect of the footprint; they say nothing reliable about the real search. Also: with the footprint the ground-floor truth scores 6225 against the solver’s 5659, the same pattern as the basement.</div>
-
-<h3>Then the real clouds (same afternoon, Milton’s tab, Calvin <code>floor-export</code>, read-only)</h3>
-<p>Three floors of the same building copy, every scan pose identical to the fixtures, so the footprint placement carried over unchanged. The solver benchmark scrambles every room except the anchor (any rotation, ±20 m), solves with the restart ensemble and the dependability rule, and checks each room against its saved place (within 1 m and 5°). Three scrambles per setting. Outdoor room excluded from the counts.</p>
-<table>
-<tr><th>Floor, real clouds</th><th>Setting</th><th class="num">Dependable proposals</th><th class="num">Wrong among dependable</th><th class="num">Indoor rooms wrong, all placements</th></tr>
-<tr><td rowspan="3">Ground floor (13 indoor rooms, 92k points)</td><td>without footprint</td><td class="num">34 / 42</td><td class="num">0</td><td class="num">2</td></tr>
-<tr><td>footprint, facade 0.15</td><td class="num">32 / 42</td><td class="num">0</td><td class="num">2</td></tr>
-<tr><td>footprint, facade 0.3</td><td class="num">31 / 42</td><td class="num">0</td><td class="num">7</td></tr>
-<tr><td rowspan="2">Basement (5 cells + corridor; the parked room excluded)</td><td>without footprint</td><td class="num">7 / 18</td><td class="num">2</td><td class="num">11</td></tr>
-<tr><td>footprint, facade 0.3</td><td class="num">6 / 18</td><td class="num">1</td><td class="num">9–10</td></tr>
-</table>
-<p>Single solves from unscrambled rotations (a friendlier setting) looked better and are the reason the weight 0.3 was chosen: ground floor 5 wrong → 1 wrong at 0.3 (0.6: 10 wrong, 0: 5 wrong), first floor 1 → 0 wrong (11 rooms). The ensemble took that back: the three tiny rooms (WC, WC-inner, Flur-aside) flip more often with the facade term, because a small room with one wall on the facade fits anywhere along it. On the basement, even polishing from the true layout leaves the truth below the solver’s wrong layout (1342 vs 2560 without, 1596 vs 2334 with): identical storage cells permute, and no outline can tell them apart.</p>
-<div class="callout"><b>Verdict for the puzzle.</b> As a score term inside the solver the footprint does not improve the puzzle on this building. The scoring effect seen on synthetic rays did not carry over. The two engineering traps found on the way are real and kept: the outdoor room must stay out of the ensemble’s run total (its exterior penalty varies between restarts and left every room undependable, 3 of 42), and the solver’s anchor must not be a parked room (the largest basement room sat 20 m outside; with it as anchor every result is “wrong”). Three floors of one building: enough to stop this line, not enough to call it closed for every building.</div>
-
-<h3>What the footprint does give puzzling, measured today</h3>
-<ul>
-<li><b>Outdoor scans:</b> origin outside the footprint, 14 of 14 on the ground floor, 0 of 78 indoor scans misclassified. The puzzle README’s outdoor room placed 15 m off is this room.</li>
-<li><b>Parked and missing rooms:</b> the basement room 20 m outside and its 34 m² hole in the footprint. Today that room became the solver’s anchor; a footprint check would have refused it.</li>
-<li><b>Orientation and north:</b> the neighbour rule decides the 180° tie on both floors; true north to a fraction of a degree, where the compass can be 10° off.</li>
-<li><b>Floors to each other:</b> ground floor and basement agree to 0.02° through the footprint alone, with no stair scan.</li>
-<li><b>A frame for the search:</b> the solver’s coarse grid span and the start frame can come from the footprint box instead of room areas; rooms outside the box are refused. Cheap, and it removes the ±20 m scatter from the search without touching the scores.</li>
-</ul>
-<p>The scratch code stays available: <code>src/lumocad/lab/scripts/scratch/floorPuzzleFootprint.ts</code> (solver copy with the <code>footprint</code> option, outdoor rooms excluded from run totals), <code>footprint-puzzle-bench.test.ts</code> (real export via <code>FP_EXPORT</code>, <code>FP_EXCLUDE</code> for parked rooms), <code>footprint-puzzle-diag.test.ts</code>, <code>footprint-puzzle-lib.ts</code>; exports in <code>artifacts/calvin-sessions/20261112-153831-footprint-puzzle-export/lab/</code> (customer geometry, not in git).</p>
-<h2 id="caveats">Caveats, so nobody over-trusts the line</h2>
-<ul>
-<li><b>One building, two floors.</b> Everything above is measured on Aldegundis. Hohental (Lower Saxony, needs #12 and the address) and one Berlin building (storey count, <code>bezdes</code> capture-method flag) should follow before any rule is made a blocker.</li>
-<li><b>Cadastre accuracy is “as good as the survey”</b>: a few centimetres where the building was surveyed numerically, several decimetres where it was digitised from old maps. NRW gives no quality flag; Berlin does. The 48 mm RMS here is internal consistency, not a guarantee. Use the footprint for class decisions (24 / 36.5 / 49 / 60 cm) and warnings, not for millimetres.</li>
-<li><b>The footprint is the ground-level outer face.</b> Plinths, cladding, cantilevered upper floors, setbacks and basements that extend under the yard all differ from it. Overhanging parts (“Bauteil”, canopies) are separate cadastre features that the Area Tool skips on purpose. The basement here agreed to 4 cm, but that is one case.</li>
-<li><b>Mirrored floors stay undetected</b> on symmetric footprints. An L-shape, windows against the aerial image, or the neighbour on an asymmetric side are needed.</li>
-<li><b>OpenStreetMap is ~4 m off on average</b> (Munich, Baden-Württemberg studies) and traced from imagery: orientation and area only, never thickness.</li>
-<li><b>Chicken and egg</b>: the thickness reading needs room faces; the fit needs rooms or a slab or scans. Order: place by scans (needs #5), outline the rooms, then read thickness.</li>
-<li><b>The CAD walls used as reference were drawn by a person</b> and may themselves be off. The 65 cm control wall and the 5 cm RMS argue the cadastre side, but Milton should look at one of the 43 cm walls in the panorama or the 3D room cloud check before believing 59 cm.</li>
-</ul>
-
-<h2 id="literature">Literature, short</h2>
-<ul>
-<li>Boundary-conditioned floor plan generation treats the building boundary as the standard input condition: <a href="https://arxiv.org/pdf/2504.09694">Computer-Aided Layout Generation for Building Design: A Review (arXiv 2025)</a>, <a href="https://www.researchgate.net/publication/343625455_Graph2Plan_learning_floorplan_generation_from_layout_graphs">Graph2Plan</a> (boundary + layout graph), WallPlan (boundary + windows, front door); <a href="https://openaccess.thecvf.com/content/CVPR2026/papers/Shiohara_Unified_Vector_Floorplan_Generation_via_Markup_Representation_CVPR_2026_paper.pdf">CVPR 2026 vector floorplan generation</a> reports boundary-conditioned IoU 97.9 %. Not our method, but the precedent that the outer line is the right conditioning for rooms.</li>
-<li>Footprint for exterior wall thickness: <a href="https://www.mdpi.com/2072-4292/15/11/2856">Geometry and Topology Reconstruction of BIM Wall Objects from Photogrammetric Meshes and Laser Point Clouds (Remote Sensing 2023)</a> finds indoor scans alone cannot give exterior thickness, overlays the footprint and <i>assumes</i> 0.3 m; exterior wall correctness 98 % with the footprint vs 42 % without. We can measure instead of assuming.</li>
-<li>Cadastre outline accuracy: state portals say “same as the underlying ALKIS points”, from a few cm (numeric) to several dm (graphic), e.g. <a href="https://geoportal.brandenburg.de/detailansichtdienst/render?view=gdibb&url=https%3A%2F%2Fgeoportal.brandenburg.de%2Fgs-json%2Fxml%3Ffileid%3Da7b74fc5-b830-4fe8-ac4d-3c8e2f095af5">Brandenburg Hausumringe</a>, <a href="https://inspire-geoportal.ec.europa.eu/srv/api/records/53a4a1c8-ce58-4e86-8b1e-20ad32b85b11">Rheinland-Pfalz Hausumringe</a>.</li>
-<li>OpenStreetMap vs official footprints: <a href="https://www.tandfonline.com/doi/abs/10.1080/13658816.2013.867495">Fan et al. 2014, Munich</a> (~4 m average offset against ATKIS, official ±0.5 m), <a href="https://d-nb.info/1277887063/34">Baden-Württemberg intrinsic assessment</a> (same ~4 m).</li>
-<li>Lower Saxony open cadastre: <a href="https://ni-lgln-opengeodata.hub.arcgis.com/pages/geodatendienste">LGLN Geodatendienste</a> (WFS “vereinfacht”, CC BY 4.0).</li>
-<li>No paper found that registers indoor LiDAR scans to a cadastre footprint directly; outdoor LiDAR-to-OSM localisation exists (<a href="https://www.researchgate.net/publication/358720956_OpenStreetMap-based_LiDAR_Global_Localization_in_Urban_Environment_without_a_Prior_LiDAR_Map">OSM-based LiDAR global localization</a>). The neighbour rule and the coverage check above are ours.</li>
-</ul>
-
-<h2 id="next">What is open, and who</h2>
-<table>
-<tr><th>Item</th><th>Owner</th><th>Note</th></tr>
-<tr><td>Decide the order: #1 (thickness review face) and #3 (delivery check) first, or #2 (slab from footprint) first because it fixes generated walls at the source</td><td>Milton</td><td>My recommendation: #5 + #4 (make the fit trustworthy), then #2, then #1 and #3 as the checks that prove it</td></tr>
-<tr><td>Look at one 43 cm wall of Aldegundis in the panorama / 3D cloud check</td><td>Milton</td><td>If it is really ~59 cm, the measured claim stands; if not, the cadastre line includes something the plan should not count</td></tr>
-<tr><td>Hohental address and a Lower Saxony registry entry (#12)</td><td>Milton (address), then code</td><td>Repeats the whole measurement on the golden building; the three Hohental fixtures are on disk</td></tr>
-<tr><td>Should coverage and inside-footprint be blockers or review?</td><td>Rio / Djunejt via Milton</td><td>Review first; the cadastre accuracy caveat argues against a blocker</td></tr>
-<tr><td>Footprint as the puzzle’s frame, not its score</td><td>pushed to <code>agentic-dev</code> as <code>0a63a8f1e</code> (12 Nov, evening)</td><td>Neighbours and same-building parts saved with the outline; the auto-fit lets the scans decide the 180° tie (indoor scanners inside, outdoor outside, nobody inside the neighbour); the floor puzzle (toolbar, Marvin’s scan puzzle, Calvin facts) treats a room whose scans all stand outside the outline as outside, so it is never the anchor. Pure <code>footprintChecks</code> facts for later checks. 121 tests, tsc and lint green. Not in: search box from the footprint (unmeasured), score terms (no gain).</td></tr>
-<tr><td>Basement-type floors (identical cells)</td><td>open</td><td>Need capture order or rough positions; the outline cannot help there</td></tr>
-<tr><td>Policy exception for the scan puzzle (“no previous outline enters the solver”)</td><td>Piotr / Arne</td><td>The cadastre is external evidence, not a previous outline; write it down before #7-in-puzzle</td></tr>
-</table>
-
-<h3>Method and files</h3>
-<p class="small">Puzzle experiment: <code>src/lumocad/lab/scripts/scratch/floorPuzzleFootprint.ts</code>, <code>footprint-puzzle-{bench,diag}.test.ts</code>, <code>footprint-puzzle-lib.ts</code> (all gitignored scratch); results in <code>/tmp/outline-research/footprint-puzzle-*.txt</code> and <code>bench-*-real-*.log</code>; real exports via Calvin on Milton’s tab (his go, read-only). Outline measurement: <code>src/lumocad/lab/scripts/scratch/outline-research-alde.test.ts</code> (gitignored scratch, run with <code>NODE_ENV=test npx vitest run …</code>). Inputs: NRW WFS answer saved as <code>/tmp/outline-research/alde-nrw.xml</code>; fixtures <code>~/factory-held-back/openings/aldegundis-{eg00,ug01}.json.gz</code> (anonymised rooms, walls, scans, openings; customer geometry, never in git). Figures: <code>/tmp/outline-research/figure.mjs</code> → HTML → headless Chrome screenshot, aerial from the Mapbox static API with the project token. Code maps from two read-only explorations of <code>utils/alignment</code>, <code>utils/geometry</code>, <code>features/wallThicknessReview</code>, <code>utils/floorplan</code> and <code>features/assistant</code>, hand-checked at the lines quoted. Nothing in any repository changed; no building was written to.</p>
-
+<footer>Points 1, 2 and 4 are on <code>agentic-dev</code> (<code>0a63a8f1e</code>). Point 3 is measured, not built yet. <a href="details/">Full method, code locations and every run</a>.</footer>
 </main>
-<footer class="wrap">Research page, 12 November 2026. Project: Lumoview-Building-Analytics-GmbH/platform, branch agentic-dev at dd66cdb45. Source data: Geobasis NRW (dl-de/zero-2.0), Mapbox satellite.</footer>
 </body>
 </html>
