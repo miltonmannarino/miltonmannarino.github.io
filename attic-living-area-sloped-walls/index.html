@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="project" content="Lumoview-Building-Analytics-GmbH/platform">
-<title>Attic living area without a roof model — LumoCad</title>
+<title>Attic living area from the scans — LumoCad</title>
 <style>
   :root {
     --paper: #fbfaf6;
@@ -12,6 +12,7 @@
     --muted: #5b6672;
     --rule: #dcd8cd;
     --accent: #23476a;
+    --pink: #c23d7a; --pink-soft: #fbe3ee;
     --full: #cfe6c2; --full-line: #4f8c43;
     --half: #f5e6a3; --half-line: #a88b1e;
     --none: #f2c4bd; --none-line: #b0473c;
@@ -20,23 +21,27 @@
   @media (prefers-color-scheme: dark) {
     :root {
       --paper: #14191f; --ink: #e6e9ec; --muted: #9aa5b0; --rule: #2c3540; --accent: #8fb4d9; --card: #1b2229;
+      --pink: #f472b6; --pink-soft: #3a2230;
       --full: #2f4a2a; --full-line: #8cc77f; --half: #4d4420; --half-line: #e0c45e; --none: #4d2723; --none-line: #e48b80;
     }
   }
   body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  main { max-width: 1080px; margin: 0 auto; padding: 56px 48px 96px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 56px 48px 96px; }
   h1, h2, h3 { font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif; line-height: 1.2; }
   h1 { font-size: 40px; margin: 0 0 12px; letter-spacing: -0.01em; }
   h2 { font-size: 27px; margin: 64px 0 14px; padding-top: 22px; border-top: 1px solid var(--rule); }
   h3 { font-size: 19px; margin: 28px 0 8px; }
-  p { margin: 0 0 14px; max-width: 74ch; }
-  .lede { font-size: 19px; color: var(--muted); max-width: 70ch; }
+  p { margin: 0 0 14px; max-width: 76ch; }
+  .lede { font-size: 19px; color: var(--muted); max-width: 72ch; }
   .meta { display: flex; gap: 10px; flex-wrap: wrap; margin: 22px 0 0; font-size: 14px; }
   .pill { border: 1px solid var(--rule); border-radius: 999px; padding: 3px 12px; color: var(--muted); background: var(--card); }
   .pill.warn { border-color: var(--half-line); color: var(--ink); }
+  .pill.ok { border-color: var(--full-line); color: var(--ink); }
   a { color: var(--accent); }
-  a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   code { font: 14px/1.4 ui-monospace, "SF Mono", Menlo, monospace; background: var(--card); border: 1px solid var(--rule); border-radius: 4px; padding: 1px 5px; overflow-wrap: anywhere; }
+  pre { background: var(--card); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 18px; overflow-x: auto; font: 13.5px/1.55 ui-monospace, "SF Mono", Menlo, monospace; max-width: 100%; }
+  pre code { border: 0; padding: 0; background: none; font: inherit; }
   .rule-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin: 18px 0 8px; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--card); }
   .rule-row div { padding: 14px 18px; border-left: 1px solid var(--rule); }
   .rule-row div:first-child { border-left: 0; }
@@ -53,57 +58,65 @@
   svg .muted { fill: var(--muted); }
   svg .ink { stroke: var(--ink); }
   svg .accent { stroke: var(--accent); }
+  svg .pink { stroke: var(--pink); }
   .steps { counter-reset: step; list-style: none; padding: 0; margin: 18px 0; display: grid; gap: 14px; }
-  .steps li { counter-increment: step; position: relative; padding: 4px 0 4px 52px; max-width: 78ch; }
+  .steps li { counter-increment: step; position: relative; padding: 4px 0 4px 52px; max-width: 80ch; }
   .steps li::before { content: counter(step); position: absolute; left: 0; top: 2px; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--paper); font-weight: 700; display: grid; place-items: center; }
-  .callout { border-left: 4px solid var(--accent); background: var(--card); padding: 14px 18px; margin: 20px 0; border-radius: 0 8px 8px 0; max-width: 80ch; }
+  .steps.pink li::before { background: var(--pink); }
+  .callout { border-left: 4px solid var(--accent); background: var(--card); padding: 14px 18px; margin: 20px 0; border-radius: 0 8px 8px 0; max-width: 84ch; }
+  .callout.pink { border-left-color: var(--pink); }
   .rules { padding-left: 20px; max-width: 80ch; }
   .rules li { margin: 6px 0; }
   table { border-collapse: collapse; width: 100%; margin: 14px 0; background: var(--card); font-variant-numeric: tabular-nums; }
   th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
   th { font-size: 14px; color: var(--muted); font-weight: 600; }
-  td.num, th.num { text-align: right; }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  td.sub { color: var(--muted); font-size: 14px; }
+  table.buildings td:first-child { min-width: 250px; }
   .good { color: var(--full-line); font-weight: 600; }
-  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
-  .area { background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 6px 22px 12px; }
+  .bad { color: var(--none-line); font-weight: 600; }
+  .meh { color: var(--half-line); font-weight: 600; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin: 22px 0; }
+  .area { background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 6px 22px 14px; }
   .area h3 { margin-top: 16px; }
   .area ul { padding-left: 20px; margin: 6px 0 10px; }
+  .area.auto { border-top: 5px solid var(--accent); }
+  .area.draw { border-top: 5px solid var(--pink); }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; padding: 2px 9px; border-radius: 999px; margin-left: 6px; vertical-align: 2px; }
+  .tag.auto { background: var(--accent); color: var(--paper); }
+  .tag.draw { background: var(--pink); color: var(--paper); }
   .missing { list-style: none; padding: 0; }
-  .missing li { padding: 12px 0; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: 210px 1fr; gap: 18px; }
+  .missing li { padding: 12px 0; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: 230px 1fr; gap: 18px; }
   .missing li b { font-weight: 600; }
   .owner { color: var(--muted); font-size: 14px; }
+  details { margin: 10px 0 18px; }
+  summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+  .why { font-style: italic; color: var(--muted); }
   footer { margin-top: 64px; color: var(--muted); font-size: 14px; }
+  @media print { body { background: #fff; color: #000; } .area, figure, table, pre { break-inside: avoid; } }
 </style>
 </head>
 <body>
 <main>
-  <header>
-    <h1>Attic living area without a roof model</h1>
-    <p class="lede">An attic room counts less living area where its ceiling slopes down. LumoCad used to need a full 3D roof to know that. Now the architect tells the room which walls the ceiling slopes down to, how high it starts and how steep it is, and LumoCad works out the rest.</p>
-    <div class="meta">
-      <span class="pill">LumoCad · Room panel · Floor plan · Room book</span>
-      <span class="pill">As of 17 Nov 2026</span>
-      <span class="pill warn">Built on <code>agentic-dev</code>, not committed yet, not tried in the app yet</span>
-    </div>
-  </header>
+<h1>Attic living area from the scans</h1>
+<p class="lede">An attic room counts less living area where its ceiling slopes down. LumoCad now works that out on its own from the laser scans. Where the scans are not enough, the architect draws the slope with two clicks in the 360° photo. Nobody types a height or an angle.</p>
+<div class="meta">
+  <span class="pill">LumoCad · Room panel · 360° view · Floor plan · Room book</span>
+  <span class="pill">As of 18 Nov 2026</span>
+  <span class="pill ok">Committed on <code>agentic-dev</code> (e4099efd8), not pushed</span>
+  <span class="pill ok">Checked against 22 rooms of 3 architects' room books: 0,69 m² mean error</span>
+  <span class="pill warn">Not yet tried in the running app</span>
+</div>
 
-  <h2 id="why">Why this exists</h2>
-  <p>German living area (<strong>WoFlV</strong>, the Wohnflächenverordnung) counts a room's floor by how much headroom it has. The height is measured straight up from the floor to the ceiling:</p>
-  <div class="rule-row" role="list">
-    <div role="listitem"><span class="swatch s-full"></span><strong>2 m or more</strong><span class="small">counts in full</span></div>
-    <div role="listitem"><span class="swatch s-half"></span><strong>1 m to under 2 m</strong><span class="small">counts half</span></div>
-    <div role="listitem"><span class="swatch s-none"></span><strong>under 1 m</strong><span class="small">does not count</span></div>
-  </div>
-  <p>Until now LumoCad got those heights from a modelled 3D roof. Since the switch to a 2D-only workflow (4 Nov 2026) roofs are not modelled any more, yet clients still pay for the living-area figure. In Revit the architects do it by hand: cut a section, find the 1 m and 2 m lines, project them onto the plan, hatch each zone. This feature does that cut for them.</p>
-
-  <h2 id="how">How it works</h2>
-  <ol class="steps">
-    <li><strong>Mark the sloped walls.</strong> In the room panel, switch on each wall the ceiling slopes down to. Usually that is the façade wall under the roof.</li>
-    <li><strong>Give each one two numbers.</strong> The <em>knee height</em>: how high the ceiling is where it meets that wall (the low wall under the slope, “Drempel”). The <em>pitch</em>: how steep the roof is, in degrees.</li>
-    <li><strong>LumoCad draws the ceiling.</strong> From the wall the ceiling rises at the pitch until it reaches the room's normal flat ceiling height, and stays flat from there.</li>
-    <li><strong>The 1 m and 2 m lines fall out.</strong> The 1 m line runs parallel to the wall at a distance of (1 m − knee) ÷ tan(pitch); the 2 m line the same with 2 m. Between them the floor counts half, in front of the 1 m line nothing.</li>
-  </ol>
-
+<h2>The problem in one minute</h2>
+<p>German living area (<strong>WoFlV</strong>, the Wohnflächenverordnung) counts a room's floor by how much headroom it has, measured straight up from the floor to the ceiling:</p>
+<div class="rule-row">
+  <div><strong><span class="swatch s-full"></span>2 m or more</strong><span class="small">counts in full</span></div>
+  <div><strong><span class="swatch s-half"></span>1 m to under 2 m</strong><span class="small">counts half</span></div>
+  <div><strong><span class="swatch s-none"></span>under 1 m</strong><span class="small">does not count</span></div>
+</div>
+<p>So the only two things that matter in a sloped room are <strong>where the ceiling is exactly 1 m high and where it is exactly 2 m high</strong>. Everything in front of the 1 m line is lost, between the lines half counts, behind the 2 m line all of it.</p>
+<p>LumoCad used to read those heights from a modelled 3D roof. Since the switch to a 2D-only workflow (4 Nov 2026) roofs are not modelled any more, yet clients still pay for the living-area figure. Until now the architects produced it by hand in Revit: cut a section through the room, find the 1 m and 2 m lines, project them onto the plan, hatch each zone. The work described here does that cut for them.</p>
   <figure aria-labelledby="fig1-cap">
     <svg viewBox="0 0 800 430" role="img" aria-label="Cross-section of an attic room: knee walls of 0.3 metres, a 40 degree slope on both sides and a flat ceiling at 2.5 metres. Dashed lines at 1 and 2 metres are projected down onto a plan strip coloured red, yellow and green.">
       <!-- section -->
@@ -148,120 +161,216 @@
     <figcaption id="fig1-cap">One room, sloped on both long walls (knee 0,30 m, pitch 40°, flat ceiling 2,50 m). The 1 m line sits (1 − 0,3) ÷ tan 40° = 0,83 m from each wall, the 2 m line 2,03 m. The coloured strip is exactly what the area plan prints, and the room's WoFlV figure is the sum of those pieces.</figcaption>
   </figure>
 
-  <h3>Four rules that make it work on real rooms</h3>
-  <ul class="rules">
-    <li><strong>A slope only counts in front of its own wall.</strong> A room behind a roof loggia can slope left and right of it and stay flat in the middle.</li>
-    <li><strong>Where two slopes meet, the lower one wins.</strong> That gives the ridge of a gable room and the corner of a hipped room without drawing either.</li>
-    <li><strong>The slope line does not have to be one of the room's own walls.</strong> A small WC standing 2 m in from the façade still lies under the façade's slope. Give it the façade line and it gets the right height.</li>
-    <li><strong>What a person typed still wins.</strong> A hand-entered WoFlV area or factor beats the slopes; the room's own slopes beat a modelled roof; with neither, nothing changes.</li>
-  </ul>
 
-  <figure aria-labelledby="fig2-cap">
-    <svg viewBox="0 0 800 310" role="img" aria-label="Plan of a room behind a roof loggia. Only the two wall pieces left and right of the loggia are sloped; the floor in front of them is coloured red and yellow, the middle and the rest are green.">
-      <text x="60" y="22" font-size="13" class="muted">PLAN — a room behind a roof loggia</text>
-      <!-- loggia -->
-      <rect x="300" y="40" width="200" height="60" fill="none" class="ink" stroke-width="1" stroke-dasharray="4 4"/>
-      <text x="400" y="76" font-size="13" text-anchor="middle" class="muted">loggia (outside)</text>
-      <!-- bands in front of left segment -->
-      <rect x="60" y="100" width="240" height="40" fill="var(--none)" stroke="var(--none-line)"/>
-      <rect x="60" y="140" width="240" height="55" fill="var(--half)" stroke="var(--half-line)"/>
-      <rect x="500" y="100" width="240" height="40" fill="var(--none)" stroke="var(--none-line)"/>
-      <rect x="500" y="140" width="240" height="55" fill="var(--half)" stroke="var(--half-line)"/>
-      <rect x="60" y="195" width="680" height="75" fill="var(--full)" stroke="var(--full-line)"/>
-      <rect x="300" y="100" width="200" height="95" fill="var(--full)" stroke="var(--full-line)"/>
-      <!-- room outline -->
-      <polyline points="60,100 300,100 300,40 500,40 500,100 740,100 740,270 60,270 60,100" fill="none" class="ink" stroke-width="3" stroke-linejoin="round"/>
-      <!-- sloped segments -->
-      <line x1="60" y1="100" x2="300" y2="100" class="accent" stroke-width="7" stroke-linecap="round"/>
-      <line x1="500" y1="100" x2="740" y2="100" class="accent" stroke-width="7" stroke-linecap="round"/>
-      <text x="180" y="124" font-size="13" text-anchor="middle">0 %</text>
-      <text x="180" y="172" font-size="13" text-anchor="middle">50 %</text>
-      <text x="620" y="124" font-size="13" text-anchor="middle">0 %</text>
-      <text x="620" y="172" font-size="13" text-anchor="middle">50 %</text>
-      <text x="400" y="240" font-size="13" text-anchor="middle">100 %</text>
-      <text x="60" y="300" font-size="12" class="muted">thick blue line = wall pieces switched to “sloped”</text>
-    </svg>
-    <figcaption id="fig2-cap">Only the two wall pieces either side of the loggia are switched on, so only the floor in front of them loses area. The middle, behind the loggia wall, keeps full height.</figcaption>
-  </figure>
+<h2>What has been done, in simple terms</h2>
+<p>Three pieces, built on top of each other. The first is the shared base; the other two are the two ways of filling it in.</p>
 
-  <h2 id="check">Does it match the architects?</h2>
-  <p>Checked against a real delivered room book: the attic flat of <strong>Fürstenwalder Poststraße 88, Frankfurt (Oder)</strong>, where the architects worked out WoFlV in Revit. Pitch 37° as measured from the vertical scans (the architects' cross-section drawing says about 37,7°), knee height 0, the rooms' outlines taken to the façade walls.</p>
+<h3>The base: a room remembers which of its walls the ceiling slopes down to</h3>
+<p>Every room can now carry a short list of <em>sloped walls</em>. Each entry names one wall of the room and gives two numbers: the <strong>knee height</strong> (how high the ceiling still is where it meets that wall; the low wall under a roof is the "Drempel") and the <strong>pitch</strong> (how steep the roof is, in degrees). From those two numbers LumoCad draws the ceiling, finds the 1 m and 2 m lines, colours the plan and prints the WoFlV figure. The list is saved with the room, loads with the building and comes back with Ctrl+Z like any other edit. In the right panel it appears as the list <strong>“Sloped walls”</strong>, one row per wall, next to the figure <strong>“WoFlV from sloped walls”</strong>.</p>
+<p>Two shortcuts make real roofs fit this simple model. First, <strong>knee 0</strong> is the drawing rule: the room books put the inner roof surface on the floor at the inner face of the façade, so that is where our slope starts too. Second, a roof with two pitches (a mansard, as in Nürnberg) is replaced by <strong>one equivalent plane</strong> that passes through the same 1 m and 2 m points. WoFlV cannot tell the difference, so neither do we.</p>
+
+<div class="cols">
+  <section class="area auto" aria-labelledby="a-title">
+    <h3 id="a-title">Approach A <span class="tag auto">automatic</span></h3>
+    <p><strong>From the scans alone.</strong> Nothing is typed. The architect only looks at the result and presses apply.</p>
+    <p>Two kinds of scans exist on every floor. A <em>level scan</em> is the lidar turned flat at the scanner's height: it shows where the beam hit walls, and where it hit the sloping ceiling instead. A <em>slice</em> is the lidar turned vertical: it shows floor, wall and the roof profile like a cross-section drawing.</p>
+    <ol class="steps">
+      <li><strong>Lay the scans over the drawing.</strong> Scans were sorted in another coordinate system than the drawn rooms. The fit uses the scanner positions against the room centres, then nudges until scan points sit on the room walls.</li>
+      <li><strong>Read the roof from the slices.</strong> Floor level, the roof pitch (the most common slope line, not the steepest, which is usually a stair), and the distance from the wall at which the roof passes 1 m and 2 m.</li>
+      <li><strong>Tell a wall from a slope.</strong> A wall is a sharp line in the same place in every scan. A slope hit is smeared and moves with the scanner height. A wardrobe front is sharp too, but the slice shows the roof going on behind it.</li>
+      <li><strong>Find the façade and extend rooms drawn too short.</strong> Flat rooms (bath, kitchen) touch the outer wall and tell where it is. In Frankfurt the sloped rooms had been traced where the beam met the slope, 35–55 % too small; they are extended out to the façade.</li>
+      <li><strong>Set the slopes.</strong> One slope per façade wall, knee 0, the equivalent pitch through the 1 m and 2 m points. Rooms the roof does not cut get nothing.</li>
+    </ol>
+    <p>The result is a <strong>proposal</strong>: per room, sloped yes/no, a confidence (<em>measured</em> from its own slice, or <em>estimated</em> from neighbours on the same side), the new outline, the slopes, the living area and a sentence saying why. One real example of that sentence:</p>
+    <p class="why">“slope-like line (±48 mm in a scan, 95 mm between scans), roof 1404 mm there, slices see the slope down to 1504 mm → extend to the façade”</p>
+    <p>Today the proposal runs as two <strong>Calvin</strong> tools (Calvin is the command-line helper that talks to the LumoCad tab): <code>room-sloped-walls-propose</code> looks and changes nothing; <code>room-sloped-walls-propose-apply</code> applies it through the editor's own edit events, saved, as one undo step. A button in the room panel and a tool for Marvin, the chat assistant, are not built yet.</p>
+  </section>
+  <section class="area draw" aria-labelledby="b-title">
+    <h3 id="b-title">Approach B <span class="tag draw">draw it</span></h3>
+    <p><strong>The fallback: draw the slope in the 360° view</strong>, the same way boundaries are drawn today. For rooms the scans cannot read (no slice, furniture in the way, an odd roof), or to correct the automatic guess.</p>
+    <ol class="steps pink">
+      <li><strong>Press “Draw”</strong> next to a wall in the “Sloped walls” list. In the 360° photo of the room that wall lights up pink.</li>
+      <li><strong>Click on the wall where the slope starts.</strong> The click is read against the wall plane, so it gives the knee height. A pink line previews it while the pointer moves, and the panel shows the live height.</li>
+      <li><strong>Click on the ceiling where the slope ends.</strong> That point lies on the flat ceiling, whose height is known. Knee height, ceiling height and the distance between the two clicks give the pitch. The panel shows the live angle.</li>
+    </ol>
+    <p>The slope is saved like a typed one: the wall's switch goes on, Knee height and Pitch fill in, the WoFlV figure and the coloured plan zones update. <strong>Esc</strong> or <strong>Stop</strong> cancels. Dragging the camera still works, because only a click without movement counts.</p>
+    <p>If the automatic proposal already set a slope on that wall, the preview starts from it. Correcting a wrong guess is then one or two clicks, not a drawing from scratch.</p>
+    <h3>Where it helps</h3>
+    <ul>
+      <li><strong>Dormer rooms</strong> like the Frankfurt 88 living room: the automatic read says flat, the architect marks the two short sloped pieces beside the dormer.</li>
+      <li><strong>Rooms without a usable slice</strong>, or with a wardrobe or boxes against the low wall.</li>
+      <li><strong>Odd roofs</strong>: a steeper second wing, a loggia, a party wall the scans cannot explain.</li>
+      <li><strong>Checking</strong>: two clicks on a room the automatic run already did show at once whether its guess sits where the real slope is.</li>
+    </ul>
+    <p>What it does not do: it still describes one wall with one knee height and one pitch. A ceiling that bends twice is entered as the equivalent single plane, just as the automatic run does.</p>
+  </section>
+</div>
+
+<figure aria-labelledby="fig2-cap">
+  <svg viewBox="0 0 800 300" role="img" aria-label="Sketch of the 360 degree view with a wall highlighted in pink: click 1 on the wall at the knee height, click 2 on the ceiling where the slope ends. On the right the room panel shows the wall row with Draw, Knee height 0.95 m and Pitch 38 degrees.">
+    <text x="30" y="24" font-size="13" class="muted">360° VIEW OF THE ROOM</text>
+    <!-- room interior perspective -->
+    <polygon points="30,250 530,250 430,200 130,200" fill="var(--paper)" stroke="var(--rule)"/>
+    <polygon points="130,200 430,200 430,105 130,160" fill="var(--pink-soft)" stroke="var(--pink)" stroke-width="3" stroke-linejoin="round"/>
+    <polygon points="130,160 430,105 430,40 130,40" fill="var(--card)" stroke="var(--rule)"/>
+    <line x1="30" y1="250" x2="130" y2="200" stroke="var(--rule)"/>
+    <line x1="530" y1="250" x2="430" y2="200" stroke="var(--rule)"/>
+    <line x1="30" y1="40" x2="130" y2="40" stroke="var(--rule)"/>
+    <line x1="530" y1="40" x2="430" y2="40" stroke="var(--rule)"/>
+    <text x="250" y="238" font-size="12" class="muted" text-anchor="middle">floor</text>
+    <text x="280" y="62" font-size="12" class="muted" text-anchor="middle">flat ceiling 2,50 m</text>
+    <text x="280" y="190" font-size="12" text-anchor="middle" fill="var(--pink)">wall 3, highlighted</text>
+    <!-- knee line and slope end line -->
+    <line x1="130" y1="160" x2="430" y2="105" class="pink" stroke-width="3"/>
+    <line x1="130" y1="40" x2="430" y2="40" class="pink" stroke-width="2.5" stroke-dasharray="8 5"/>
+    <!-- click 1 -->
+    <circle cx="300" cy="129" r="10" fill="var(--pink)"/>
+    <text x="300" y="133" font-size="12" text-anchor="middle" fill="#fff" font-weight="700">1</text>
+    <text x="300" y="155" font-size="12" text-anchor="middle">where the slope starts → knee 0,95 m</text>
+    <!-- click 2 -->
+    <circle cx="300" cy="40" r="10" fill="var(--pink)"/>
+    <text x="300" y="44" font-size="12" text-anchor="middle" fill="#fff" font-weight="700">2</text>
+    <text x="300" y="86" font-size="12" text-anchor="middle">where the slope ends on the ceiling → pitch 38°</text>
+    <!-- panel -->
+    <rect x="570" y="20" width="210" height="260" rx="8" fill="var(--card)" stroke="var(--rule)"/>
+    <text x="586" y="46" font-size="12" class="muted">Sloped walls — the ceiling slopes</text>
+    <text x="586" y="62" font-size="12" class="muted">down to these walls (WoFlV)</text>
+    <text x="586" y="94" font-size="13">Wall 1 (3,20 m)</text><text x="730" y="94" font-size="12" class="muted">Draw ○</text>
+    <text x="586" y="120" font-size="13">Wall 2 (5,10 m)</text><text x="730" y="120" font-size="12" class="muted">Draw ○</text>
+    <rect x="578" y="132" width="194" height="92" rx="6" fill="var(--pink-soft)"/>
+    <text x="586" y="152" font-size="13" font-weight="700">Wall 3 (3,20 m)</text><text x="730" y="152" font-size="12" fill="var(--pink)" font-weight="700">Stop ●</text>
+    <text x="596" y="176" font-size="12">Knee height</text><text x="760" y="176" font-size="12" text-anchor="end">0,95 m</text>
+    <text x="596" y="196" font-size="12">Pitch</text><text x="760" y="196" font-size="12" text-anchor="end">38°</text>
+    <text x="596" y="216" font-size="11" class="muted">Esc cancels</text>
+    <text x="586" y="248" font-size="13">Wall 4 (5,10 m)</text><text x="730" y="248" font-size="12" class="muted">Draw ○</text>
+    <text x="586" y="272" font-size="12" class="muted">WoFlV from sloped walls  13,5 m²</text>
+  </svg>
+  <figcaption id="fig2-cap">Approach B. The room panel (right) starts the drawing for one wall; the 360° view (left) reads the two clicks: the first on the wall gives the knee height, the second on the ceiling gives the pitch. The pink lines follow the pointer before each click.</figcaption>
+</figure>
+
+<div class="callout">
+  <strong>How the two fit together.</strong> The automatic proposal fills in every room it can read. The architect looks at the coloured zones on the plan and, where something looks wrong, draws over it with two clicks. Anything a person set wins: a drawn or typed slope replaces the automatic one, a hand-entered WoFlV figure beats both, and a room's own slopes beat a modelled roof above it.
+</div>
+
+<h2>Does it match the architects' room books?</h2>
+<p>The automatic result was graded against the room books (the <em>Raumbuch</em> Excel files) the architects delivered for three real buildings, 22 attic rooms in all. The pass bar set beforehand: on average at most <strong>1,0 m² per room</strong> off, and no room that the book leaves unreduced may lose more than 0,3 m². Stairwells (0 by convention) and balconies (½ by convention) are left out.</p>
+<table>
+  <thead><tr><th>Building</th><th>Rooms</th><th class="num">Mean error per room</th><th class="num">Flat total, automatic</th><th class="num">Flat total, room book</th><th class="num">Difference</th></tr></thead>
+  <tbody>
+    <tr><td>Frankfurt (Oder), Fürstenwalder Poststraße 88 — flat 88 OG04</td><td>8</td><td class="num good">0,42 m²</td><td class="num">95,92 m²</td><td class="num">93,15 m²</td><td class="num">+3,0 %</td></tr>
+    <tr><td>Frankfurt (Oder), Fürstenwalder Poststraße 91 — flat 91 OG04</td><td>8</td><td class="num good">0,48 m²</td><td class="num">95,66 m²</td><td class="num">98,06 m²</td><td class="num">−2,4 %</td></tr>
+    <tr><td>Nürnberg, Eibacher Hauptstraße 2 — flat 02.03.01</td><td>6</td><td class="num meh">1,33 m²</td><td class="num">98,68 m²</td><td class="num">98,86 m²</td><td class="num">−0,2 %</td></tr>
+    <tr><td><strong>All three</strong></td><td><strong>22</strong></td><td class="num good"><strong>0,69 m²</strong> (bar 1,0)</td><td class="num"></td><td class="num"></td><td class="num">damage 0</td></tr>
+  </tbody>
+</table>
+<details>
+  <summary>All 22 rooms, automatic vs room book</summary>
   <table>
-    <thead><tr><th>Room</th><th class="num">LumoCad</th><th class="num">Architects' room book</th><th class="num">Difference</th></tr></thead>
+    <thead><tr><th>Room</th><th class="num">Floor area auto / book</th><th class="num">Living area auto / book</th><th class="num">Difference</th><th>Read as</th></tr></thead>
     <tbody>
-      <tr><td>Schlafzimmer</td><td class="num">20,33 m²</td><td class="num">20,12 m²</td><td class="num good">+0,21</td></tr>
-      <tr><td>Zimmer 1</td><td class="num">13,35 m²</td><td class="num">13,59 m²</td><td class="num good">−0,24</td></tr>
-      <tr><td>Zimmer 2</td><td class="num">12,52 m²</td><td class="num">11,74 m²</td><td class="num">+0,78</td></tr>
-      <tr><td>WC (2 m in from the façade)</td><td class="num">1,39 m²</td><td class="num">1,31 m²</td><td class="num good">+0,08</td></tr>
-      <tr><td><strong>Together</strong></td><td class="num"><strong>47,59 m²</strong></td><td class="num"><strong>46,76 m²</strong></td><td class="num"><strong>+1,8 %</strong></td></tr>
+      <tr><td colspan="5" class="sub">Frankfurt (Oder), Fürstenwalder Poststraße 88, Floor 4</td></tr>
+      <tr><td>Flur</td><td class="num">4,87 / 4,79</td><td class="num">4,87 / 4,79</td><td class="num">+0,08</td><td>flat</td></tr>
+      <tr><td>Küche</td><td class="num">5,82 / 5,98</td><td class="num">5,82 / 5,98</td><td class="num">−0,16</td><td>flat</td></tr>
+      <tr><td>Bad</td><td class="num">6,55 / 6,56</td><td class="num">6,55 / 6,56</td><td class="num">−0,01</td><td>flat</td></tr>
+      <tr><td>Schlafzimmer</td><td class="num">34,03 / 34,52</td><td class="num">20,06 / 20,12</td><td class="num">−0,06</td><td>sloped, measured</td></tr>
+      <tr><td>Wohnzimmer</td><td class="num">30,77 / 30,80</td><td class="num">30,77 / 29,06</td><td class="num bad">+1,71</td><td>flat (the book takes 6 % off: a dormer room)</td></tr>
+      <tr><td>Zimmer 1</td><td class="num">22,96 / 22,69</td><td class="num">13,51 / 13,59</td><td class="num">−0,08</td><td>sloped, measured</td></tr>
+      <tr><td>Zimmer 2</td><td class="num">22,36 / 21,56</td><td class="num">12,97 / 11,74</td><td class="num bad">+1,23</td><td>sloped, measured</td></tr>
+      <tr><td>WC (Bad2DG)</td><td class="num">1,68 / 1,70</td><td class="num">1,37 / 1,31</td><td class="num">+0,06</td><td>sloped, measured</td></tr>
+      <tr><td colspan="5" class="sub">Frankfurt (Oder), Fürstenwalder Poststraße 91, Floor 4</td></tr>
+      <tr><td>Flur</td><td class="num">4,06 / 4,15</td><td class="num">4,06 / 4,15</td><td class="num">−0,09</td><td>flat</td></tr>
+      <tr><td>Küche</td><td class="num">6,53 / 6,61</td><td class="num">6,53 / 6,61</td><td class="num">−0,08</td><td>flat</td></tr>
+      <tr><td>Bad (small WC)</td><td class="num">4,19 / 1,86</td><td class="num">1,76 / 1,43</td><td class="num">+0,33</td><td>sloped, measured (the book counts a smaller room)</td></tr>
+      <tr><td>Schlafzimmer</td><td class="num">30,06 / 34,34</td><td class="num">19,76 / 20,02</td><td class="num">−0,26</td><td>sloped, measured</td></tr>
+      <tr><td>Wohnzimmer</td><td class="num">31,95 / 32,93</td><td class="num">31,95 / 32,93</td><td class="num">−0,98</td><td>flat (drawn 1 m² smaller than the book)</td></tr>
+      <tr><td>Zimmer 1</td><td class="num">21,74 / 23,39</td><td class="num">12,30 / 14,00</td><td class="num bad">−1,70</td><td>sloped, measured (floor already 1,65 short)</td></tr>
+      <tr><td>Zimmer 2</td><td class="num">22,21 / 22,25</td><td class="num">12,74 / 12,36</td><td class="num">+0,38</td><td>sloped, measured</td></tr>
+      <tr><td>Bad 2</td><td class="num">6,56 / 6,56</td><td class="num">6,56 / 6,56</td><td class="num">±0,00</td><td>flat</td></tr>
+      <tr><td colspan="5" class="sub">Nürnberg, Eibacher Hauptstraße 2, Floor 3</td></tr>
+      <tr><td>Flur</td><td class="num">7,40 / 7,74</td><td class="num">7,40 / 7,42</td><td class="num">−0,02</td><td>flat</td></tr>
+      <tr><td>Bad</td><td class="num">5,35 / 5,60</td><td class="num">5,35 / 5,60</td><td class="num">−0,25</td><td>flat</td></tr>
+      <tr><td>Zimmer 1 (book: Zimmer 2)</td><td class="num">33,67 / 33,59</td><td class="num">28,29 / 24,55</td><td class="num bad">+3,74</td><td>sloped, measured</td></tr>
+      <tr><td>Zimmer 2 (book: Zimmer 1)</td><td class="num">12,40 / 12,60</td><td class="num">9,35 / 9,25</td><td class="num">+0,10</td><td>sloped, measured</td></tr>
+      <tr><td>Abstellkammer</td><td class="num">3,61 / 3,67</td><td class="num">2,92 / 2,85</td><td class="num">+0,07</td><td>sloped, measured</td></tr>
+      <tr><td>Wohnküche</td><td class="num">61,11 / 61,82</td><td class="num">45,37 / 49,19</td><td class="num bad">−3,82</td><td>sloped, measured</td></tr>
     </tbody>
   </table>
-  <p>The living room of that flat counts 94 % in the room book, and the scans show why: most of it sits under a wide dormer, so only the few truly sloped wall pieces should be marked. The neighbouring building (Nr. 91–93) has six more identical flats with the same percentages.</p>
-  <div class="callout"><strong>One surprise from the check.</strong> In both Frankfurt buildings the sloped rooms were drawn in LumoCad 35–55 % too small: the outline stops where the scanner's beam hit the slope instead of at the wall. That makes even the plain floor area (DIN 277) wrong. The numbers above use the outlines taken to the walls; fixing short outlines is on the list below.</div>
+</details>
+<p><strong>Where it is still off.</strong> Nürnberg's two big rooms miss by about 3,8 m² each in opposite directions. That roof has two wings and knee walls, and one wing may be steeper than the pitch the slices agree on; the flat total happens to come out right, the rooms do not. Frankfurt 88's living room reads as flat while the book takes 6 % off: the room sits under a wide dormer, and dormers inside a sloped room are outside what this version detects. Frankfurt 91's Zimmer 1 is 1,7 m² short because its floor area is already 1,65 m² short, which points at the façade line, not at the slope.</p>
+<p><strong>What else was checked.</strong> Eight worked examples with hand-calculable numbers (floor fit, roof pitch, wall or slope, slice to plane, a room traced short, a wardrobe front, flat rooms with a balcony, a two-pitch roof). Seven rules on 30 random synthetic floors with a known roof: the same input always gives the same answer, a room is never shrunk, nothing is invented on a flat floor, an extension never crosses the façade or enters a neighbour, every slope is valid, uncut rooms keep their area, and the living area stays within 5 % of the true roof's. One random floor is 0,04 m² over that last tolerance and is accepted as is.</p>
 
-  <h2 id="changed">What changed</h2>
-  <div class="cols">
-    <section class="area" aria-labelledby="a1">
-      <h3 id="a1">Room panel</h3>
-      <ul>
-        <li>New list <strong>“Sloped walls”</strong> under “Ceiling slope”: one switch per wall of the room, with its length.</li>
-        <li>A switched-on wall shows <strong>Knee height</strong> (m) and <strong>Pitch</strong> (°). A new wall starts with the room's surveyed ceiling slope, or the last values used.</li>
-        <li>A slope line that no longer sits on a wall (the outline was moved, or a façade line) is listed with <strong>Remove</strong>.</li>
-        <li>“WoFlV from sloped walls” shows the living area and the &lt; 1 m / 1–2 m split live.</li>
-      </ul>
-    </section>
-    <section class="area" aria-labelledby="a2">
-      <h3 id="a2">Floor plan and room book</h3>
-      <ul>
-        <li>The printed WoFlV figure, the coloured area zones (sheet option “Show WoFlV area zones”) and the room book use the room's slopes.</li>
-        <li>Plan warnings say where the figure came from: “from its sloped walls” or “from the roof above it”.</li>
-      </ul>
-    </section>
-    <section class="area" aria-labelledby="a3">
-      <h3 id="a3">Saving and undo</h3>
-      <ul>
-        <li>The slopes are saved on the room, load with the building and come back with <strong>Ctrl+Z</strong> like any other room edit.</li>
-        <li>Editing another room field never clears them.</li>
-      </ul>
-    </section>
-    <section class="area" aria-labelledby="a4">
-      <h3 id="a4">For developers</h3>
-      <ul>
-        <li>Geometry: <code>src/lumocad/utils/floorplan/roomCeiling.ts</code>. It turns the slopes into ceiling triangles, the same shape a roof's underside has, so the existing WoFlV code needs no special case.</li>
-        <li>Room property <code>ceilingSlopes</code>, event <code>space.setCeilingSlopes</code>.</li>
-        <li>Panel: <code>RoomSlopedWallsEditor.tsx</code>.</li>
-      </ul>
-    </section>
-  </div>
+<h2>How to test</h2>
+<p>Three ways, from the most automatic to the most manual. The in-app steps use the dev copy of <strong>Frankfurt (Oder), Fürstenwalder Poststraße 88</strong> (dev building id starting <code>9b4bceac</code>, same id as in prod). It is on the Calvin allow-list, so tools may write to it.</p>
 
-  <h2 id="test">How to test</h2>
-  <h3>In the app (not done yet)</h3>
-  <ol class="steps">
-    <li>Copy the Frankfurt (Oder) building, Fürstenwalder Poststraße 88–90, from prod to dev and open its attic floor (Floor 4) in LumoCad.</li>
-    <li>Select the room <strong>“DG04 M Zimmer1”</strong>. Fix its outline first: drag the façade-side edge out to the façade wall, since it was drawn too short.</li>
-    <li>In the right panel under <strong>Sloped walls</strong>, switch on the façade wall. Set <strong>Knee height 0</strong> and <strong>Pitch 37</strong>.</li>
-    <li>Expect “WoFlV from sloped walls” close to the room book's <strong>13,59 m²</strong>. Turn on <strong>Show WoFlV area zones</strong> in the floor plan: red, yellow and green strips along the façade.</li>
-    <li>Press <strong>Ctrl+Z</strong>: the slope and the figure go back. Reload the page: a saved slope is still there.</li>
-  </ol>
-  <h3>Automated checks (done)</h3>
-  <ul class="rules">
-    <li>Typecheck clean. 21 new tests pass. They check worked examples by hand-calculable numbers, the loggia and the room in front of a façade, saving and undo, and the panel.</li>
-    <li>The full LumoCad test suite passes: 15,244 tests. The one failure is an old research script unrelated to this work.</li>
-    <li>The room book comparison above was run as a script against the downloaded building.</li>
-  </ul>
+<h3>A. The automatic proposal, through Calvin</h3>
+<p>Needs the dev server (<code>pnpm dev</code>) and a LumoCad tab open on that building with <strong>Floor 4</strong> active. Calvin drives the open tab; I only run it when Milton asks.</p>
+<ol class="steps">
+  <li>In a terminal in the platform repo: <code>pnpm calvin status</code> must say it is connected to the tab.</li>
+  <li><code>pnpm calvin tool room-sloped-walls-propose</code>. Changes nothing. Expect a summary like “4 of 8 room(s) sloped (4 measured, 0 estimated), …” and, per room, the outline it would extend to, the slopes, the living area and the why-sentence. Zimmer 1, Zimmer 2, Schlafzimmer and the small WC should be sloped; Flur, Küche, Bad and Wohnzimmer flat.</li>
+  <li><code>pnpm calvin tool room-sloped-walls-propose-apply</code>. Expect “Saved: …”. Everything it did is one undo step.</li>
+  <li>In the tab, select <strong>DG04 M Zimmer1</strong>. In the right panel, “WoFlV from sloped walls” should read about <strong>13,5 m²</strong> (room book 13,59). In the floor plan, switch the WoFlV area zones on: red, yellow and green strips along the façade.</li>
+  <li>Press <strong>Ctrl+Z</strong> once: outlines and slopes go back together. Apply again and reload the page: the saved result is still there.</li>
+</ol>
+<div class="callout">
+  <strong>One caveat for this building.</strong> Floor 4 of the dev copy was already corrected by hand on 17 Nov (outlines extended to the façade, slopes set). There the proposal mostly confirms what is saved. To watch it extend short outlines, copy Nr. 91 (prod id starting <code>4e6b5984</code>) to dev and add it to the allow-list, or undo the 17 Nov edits first.
+</div>
 
-  <h2 id="missing">What's missing</h2>
-  <ul class="missing">
-    <li><b>Try it in the app</b><span>Nobody has used the panel on a real building yet. Needs the Frankfurt building copied to dev. <span class="owner">Milton</span></span></li>
-    <li><b>Commit</b><span>Not committed. Two files also contain another session's unfinished balcony-share edits, so the commit has to take only this feature's lines. <span class="owner">Milton decides when</span></span></li>
-    <li><b>Outlines drawn too short</b><span>A check that spots a sloped room whose outline stops before the wall, and offers to extend it. Without it, floor area and living area are both too small in buildings drawn like Frankfurt. <span class="owner">next</span></span></li>
-    <li><b>One slope line for many rooms</b><span>Set the eave line once and give it to every room on the floor in front of it, instead of per room. <span class="owner">next</span></span></li>
-    <li><b>Pitch suggested from the scans</b><span>The vertical scans gave the pitch within about 1° in both checked buildings. The knee height they cannot see, so a person still sets or confirms it. Then a Marvin tool. <span class="owner">later</span></span></li>
-    <li><b>Harder roofs</b><span>Mansard roofs (two pitches per side), dormers and party walls, as in the Nürnberg check building, need the right walls marked by hand. Curved ceilings are out of scope. <span class="owner">open</span></span></li>
-    <li><b>Small rounding gap</b><span>The printed figure is measured in 5 cm strips and can be up to about 0,07 m² off when the wall runs along those strips; the coloured zones are exact. Measuring the figure from the zones fixes it. <span class="owner">later</span></span></li>
-  </ul>
+<h3>B. Drawing the slope in the 360° view</h3>
+<p>Works on any building that has 360° photos. A good first room: the same dev copy, Floor 4, <strong>DG04 M Zimmer1</strong>, its façade wall. Expect a knee height near 0 to 0,2 m and a pitch near 37°.</p>
+<ol class="steps pink">
+  <li>Open the 360° view of a scan standing in the room and select the room, so its outline shows in the photo.</li>
+  <li>In the right panel, find the list <strong>“Sloped walls”</strong> and press <strong>Draw</strong> on the façade wall. The wall lights up pink in the photo. The hint under the row reads “In the 360° view of this room: click on wall N where the slope starts” and shows the height under the pointer.</li>
+  <li>Click on the wall where the slope begins, at the top of the low wall. The hint changes to “Now click on the ceiling where the slope ends” and shows the angle under the pointer.</li>
+  <li>Click on the ceiling where the slope meets the flat ceiling. The wall's switch goes on, Knee height and Pitch fill in, “WoFlV from sloped walls” and the plan zones update.</li>
+  <li>Try the escape routes: <strong>Esc</strong> or <strong>Stop</strong> cancels a drawing; dragging the camera is not a click; <strong>Ctrl+Z</strong> takes a saved slope back.</li>
+</ol>
 
-  <footer>Lumoview · LumoCad · living area (WoFlV §4) from a room's sloped walls · 17 Nov 2026</footer>
+<h3>C. Automated checks (run on 18 Nov 2026)</h3>
+<ul class="rules">
+  <li>Typecheck clean (<code>pnpm exec tsc -b</code>).</li>
+  <li>181 of 182 tests pass: examples 8/8, rules 6/7 (the accepted 0,04 m² seed), Calvin propose/apply 4/4, ceiling geometry 10/10, drawing geometry 3/3, room panel 4/4, 360° overlay interactions 2/2, plus the existing floor plan and lab suites.</li>
+  <li>Room-book grader: 0,691 m² mean per room, damage 0, 22 rooms (bar 1,0).</li>
+</ul>
+<pre><code># platform repo, Node 22 via Volta
+pnpm exec tsc -b
+NODE_ENV=test pnpm exec vitest run src/lumocad/utils/floorplan/atticSlopes src/lumocad/lab/roomSlopedWallsProposeLab.test.ts
+node scripts/attic-slopes-grade.mjs                       # the three room books; needs the downloaded buildings
+node scripts/attic-slopes-grade.mjs --held-back &lt;dir&gt;      # the blind building, see below</code></pre>
+
+<h2>Which buildings</h2>
+<table class="buildings">
+  <thead><tr><th>Building</th><th>Storey · flat · rooms</th><th>Role</th><th>What makes it interesting</th></tr></thead>
+  <tbody>
+    <tr><td>Frankfurt (Oder), Fürstenwalder Poststraße 88<br><span class="sub">prod and dev id start <code>9b4bceac</code></span></td><td>Floor 4 · 88 OG04 · 8 rooms</td><td>Tuned and graded; dev copy for in-app tests (Calvin allow-listed)</td><td>Gable roof, 37–39°. Sloped rooms traced 35–55 % too small. Living room under a wide dormer.</td></tr>
+    <tr><td>Frankfurt (Oder), Fürstenwalder Poststraße 91<br><span class="sub">prod id starts <code>4e6b5984</code></span></td><td>Floor 4 · 91 OG04 · 8 rooms</td><td>Graded</td><td>Same building type. The first run on it was blind: flat rooms 0,0 %, sloped rooms within ±0,9 m².</td></tr>
+    <tr><td>Nürnberg, Eibacher Hauptstraße 2<br><span class="sub">prod id starts <code>80263eb4</code></span></td><td>Floor 3 · 02.03.01 · 6 rooms</td><td>Graded (the hard one)</td><td>Mansard: two pitches per side, flat ceiling at 2,4 m, two roof wings, knee walls. Outlines already drawn to the façade. Room names swapped against the book.</td></tr>
+    <tr><td>Frankfurt (Oder), Berliner Straße 24<br><span class="sub">prod id starts <code>5ace8d0c</code></span></td><td>not looked at</td><td><strong>Held back.</strong> Downloaded, never opened during the build</td><td>The blind final exam. Milton runs <code>node scripts/attic-slopes-grade.mjs --held-back &lt;its folder&gt;</code>; the key is built from its own room book at grading time and only the score is kept.</td></tr>
+    <tr><td>Frankenstraße 14 · Sangerhausen, Markt 9<br><span class="sub">ids start <code>cfb74680</code> · <code>ea221ee0</code></span></td><td>Floor 2 · Floor 3</td><td>Early exploration only, not graded</td><td>First slice readings (pitch 37°, knee wall 1,2 m) on 16 Nov; Frankenstraße has a Revit roof to compare with.</td></tr>
+  </tbody>
+</table>
+<p>The downloads live outside the repo in a local <em>golden</em> folder; the answer key with the room-book areas per room is in the repo at <code>.factory/attic-slopes/answer-key.json</code>.</p>
+
+<h2>What's missing</h2>
+<ul class="missing">
+  <li><b>Try it in the running app</b><span>Neither the Calvin proposal nor the drawing has been used on a real building in the browser yet; both are covered by tests only. Steps A and B above. <span class="owner">Milton, or me on his tab when he asks</span></span></li>
+  <li><b>Held-back grade</b><span>Berliner Straße 24 has not been graded. One command, result is a single score. <span class="owner">Milton runs it</span></span></li>
+  <li><b>Nürnberg's two big rooms</b><span>±3,8 m² on Zimmer 1 and the Wohnküche. Suspects: the second roof wing's pitch, the knee walls. <span class="owner">next, Milton's session</span></span></li>
+  <li><b>Dormer rooms</b><span>A dormer inside a sloped room (Frankfurt 88 living room) is not detected; the room reads as flat. Out of scope for this version; approach B covers it by hand. <span class="owner">open</span></span></li>
+  <li><b>A button instead of Calvin</b><span>“Propose sloped walls” in the room or floor panel, and a Marvin tool, so architects do not need the command line. <span class="owner">next / later</span></span></li>
+  <li><b>Push and PR</b><span>Committed locally on <code>agentic-dev</code>, not pushed. Two shared files still hold another session's uncommitted balcony-share edits; they were left untouched. <span class="owner">Milton decides</span></span></li>
+  <li><b>Docs</b><span>The exploration document (sections 11 and 12) is untracked on purpose; this page is the explainer. The traps file in <code>.factory/attic-slopes</code> is local. <span class="owner">Milton decides what to commit</span></span></li>
+</ul>
+
+<h2>For developers</h2>
+<ul class="rules">
+  <li>Automatic proposal: <code>src/lumocad/utils/floorplan/atticSlopes/index.ts</code> (one function, <code>proposeAtticSlopes</code>, pure, no app state) with its examples, rules and benchmark tests next to it; synthetic floors in <code>testFixtures.ts</code>; room-book reader and building loader in <code>bench/</code>.</li>
+  <li>Calvin: <code>src/lumocad/lab/roomSlopedWallsProposeLab.ts</code> and the two tools <code>room-sloped-walls-propose</code> / <code>-propose-apply</code>.</li>
+  <li>Ceiling model and WoFlV: <code>src/lumocad/utils/floorplan/roomCeiling.ts</code>; a slope now keeps descending behind its line, so a plane shifted inside the room still reads 0 m at the façade.</li>
+  <li>Drawing: <code>src/lumocad/stores/slopeDrawStore.ts</code> (the session), <code>src/lumocad/utils/panorama/slopeDrawGeometry.ts</code> (ray to knee height and pitch), <code>src/lumocad/components/views/Panorama/SlopeDrawPanoLayer.tsx</code> (the pink layer in the 360° view), Draw button in <code>RoomSlopedWallsEditor.tsx</code>.</li>
+  <li>Contract: <code>.factory/attic-slopes/spec.md</code>, <code>factory.json</code>, <code>answer-key.json</code>; grader <code>scripts/attic-slopes-grade.mjs</code>.</li>
+</ul>
+
+<footer>Lumoview · LumoCad · living area (WoFlV §4) of attic rooms from the scans, with a draw-it-yourself fallback · 18 Nov 2026 · replaces the 17 Nov version of this page</footer>
 </main>
 </body>
 </html>
