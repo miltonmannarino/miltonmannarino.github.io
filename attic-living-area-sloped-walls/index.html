@@ -92,6 +92,9 @@
   details { margin: 10px 0 18px; }
   summary { cursor: pointer; color: var(--accent); font-weight: 600; }
   .why { font-style: italic; color: var(--muted); }
+  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 18px 0 6px; }
+  .shots figure { margin: 0; padding: 10px 10px 8px; }
+  .shots img { display: block; width: 100%; height: auto; border-radius: 6px; }
   footer { margin-top: 64px; color: var(--muted); font-size: 14px; }
   @media print { body { background: #fff; color: #000; } .area, figure, table, pre { break-inside: avoid; } }
 </style>
@@ -103,7 +106,7 @@
 <div class="meta">
   <span class="pill">LumoCad · Room panel · 360° view · Floor plan · Room book</span>
   <span class="pill">As of 18 Nov 2026</span>
-  <span class="pill ok">Committed on <code>agentic-dev</code> (e4099efd8, 6be5fdda6, fee2f5fc2), not pushed</span>
+  <span class="pill ok">Committed on <code>agentic-dev</code> (e4099efd8, 6be5fdda6, fee2f5fc2, a5f1e9f2a), not pushed</span>
   <span class="pill ok">Checked against 22 rooms of 3 architects' room books: 0,69 m² mean error</span>
   <span class="pill warn">First in-app try on 18 Nov found the drawing dead; fixed the same evening, re-try pending</span>
 </div>
@@ -191,7 +194,7 @@
     <ol class="steps pink">
       <li><strong>Press “Draw”</strong> next to a wall in the “Sloped walls” list. In the 360° photo of the room that wall lights up pink.</li>
       <li><strong>Click on the wall where the slope starts.</strong> The click is read against the wall plane, so it gives the knee height. A pink line previews it while the pointer moves, and the panel shows the live height.</li>
-      <li><strong>Click on the ceiling where the slope ends.</strong> That point lies on the flat ceiling, whose height is known. Knee height, ceiling height and the distance between the two clicks give the pitch. The panel shows the live angle.</li>
+      <li><strong>Click where the slope ends.</strong> Either on a <strong>side wall</strong>, where the slanted roof line crosses it, or on the <strong>flat ceiling</strong>. Both give a point on the roof surface: its height above the knee and its distance from the wall give the pitch. The side wall is the safer click in an attic, because many attic rooms have no reliable flat-ceiling height. The panel shows the live angle.</li>
     </ol>
     <p>The slope is saved like a typed one: the wall's switch goes on, Knee height and Pitch fill in, the WoFlV figure and the coloured plan zones update. <strong>Esc</strong> or <strong>Stop</strong> cancels. Dragging the camera still works, because only a click without movement counts.</p>
     <p>If the automatic proposal already set a slope on that wall, the preview starts from it. Correcting a wrong guess is then one or two clicks, not a drawing from scratch.</p>
@@ -324,11 +327,25 @@ pnpm calvin tool room-sloped-walls-propose-apply    # apply, one undo step</code
 <ol class="steps pink">
   <li>Open the 360° view of a scan standing in the room and select the room, so its outline shows in the photo.</li>
   <li>In the right panel, find the list <strong>“Sloped walls”</strong> and press <strong>Draw</strong> on the façade wall. The wall lights up pink in the photo. The hint under the row reads “In the 360° view of this room: click on wall N where the slope starts” and shows the height under the pointer.</li>
-  <li>Click on the wall where the slope begins, at the top of the low wall. The hint changes to “Now click on the ceiling where the slope ends” and shows the angle under the pointer.</li>
-  <li>Click on the ceiling where the slope meets the flat ceiling. The wall's switch goes on, Knee height and Pitch fill in, “WoFlV from sloped walls” and the plan zones update.</li>
+  <li>Click on the wall where the slope begins, at the top of the low wall. The hint changes to “Now click where the slope ends …” and shows the angle under the pointer.</li>
+  <li>Click on a side wall where the slanted roof line crosses it (or on the flat ceiling, if the room has one). The wall's switch goes on, Knee height and Pitch fill in, “WoFlV from sloped walls” and the plan zones update.</li>
   <li>Try the escape routes: <strong>Esc</strong> or <strong>Stop</strong> cancels a drawing; dragging the camera is not a click; <strong>Ctrl+Z</strong> takes a saved slope back.</li>
 </ol>
 
+<p><strong>Where to click, on a real room.</strong> Milton's own screenshot of the Frankfurt 88 bedroom, wall 4 being drawn (the pink lines are the preview). The two marks are the two clicks:</p>
+<div class="shots">
+  <figure>
+    <img src="draw-step1.jpg" alt="Panorama of an attic bedroom with a pink circle on the back wall where the low wall meets the sloped ceiling, labelled click 1" width="900" height="1446" loading="lazy">
+    <figcaption><strong>Click 1</strong> on wall 4, where the low wall meets the slope. The height under the pointer is the knee height.</figcaption>
+  </figure>
+  <figure>
+    <img src="draw-step2.jpg" alt="Same panorama with a pink circle on the left side wall where the slanted roof line crosses it, labelled click 2" width="900" height="1446" loading="lazy">
+    <figcaption><strong>Click 2</strong> on the left side wall, anywhere on the slanted line where the roof meets it. The pitch follows. The flat ceiling would also do, if the room had a reliable one.</figcaption>
+  </figure>
+</div>
+<div class="callout pink">
+  <strong>Why Milton's first drawing read 5,04 m.</strong> This screenshot showed a knee of 5,04 m and a ceiling loop of 6,66 m in a room that is 2,8 m high. The panorama overlay measures heights above each wall's own floor corners, and this outline has one corner about 3,8 m too low (a fault in the prod data, known from 17 Nov). Every height on that wall came out 3,8 m too high. Since a5f1e9f2a the drawing layer uses the median floor height of all corners of the room, so the readings are right even with such a corner; the overlay's own blue ceiling loop still shows the fault until the outline is repaired (Calvin: <code>room-boundary-flatten-apply</code>).
+</div>
 <h3>C. Automated checks (run on 18 Nov 2026)</h3>
 <ul class="rules">
   <li>Typecheck clean (<code>pnpm exec tsc -b</code>).</li>
@@ -376,7 +393,7 @@ node scripts/attic-slopes-grade.mjs --held-back &lt;dir&gt;      # the blind bui
   <li>Contract: <code>.factory/attic-slopes/spec.md</code>, <code>factory.json</code>, <code>answer-key.json</code>; grader <code>scripts/attic-slopes-grade.mjs</code>.</li>
 </ul>
 
-<footer>Lumoview · LumoCad · living area (WoFlV §4) of attic rooms from the scans, with a draw-it-yourself fallback · 18 Nov 2026, updated the same day with the sidebar panel, the reset, the drawing fix and the plan-redraw fix · replaces the 17 Nov version of this page</footer>
+<footer>Lumoview · LumoCad · living area (WoFlV §4) of attic rooms from the scans, with a draw-it-yourself fallback · 18 Nov 2026, updated the same day with the sidebar panel, the reset, the drawing fixes, the plan-redraw fix and the click guide · replaces the 17 Nov version of this page</footer>
 </main>
 </body>
 </html>
