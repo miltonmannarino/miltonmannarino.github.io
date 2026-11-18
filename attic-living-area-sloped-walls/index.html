@@ -332,7 +332,7 @@ pnpm calvin tool room-sloped-walls-propose-apply    # apply, one undo step</code
 <h3>C. Automated checks (run on 18 Nov 2026)</h3>
 <ul class="rules">
   <li>Typecheck clean (<code>pnpm exec tsc -b</code>).</li>
-  <li>181 of 182 tests pass: examples 8/8, rules 6/7 (the accepted 0,04 m² seed), Calvin propose/apply 4/4, ceiling geometry 10/10, drawing geometry 3/3, room panel 4/4, 360° overlay interactions 2/2, plus the existing floor plan and lab suites.</li>
+  <li>Evening run after the panel and the drawing fix: the focused set passes 134/134 (examples 8/8, Calvin propose/apply 4/4, reset 4/4, sidebar panel 3/3, Calvin tool registry, ceiling geometry 10/10, drawing geometry 3/3, room panel 4/4, 360° overlay interactions 2/2); the wider floor plan, lab and panorama suites pass 1535 with the one accepted failure (rules R7, the 0,04 m² seed).</li>
   <li>Room-book grader: 0,691 m² mean per room, damage 0, 22 rooms (bar 1,0).</li>
 </ul>
 <pre><code># platform repo, Node 22 via Volta
