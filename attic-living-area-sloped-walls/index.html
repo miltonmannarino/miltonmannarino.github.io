@@ -103,9 +103,9 @@
 <div class="meta">
   <span class="pill">LumoCad · Room panel · 360° view · Floor plan · Room book</span>
   <span class="pill">As of 18 Nov 2026</span>
-  <span class="pill ok">Committed on <code>agentic-dev</code> (e4099efd8), not pushed</span>
+  <span class="pill ok">Committed on <code>agentic-dev</code> (e4099efd8, 6be5fdda6), not pushed</span>
   <span class="pill ok">Checked against 22 rooms of 3 architects' room books: 0,69 m² mean error</span>
-  <span class="pill warn">Not yet tried in the running app</span>
+  <span class="pill warn">First in-app try on 18 Nov found the drawing dead; fixed the same evening, re-try pending</span>
 </div>
 
 <h2>The problem in one minute</h2>
@@ -183,7 +183,7 @@
     </ol>
     <p>The result is a <strong>proposal</strong>: per room, sloped yes/no, a confidence (<em>measured</em> from its own slice, or <em>estimated</em> from neighbours on the same side), the new outline, the slopes, the living area and a sentence saying why. One real example of that sentence:</p>
     <p class="why">“slope-like line (±48 mm in a scan, 95 mm between scans), roof 1404 mm there, slices see the slope down to 1504 mm → extend to the façade”</p>
-    <p>Today the proposal runs as two <strong>Calvin</strong> tools (Calvin is the command-line helper that talks to the LumoCad tab): <code>room-sloped-walls-propose</code> looks and changes nothing; <code>room-sloped-walls-propose-apply</code> applies it through the editor's own edit events, saved, as one undo step. A button in the room panel and a tool for Marvin, the chat assistant, are not built yet.</p>
+    <p><strong>In the app</strong> it is a small panel at the top of the right sidebar while the boundary tool is active: <strong>“Sloped walls from scans”</strong> with <strong>Propose sloped walls</strong> (reads the active floor, lists every room with its reading, changes nothing), <strong>Apply to N rooms</strong> (writes it through the editor's own edit events, saved, as one undo step) and <strong>Clear slopes</strong> (empties the sloped walls of the whole floor, also one undo step, so a test can start from scratch; extended outlines stay). The same functions run as <strong>Calvin</strong> tools (Calvin is the command-line helper that talks to the LumoCad tab): <code>room-sloped-walls-propose</code>, <code>room-sloped-walls-propose-apply</code> and <code>room-sloped-walls-reset</code>. A tool for Marvin, the chat assistant, is not built yet.</p>
   </section>
   <section class="area draw" aria-labelledby="b-title">
     <h3 id="b-title">Approach B <span class="tag draw">draw it</span></h3>
@@ -302,15 +302,19 @@
 <h2>How to test</h2>
 <p>Three ways, from the most automatic to the most manual. The in-app steps use the dev copy of <strong>Frankfurt (Oder), Fürstenwalder Poststraße 88</strong> (dev building id starting <code>9b4bceac</code>, same id as in prod). It is on the Calvin allow-list, so tools may write to it.</p>
 
-<h3>A. The automatic proposal, through Calvin</h3>
-<p>Needs the dev server (<code>pnpm dev</code>) and a LumoCad tab open on that building with <strong>Floor 4</strong> active. Calvin drives the open tab; I only run it when Milton asks.</p>
+<h3>A. The automatic proposal, from the sidebar panel</h3>
+<p>Open the building in LumoCad with <strong>Floor 4</strong> active and the boundary tool selected (the mode in which you move room outline nodes). The right sidebar then starts with the panel <strong>“Sloped walls from scans”</strong>.</p>
 <ol class="steps">
-  <li>In a terminal in the platform repo: <code>pnpm calvin status</code> must say it is connected to the tab.</li>
-  <li><code>pnpm calvin tool room-sloped-walls-propose</code>. Changes nothing. Expect a summary like “4 of 8 room(s) sloped (4 measured, 0 estimated), …” and, per room, the outline it would extend to, the slopes, the living area and the why-sentence. Zimmer 1, Zimmer 2, Schlafzimmer and the small WC should be sloped; Flur, Küche, Bad and Wohnzimmer flat.</li>
-  <li><code>pnpm calvin tool room-sloped-walls-propose-apply</code>. Expect “Saved: …”. Everything it did is one undo step.</li>
-  <li>In the tab, select <strong>DG04 M Zimmer1</strong>. In the right panel, “WoFlV from sloped walls” should read about <strong>13,5 m²</strong> (room book 13,59). In the floor plan, switch the WoFlV area zones on: red, yellow and green strips along the façade.</li>
+  <li>Press <strong>Clear slopes</strong> first if you want to start from scratch: every room on the floor loses its sloped walls, the WoFlV figures go back to the plain floor areas. One undo step.</li>
+  <li>Press <strong>Propose sloped walls</strong>. Nothing is written. Expect a summary like “4 of 8 room(s) sloped (4 measured, 0 estimated), …” and one row per room with its reading (flat, measured or estimated), floor area before → after when it would be extended, living area, and the first why-sentence (the full reasoning is in the row's tooltip). Zimmer 1, Zimmer 2, Schlafzimmer and the small WC should be sloped; Flur, Küche, Bad and Wohnzimmer flat.</li>
+  <li>Press <strong>Apply to N rooms</strong>. Expect the line “Saved: N room(s): … · Ctrl+Z takes it back.” and the list to refresh with nothing left to apply.</li>
+  <li>Select <strong>DG04 M Zimmer1</strong>. In the room section of the sidebar, “WoFlV from sloped walls” should read about <strong>13,5 m²</strong> (room book 13,59). In the floor plan, switch the WoFlV area zones on: red, yellow and green strips along the façade.</li>
   <li>Press <strong>Ctrl+Z</strong> once: outlines and slopes go back together. Apply again and reload the page: the saved result is still there.</li>
 </ol>
+<p>The same three steps from a terminal, through Calvin, with the dev server running and the tab open on the building:</p>
+<pre><code>pnpm calvin tool room-sloped-walls-reset            # start from scratch (slopes only)
+pnpm calvin tool room-sloped-walls-propose          # look, change nothing
+pnpm calvin tool room-sloped-walls-propose-apply    # apply, one undo step</code></pre>
 <div class="callout">
   <strong>One caveat for this building.</strong> Floor 4 of the dev copy was already corrected by hand on 17 Nov (outlines extended to the façade, slopes set). There the proposal mostly confirms what is saved. To watch it extend short outlines, copy Nr. 91 (prod id starting <code>4e6b5984</code>) to dev and add it to the allow-list, or undo the 17 Nov edits first.
 </div>
@@ -352,11 +356,12 @@ node scripts/attic-slopes-grade.mjs --held-back &lt;dir&gt;      # the blind bui
 
 <h2>What's missing</h2>
 <ul class="missing">
-  <li><b>Try it in the running app</b><span>Neither the Calvin proposal nor the drawing has been used on a real building in the browser yet; both are covered by tests only. Steps A and B above. <span class="owner">Milton, or me on his tab when he asks</span></span></li>
+  <li><b>Try it in the running app</b><span>Milton's first try on 18 Nov showed the drawing could not work: the pink layer was tied to the boundary overlay's visibility and listened on the wrong element for the pointer. Both fixed in 6be5fdda6 and covered by tests, but the panel, the drawing and the apply have still not been exercised on a real building in the browser. Steps A and B above. <span class="owner">Milton, or me on his tab when he asks</span></span></li>
   <li><b>Held-back grade</b><span>Berliner Straße 24 has not been graded. One command, result is a single score. <span class="owner">Milton runs it</span></span></li>
   <li><b>Nürnberg's two big rooms</b><span>±3,8 m² on Zimmer 1 and the Wohnküche. Suspects: the second roof wing's pitch, the knee walls. <span class="owner">next, Milton's session</span></span></li>
   <li><b>Dormer rooms</b><span>A dormer inside a sloped room (Frankfurt 88 living room) is not detected; the room reads as flat. Out of scope for this version; approach B covers it by hand. <span class="owner">open</span></span></li>
-  <li><b>A button instead of Calvin</b><span>“Propose sloped walls” in the room or floor panel, and a Marvin tool, so architects do not need the command line. <span class="owner">next / later</span></span></li>
+  <li><b>Marvin tool</b><span>The chat assistant cannot run the proposal yet; the sidebar panel covers architects, Marvin would cover the automated pipeline. <span class="owner">later</span></span></li>
+  <li><b>Clear slopes leaves extended outlines</b><span>The original short outline is not stored anywhere, so “Clear slopes” only empties the sloped walls. Right after an apply, Ctrl+Z takes both back. <span class="owner">accepted for now</span></span></li>
   <li><b>Push and PR</b><span>Committed locally on <code>agentic-dev</code>, not pushed. Two shared files still hold another session's uncommitted balcony-share edits; they were left untouched. <span class="owner">Milton decides</span></span></li>
   <li><b>Docs</b><span>The exploration document (sections 11 and 12) is untracked on purpose; this page is the explainer. The traps file in <code>.factory/attic-slopes</code> is local. <span class="owner">Milton decides what to commit</span></span></li>
 </ul>
@@ -364,13 +369,13 @@ node scripts/attic-slopes-grade.mjs --held-back &lt;dir&gt;      # the blind bui
 <h2>For developers</h2>
 <ul class="rules">
   <li>Automatic proposal: <code>src/lumocad/utils/floorplan/atticSlopes/index.ts</code> (one function, <code>proposeAtticSlopes</code>, pure, no app state) with its examples, rules and benchmark tests next to it; synthetic floors in <code>testFixtures.ts</code>; room-book reader and building loader in <code>bench/</code>.</li>
-  <li>Calvin: <code>src/lumocad/lab/roomSlopedWallsProposeLab.ts</code> and the two tools <code>room-sloped-walls-propose</code> / <code>-propose-apply</code>.</li>
+  <li>Propose / apply / reset: <code>src/lumocad/lab/roomSlopedWallsProposeLab.ts</code>, written against a small <code>SlopedWallsEditor</code> interface; Calvin uses it through <code>editorFromLab</code> and the three tools <code>room-sloped-walls-propose</code> / <code>-propose-apply</code> / <code>-reset</code>; the app through the live adapter in <code>src/lumocad/features/slopedWallsGuide/</code> (store, panel, saves confirmed from the machines' own receipts).</li>
   <li>Ceiling model and WoFlV: <code>src/lumocad/utils/floorplan/roomCeiling.ts</code>; a slope now keeps descending behind its line, so a plane shifted inside the room still reads 0 m at the façade.</li>
-  <li>Drawing: <code>src/lumocad/stores/slopeDrawStore.ts</code> (the session), <code>src/lumocad/utils/panorama/slopeDrawGeometry.ts</code> (ray to knee height and pitch), <code>src/lumocad/components/views/Panorama/SlopeDrawPanoLayer.tsx</code> (the pink layer in the 360° view), Draw button in <code>RoomSlopedWallsEditor.tsx</code>.</li>
+  <li>Drawing: <code>src/lumocad/stores/slopeDrawStore.ts</code> (the session), <code>src/lumocad/utils/panorama/slopeDrawGeometry.ts</code> (ray to knee height and pitch), <code>src/lumocad/components/views/Panorama/SlopeDrawPanoLayer.tsx</code> (the pink layer; it reads the pointer through the 3D event system on an invisible sphere, because the shared canvas routes events through a wrapper and each view covers only part of it), Draw button in <code>RoomSlopedWallsEditor.tsx</code>.</li>
   <li>Contract: <code>.factory/attic-slopes/spec.md</code>, <code>factory.json</code>, <code>answer-key.json</code>; grader <code>scripts/attic-slopes-grade.mjs</code>.</li>
 </ul>
 
-<footer>Lumoview · LumoCad · living area (WoFlV §4) of attic rooms from the scans, with a draw-it-yourself fallback · 18 Nov 2026 · replaces the 17 Nov version of this page</footer>
+<footer>Lumoview · LumoCad · living area (WoFlV §4) of attic rooms from the scans, with a draw-it-yourself fallback · 18 Nov 2026, updated the same evening with the sidebar panel, the reset and the drawing fix · replaces the 17 Nov version of this page</footer>
 </main>
 </body>
 </html>
