@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="project" content="Lumoview-Building-Analytics-GmbH/lumoflow">
+<title>Lumoview infrastructure, from scratch</title>
+<style>
+  :root {
+    --paper: #f6f4ee; --ink: #1c2230; --muted: #596273; --line: #d8d2c4;
+    --accent: #b8430f; --accent-soft: #fbe9dc; --zone: #ecf0f5; --card: #ffffff;
+    --code: #ece8de; --ok: #2f6b3a; --warn: #9a5b00; --bad: #a3271f;
+    --hi: #fff6d6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #13161c; --ink: #e6e8ee; --muted: #a0a8b7; --line: #2d333e;
+      --accent: #f08a4b; --accent-soft: #3a2416; --zone: #1a1f28; --card: #1d222c;
+      --code: #232933; --ok: #7cc68a; --warn: #e3b25a; --bad: #f08a80; --hi: #2f2a17;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink);
+    font: 16px/1.6 ui-sans-serif, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
+  a { color: var(--accent); }
+  a:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+  code, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: .88em; }
+  code { background: var(--code); padding: .08em .35em; border-radius: 4px; overflow-wrap: anywhere; }
+  .page { display: grid; grid-template-columns: 230px minmax(0, 860px); gap: 56px;
+    max-width: 1180px; margin: 0 auto; padding: 48px 40px 96px; }
+  nav.toc { position: sticky; top: 32px; align-self: start; font-size: 14px; }
+  nav.toc p { margin: 0 0 8px; color: var(--muted); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+  nav.toc ol { margin: 0; padding-left: 20px; }
+  nav.toc li { margin: 4px 0; }
+  nav.toc a { color: var(--ink); text-decoration: none; }
+  nav.toc a:hover { color: var(--accent); }
+  header.hero { border-bottom: 2px solid var(--ink); padding-bottom: 24px; margin-bottom: 8px; }
+  .kicker { font-size: 13px; color: var(--accent); font-weight: 600; letter-spacing: .04em; margin: 0 0 6px; }
+  h1 { font-size: 40px; line-height: 1.15; margin: 0 0 14px; letter-spacing: -.01em; }
+  .lede { font-size: 19px; color: var(--muted); margin: 0 0 16px; max-width: 760px; }
+  .meta { font-size: 13.5px; color: var(--muted); }
+  h2 { font-size: 26px; margin: 64px 0 12px; padding-top: 8px; letter-spacing: -.005em; }
+  h2 .n { color: var(--accent); font-variant-numeric: tabular-nums; margin-right: 10px; }
+  h3 { font-size: 19px; margin: 34px 0 8px; }
+  p, li { max-width: 780px; }
+  .short { background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--accent);
+    padding: 18px 24px; border-radius: 6px; }
+  .short ol { margin: 0; padding-left: 20px; }
+  .short li { margin: 8px 0; }
+  dl.ideas { display: grid; grid-template-columns: 210px 1fr; gap: 0; margin: 16px 0;
+    border-top: 1px solid var(--line); }
+  dl.ideas dt, dl.ideas dd { padding: 12px 0; border-bottom: 1px solid var(--line); margin: 0; }
+  dl.ideas dt { font-weight: 650; padding-right: 18px; }
+  dl.ideas dd { color: var(--ink); }
+  dl.ideas dd .eg { color: var(--muted); }
+  figure.map { margin: 20px 0 8px; background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; }
+  figure.map svg { display: block; width: 100%; min-width: 760px; height: auto; }
+  figcaption { font-size: 14px; color: var(--muted); margin-top: 6px; }
+  .legend { columns: 2; column-gap: 32px; font-size: 14.5px; padding-left: 20px; }
+  .legend li { break-inside: avoid; margin: 4px 0; }
+  svg text { fill: var(--ink); font-family: ui-sans-serif, -apple-system, "Segoe UI", Arial, sans-serif; }
+  svg .t { font-size: 13.5px; font-weight: 650; }
+  svg .s { font-size: 11px; fill: var(--muted); }
+  svg .zone-label { font-size: 12px; fill: var(--muted); font-weight: 600; letter-spacing: .04em; }
+  svg .box { fill: var(--card); stroke: var(--ink); stroke-width: 1.3; }
+  svg .box.ext { stroke-dasharray: 4 3; }
+  svg .box.key { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.8; }
+  svg .zone { fill: var(--zone); stroke: var(--line); stroke-width: 1.2; }
+  svg .wf { fill: var(--paper); stroke: var(--line); }
+  svg .arrow { stroke: var(--accent); stroke-width: 1.8; fill: none; }
+  svg .num { fill: var(--accent); }
+  svg .numt { fill: #fff; font-size: 11px; font-weight: 700; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; margin: 14px 0; }
+  .tablewrap { overflow-x: auto; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 12px 9px 0; border-bottom: 1px solid var(--line); }
+  th { font-size: 12.5px; color: var(--muted); font-weight: 600; letter-spacing: .03em; border-bottom: 2px solid var(--ink); }
+  td:first-child { font-weight: 600; }
+  .piece { margin: 26px 0; padding: 20px 24px; background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
+  .piece h3 { margin-top: 0; }
+  .piece .what { margin: 0 0 14px; }
+  .facts { display: grid; grid-template-columns: 128px 1fr; gap: 6px 16px; font-size: 14.5px; margin: 0; }
+  .facts dt { color: var(--accent); font-weight: 650; }
+  .facts dd { margin: 0; }
+  .note { background: var(--hi); border: 1px solid var(--line); padding: 12px 16px; border-radius: 6px; font-size: 15px; }
+  .steps { counter-reset: s; list-style: none; padding: 0; }
+  .steps li { counter-increment: s; position: relative; padding: 8px 0 8px 44px; border-bottom: 1px solid var(--line); }
+  .steps li::before { content: counter(s); position: absolute; left: 0; top: 8px; width: 28px; height: 28px;
+    border-radius: 50%; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 13.5px;
+    display: flex; align-items: center; justify-content: center; }
+  .imp { border-top: 1px solid var(--line); padding: 16px 0; }
+  .imp h4 { margin: 0 0 6px; font-size: 17px; }
+  .tag { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 1px 8px; border-radius: 10px;
+    margin-right: 8px; vertical-align: 2px; border: 1px solid currentColor; }
+  .tag.high { color: var(--bad); } .tag.med { color: var(--warn); } .tag.low { color: var(--ok); }
+  .imp p { margin: 4px 0; }
+  .imp .where { font-size: 14px; color: var(--muted); }
+  ul.sure li { margin: 6px 0; }
+  .ok { color: var(--ok); font-weight: 650; } .unk { color: var(--warn); font-weight: 650; }
+  footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+  @media print { nav.toc { display: none; } .page { display: block; } }
+</style>
+</head>
+<body>
+<div class="page">
+<nav class="toc" aria-label="Contents">
+  <p>Contents</p>
+  <ol>
+    <li><a href="#short">The short version</a></li>
+    <li><a href="#ideas">Ideas you need first</a></li>
+    <li><a href="#map">The map</a></li>
+    <li><a href="#pieces">Every piece</a></li>
+    <li><a href="#deploy">How a change goes live</a></li>
+    <li><a href="#secrets">Secrets and settings</a></li>
+    <li><a href="#see">Seeing what happens</a></li>
+    <li><a href="#duplicate">One click, end to end</a></li>
+    <li><a href="#improve">Proposed improvements</a></li>
+    <li><a href="#sure">How sure this page is</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="hero">
+  <p class="kicker">Lumoview · infrastructure explainer</p>
+  <h1>Lumoview infrastructure, from scratch</h1>
+  <p class="lede">Everything that keeps the Lumoview app running: what each piece is, where it is written down, how to look at it, and how to change it. No prior knowledge assumed.</p>
+  <p class="meta">As of 20 November 2026. Read from the Lumoflow repo (<code>origin/development</code> 597cfa1, which has the same resources as <code>main</code>) and the api repo (<code>development</code> cba640a). Section 10 lists what was not checked.</p>
+</header>
+
+<section id="short">
+<h2><span class="n">1</span>The short version</h2>
+<div class="short">
+<ol>
+  <li><strong>Almost everything runs on Scaleway</strong>, a French cloud provider, in its Paris region. Development and production are two separate Scaleway projects, each a full copy of the other.</li>
+  <li><strong>One repository, Lumoflow, describes the infrastructure as text files.</strong> A tool called OpenTofu reads them and creates or changes the real resources. Pushing Lumoflow to <code>development</code> changes dev. Merging to <code>main</code> changes prod after someone approves it in GitHub.</li>
+  <li><strong>Each app repository deploys its own code</strong> into the slots Lumoflow created. That covers api, platform, lumowave, lumoplan, marvin and the workflow repositories.</li>
+  <li><strong>The API is two processes built from one codebase.</strong> The web server answers browsers and runs as a serverless container. The worker runs long tasks from a queue on its own virtual machine. The worker reaches browsers through a small relay server called Valkey.</li>
+  <li><strong>Data lives in two places.</strong> The database is MongoDB Atlas, a hosted MongoDB service outside Scaleway. Files live in Scaleway Object Storage buckets. Logins go through Auth0.</li>
+</ol>
+</div>
+</section>
+
+<section id="ideas">
+<h2><span class="n">2</span>The ideas you need first</h2>
+<p>Each term below shows up later on this page. Read them once and the rest makes sense.</p>
+<dl class="ideas">
+  <dt>Cloud provider, project, region</dt>
+  <dd>A cloud provider rents out computers, storage and networking. Scaleway groups resources into <em>projects</em>, and Lumoview has one project per environment. A <em>region</em> is a data-centre location. Ours is <code>fr-par</code> (Paris), and machines sit in zone <code>fr-par-1</code>.</dd>
+
+  <dt>Environment</dt>
+  <dd>A complete, separate copy of the system. <em>Development</em> (dev) is for testing and <em>production</em> (prod) is what customers use. Names end in the environment, as in <code>api-development</code> and <code>api-production</code>. Dev hostnames end in <code>lumodev.cloud</code> and prod hostnames end in <code>lumoview.com</code>.</dd>
+
+  <dt>Docker image, registry</dt>
+  <dd>An <em>image</em> is a packaged app: code, Node.js and libraries, frozen into one file that runs the same everywhere. A <em>registry</em> stores images. Ours are Scaleway registries named <code>app-container-&lt;env&gt;</code> for the apps and <code>job-container-&lt;env&gt;</code> for workflows. <span class="eg">Example: <code>api:cba640a49183</code> is the API image of that commit.</span></dd>
+
+  <dt>Serverless Container</dt>
+  <dd>Scaleway runs your image only when requests arrive and adds copies under load. With a minimum of zero it shuts down when idle, which saves money. The cost is a <em>cold start</em>: the first request waits while it boots. Size is given in mCPU, thousandths of a CPU core, so 560 mCPU is about half a core.</dd>
+
+  <dt>Instance (virtual machine)</dt>
+  <dd>A rented computer that stays on all the time. We use two kinds: the API worker and the Valkey server. Type <code>DEV1-S</code> has 2 virtual CPUs and 2 GB of memory. <code>STARDUST1-S</code> has 1 virtual CPU and 1 GB.</dd>
+
+  <dt>Serverless Function, Job</dt>
+  <dd>A <em>function</em> is a small piece of code that wakes up for one event, for example a queue message, and must finish quickly. A <em>job</em> is a container that runs a longer batch to completion and then stops.</dd>
+
+  <dt>Queue (SQS)</dt>
+  <dd>A mailbox for work. One side posts a message such as "copy building X". A consumer takes it, does the work, then deletes it. While the work runs, the message is hidden from other consumers. That hidden period is the <em>visibility timeout</em>. If the consumer does not delete the message in time, the message reappears and runs again. This is how one building copy ran about 130 times in dev on 19 November.</dd>
+
+  <dt>Object Storage, bucket</dt>
+  <dd>A file store reached over the web, compatible with Amazon S3. A <em>bucket</em> is one named store. Files are addressed by a <em>key</em> that looks like a path. <span class="eg">Example: <code>building/&lt;id&gt;/file/scan.json</code> in bucket <code>files-production</code>.</span></dd>
+
+  <dt>Secret Manager</dt>
+  <dd>Scaleway's safe for passwords and settings. Each secret has numbered <em>versions</em>, and adding a version is how you change it. Our apps read their secrets <strong>only when they start</strong>, so a change needs a restart.</dd>
+
+  <dt>Valkey</dt>
+  <dd>A fast in-memory server, the open-source continuation of Redis. We use it as a relay. The worker publishes "copy 40% done" to Valkey, and every API instance listening there forwards it to the right browser over Socket.IO, a live connection between browser and API.</dd>
+
+  <dt>Infrastructure as code, OpenTofu, state</dt>
+  <dd>Instead of clicking in the Scaleway console, resources are described in <code>.tf</code> files. <em>OpenTofu</em>, the open-source fork of Terraform, compares those files with reality and makes the changes. It records what it created in a <em>state file</em>, kept in bucket <code>lumoflow-tofu-&lt;env&gt;</code>. Anything clicked by hand is invisible to it.</dd>
+
+  <dt>CI/CD, GitHub Actions</dt>
+  <dd>Continuous integration and deployment: scripts that run on every push to test, build and deploy. Ours are GitHub Actions <em>workflows</em>, YAML files in each repo's <code>.github/workflows/</code>. Note that "workflow" also names our queue-driven processing services, which is a different thing.</dd>
+
+  <dt>Health probes</dt>
+  <dd>Scaleway keeps calling an address such as <code>/healthz</code> to check the app is alive. A <em>liveness probe</em> restarts or rejects an app that stops answering. A <em>startup probe</em> gives a slow-starting app extra time before liveness checks begin.</dd>
+
+  <dt>Logs, Cockpit, Grafana, Promtail</dt>
+  <dd><em>Cockpit</em> is Scaleway's log and metrics store, and <em>Grafana</em> is the screen you search it with. Serverless resources send logs there automatically. Virtual machines need a forwarder, and ours is <em>Promtail</em>.</dd>
+
+  <dt>DNS, Cloudflare</dt>
+  <dd>DNS turns a name like <code>api.lumoview.com</code> into an address. Our DNS lives at Cloudflare. For the Platform site, Cloudflare also adds HTTPS and redirects plain HTTP.</dd>
+</dl>
+</section>
+
+<section id="map">
+<h2><span class="n">3</span>The map</h2>
+<p>One environment. Production and development each have this whole picture. The orange boxes are the parts you deal with most.</p>
+<figure class="map">
+<svg viewBox="0 0 910 790" role="img" aria-labelledby="mapTitle mapDesc">
+  <title id="mapTitle">Lumoview infrastructure map for one environment</title>
+  <desc id="mapDesc">Browsers reach Cloudflare, which points to the Platform site bucket and the API container in Scaleway. The API posts tasks to queues. The worker virtual machine takes tasks and reports progress through Valkey back to the API. Queues also wake the Lumoflow workflows. Outside services include MongoDB Atlas, Auth0, Sentry, SendGrid, Notion, Airteam, RunPod and Lumo logs.</desc>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/>
+    </marker>
+  </defs>
+
+  <!-- left column -->
+  <rect class="box ext" x="20" y="40" width="140" height="52" rx="6"/>
+  <text class="t" x="90" y="62" text-anchor="middle">Browser</text>
+  <text class="s" x="90" y="79" text-anchor="middle">people using the app</text>
+
+  <rect class="box" x="20" y="130" width="140" height="70" rx="6"/>
+  <text class="t" x="90" y="158" text-anchor="middle">Cloudflare</text>
+  <text class="s" x="90" y="176" text-anchor="middle">DNS names + HTTPS</text>
+
+  <rect class="box ext" x="20" y="440" width="140" height="52" rx="6"/>
+  <text class="t" x="90" y="462" text-anchor="middle">Developer</text>
+  <text class="s" x="90" y="479" text-anchor="middle">git push</text>
+
+  <rect class="box" x="20" y="530" width="140" height="62" rx="6"/>
+  <text class="t" x="90" y="556" text-anchor="middle">GitHub Actions</text>
+  <text class="s" x="90" y="574" text-anchor="middle">test, build, deploy</text>
+
+  <!-- scaleway zone -->
+  <rect class="zone" x="185" y="20" width="710" height="600" rx="10"/>
+  <text class="zone-label" x="200" y="42">SCALEWAY PROJECT · fr-par · one per environment</text>
+
+  <rect class="box" x="205" y="60" width="140" height="64" rx="6"/>
+  <text class="t" x="275" y="86" text-anchor="middle">Platform site</text>
+  <text class="s" x="275" y="104" text-anchor="middle">static files in a bucket</text>
+
+  <rect class="box key" x="360" y="60" width="150" height="64" rx="6"/>
+  <text class="t" x="435" y="86" text-anchor="middle">API container</text>
+  <text class="s" x="435" y="104" text-anchor="middle">web server, ROLES=server</text>
+
+  <rect class="box" x="525" y="60" width="110" height="64" rx="6"/>
+  <text class="t" x="580" y="86" text-anchor="middle">Lumowave</text>
+  <text class="s" x="580" y="104" text-anchor="middle">ops dashboard</text>
+  <rect class="box" x="645" y="60" width="110" height="64" rx="6"/>
+  <text class="t" x="700" y="86" text-anchor="middle">Lumoplan</text>
+  <text class="s" x="700" y="104" text-anchor="middle">capacity planning</text>
+  <rect class="box" x="765" y="60" width="110" height="64" rx="6"/>
+  <text class="t" x="820" y="86" text-anchor="middle">Marvin</text>
+  <text class="s" x="820" y="104" text-anchor="middle">LumoCad assistant</text>
+
+  <rect class="box key" x="205" y="170" width="140" height="56" rx="6"/>
+  <text class="t" x="275" y="194" text-anchor="middle">Valkey VM</text>
+  <text class="s" x="275" y="211" text-anchor="middle">progress relay</text>
+
+  <rect class="box" x="525" y="170" width="170" height="56" rx="6"/>
+  <text class="t" x="610" y="194" text-anchor="middle">Secret Manager</text>
+  <text class="s" x="610" y="211" text-anchor="middle">settings + passwords</text>
+  <rect class="box" x="705" y="170" width="170" height="56" rx="6"/>
+  <text class="t" x="790" y="194" text-anchor="middle">Container Registry</text>
+  <text class="s" x="790" y="211" text-anchor="middle">Docker images</text>
+
+  <rect class="box key" x="205" y="260" width="140" height="80" rx="6"/>
+  <text class="t" x="275" y="290" text-anchor="middle">Worker VM</text>
+  <text class="s" x="275" y="307" text-anchor="middle">same API image,</text>
+  <text class="s" x="275" y="322" text-anchor="middle">ROLES=worker</text>
+
+  <rect class="box key" x="360" y="270" width="150" height="60" rx="6"/>
+  <text class="t" x="435" y="295" text-anchor="middle">SQS queues</text>
+  <text class="s" x="435" y="312" text-anchor="middle">task mailboxes</text>
+
+  <rect class="box" x="525" y="270" width="170" height="60" rx="6"/>
+  <text class="t" x="610" y="295" text-anchor="middle">File buckets</text>
+  <text class="s" x="610" y="312" text-anchor="middle">files-production, …</text>
+  <rect class="box" x="705" y="270" width="170" height="60" rx="6"/>
+  <text class="t" x="790" y="295" text-anchor="middle">Cockpit</text>
+  <text class="s" x="790" y="312" text-anchor="middle">logs + Grafana</text>
+
+  <rect class="wf" x="205" y="380" width="670" height="222" rx="8"/>
+  <text class="zone-label" x="220" y="402">LUMOFLOW WORKFLOWS · wake up for each queue message</text>
+  <g>
+    <rect class="box" x="225" y="418" width="150" height="44" rx="5"/><text class="t" x="300" y="437" text-anchor="middle">process-rcs</text><text class="s" x="300" y="453" text-anchor="middle">container</text>
+    <rect class="box" x="385" y="418" width="150" height="44" rx="5"/><text class="t" x="460" y="437" text-anchor="middle">process-observation</text><text class="s" x="460" y="453" text-anchor="middle">container</text>
+    <rect class="box" x="545" y="418" width="150" height="44" rx="5"/><text class="t" x="620" y="437" text-anchor="middle">audit-floor-plan</text><text class="s" x="620" y="453" text-anchor="middle">function</text>
+    <rect class="box" x="705" y="418" width="150" height="44" rx="5"/><text class="t" x="780" y="437" text-anchor="middle">export-to-ifc</text><text class="s" x="780" y="453" text-anchor="middle">function</text>
+    <rect class="box" x="225" y="476" width="150" height="44" rx="5"/><text class="t" x="300" y="495" text-anchor="middle">ifc-clash</text><text class="s" x="300" y="511" text-anchor="middle">function</text>
+    <rect class="box" x="385" y="476" width="150" height="44" rx="5"/><text class="t" x="460" y="495" text-anchor="middle">send-email</text><text class="s" x="460" y="511" text-anchor="middle">function</text>
+    <rect class="box" x="545" y="476" width="150" height="44" rx="5"/><text class="t" x="620" y="495" text-anchor="middle">floor-plan-audit</text><text class="s" x="620" y="511" text-anchor="middle">job</text>
+    <rect class="box" x="705" y="476" width="150" height="44" rx="5"/><text class="t" x="780" y="495" text-anchor="middle">qa-agent</text><text class="s" x="780" y="511" text-anchor="middle">job</text>
+    <rect class="box" x="225" y="534" width="150" height="44" rx="5"/><text class="t" x="300" y="553" text-anchor="middle">hours-reminder</text><text class="s" x="300" y="569" text-anchor="middle">function on a timer</text>
+  </g>
+
+  <!-- outside -->
+  <text class="zone-label" x="20" y="660">OUTSIDE SERVICES · not run by us</text>
+  <g>
+    <rect class="box ext" x="20" y="674" width="204" height="48" rx="6"/><text class="t" x="122" y="694" text-anchor="middle">MongoDB Atlas</text><text class="s" x="122" y="711" text-anchor="middle">the database</text>
+    <rect class="box ext" x="242" y="674" width="204" height="48" rx="6"/><text class="t" x="344" y="694" text-anchor="middle">Auth0</text><text class="s" x="344" y="711" text-anchor="middle">login and users</text>
+    <rect class="box ext" x="464" y="674" width="204" height="48" rx="6"/><text class="t" x="566" y="694" text-anchor="middle">Sentry</text><text class="s" x="566" y="711" text-anchor="middle">error reports</text>
+    <rect class="box ext" x="686" y="674" width="204" height="48" rx="6"/><text class="t" x="788" y="694" text-anchor="middle">SendGrid</text><text class="s" x="788" y="711" text-anchor="middle">email delivery</text>
+    <rect class="box ext" x="20" y="734" width="204" height="48" rx="6"/><text class="t" x="122" y="754" text-anchor="middle">Notion</text><text class="s" x="122" y="771" text-anchor="middle">project tracking sync</text>
+    <rect class="box ext" x="242" y="734" width="204" height="48" rx="6"/><text class="t" x="344" y="754" text-anchor="middle">Airteam</text><text class="s" x="344" y="771" text-anchor="middle">drone building models</text>
+    <rect class="box ext" x="464" y="734" width="204" height="48" rx="6"/><text class="t" x="566" y="754" text-anchor="middle">RunPod</text><text class="s" x="566" y="771" text-anchor="middle">GPU processing</text>
+    <rect class="box ext" x="686" y="734" width="204" height="48" rx="6"/><text class="t" x="788" y="754" text-anchor="middle">Lumo logs</text><text class="s" x="788" y="771" text-anchor="middle">app log search</text>
+  </g>
+
+  <!-- arrows -->
+  <path class="arrow" d="M90,92 V128" marker-end="url(#ah)"/>
+  <path class="arrow" d="M160,145 H190 V92 H203" marker-end="url(#ah)"/>
+  <path class="arrow" d="M160,185 H190 V147 H372 V126" marker-end="url(#ah)"/>
+  <path class="arrow" d="M470,124 V268" marker-end="url(#ah)"/>
+  <path class="arrow" d="M360,300 H347" marker-end="url(#ah)"/>
+  <path class="arrow" d="M275,260 V228" marker-end="url(#ah)"/>
+  <path class="arrow" d="M345,198 H392 V126" marker-end="url(#ah)"/>
+  <path class="arrow" d="M435,330 V378" marker-end="url(#ah)"/>
+  <path class="arrow" d="M90,492 V528" marker-end="url(#ah)"/>
+  <path class="arrow" d="M160,561 H196" marker-end="url(#ah)"/>
+
+  <!-- numbers -->
+  <g>
+    <circle class="num" cx="104" cy="110" r="9"/><text class="numt" x="104" y="114" text-anchor="middle">1</text>
+    <circle class="num" cx="176" cy="125" r="9"/><text class="numt" x="176" y="129" text-anchor="middle">2</text>
+    <circle class="num" cx="300" cy="147" r="9"/><text class="numt" x="300" y="151" text-anchor="middle">3</text>
+    <circle class="num" cx="484" cy="200" r="9"/><text class="numt" x="484" y="204" text-anchor="middle">4</text>
+    <circle class="num" cx="353" cy="283" r="9"/><text class="numt" x="353" y="287" text-anchor="middle">5</text>
+    <circle class="num" cx="261" cy="244" r="9"/><text class="numt" x="261" y="248" text-anchor="middle">6</text>
+    <circle class="num" cx="406" cy="165" r="9"/><text class="numt" x="406" y="169" text-anchor="middle">7</text>
+    <circle class="num" cx="449" cy="355" r="9"/><text class="numt" x="449" y="359" text-anchor="middle">8</text>
+    <circle class="num" cx="104" cy="510" r="9"/><text class="numt" x="104" y="514" text-anchor="middle">9</text>
+  </g>
+</svg>
+<figcaption>Dashed boxes are not run by us. The API, the worker and the workflows all read and write MongoDB Atlas and the file buckets. Those lines are left out to keep the picture readable.</figcaption>
+</figure>
+<ol class="legend">
+  <li>The browser looks up our names at Cloudflare.</li>
+  <li>It loads the Platform app, plain files served from a bucket.</li>
+  <li>The Platform app calls the API for data.</li>
+  <li>The API posts long work as a message on a queue.</li>
+  <li>The worker takes the message and does the work.</li>
+  <li>The worker publishes progress to Valkey.</li>
+  <li>Every API instance hears it and forwards it to the right browser.</li>
+  <li>Other queues wake the Lumoflow workflows.</li>
+  <li>A push to GitHub runs Actions, which build images and deploy every box in Scaleway.</li>
+</ol>
+</section>
+
+<section id="pieces">
+<h2><span class="n">4</span>Every piece, one by one</h2>
+<p>First the overview, then a closer look at the parts that matter most for the API.</p>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Piece</th><th>Kind</th><th>Dev / prod</th><th>Size</th><th>Code comes from</th></tr></thead>
+  <tbody>
+    <tr><td>Platform</td><td>Bucket website</td><td><code>cloud.lumodev.cloud</code> / <code>cloud.lumoview.com</code></td><td>static files</td><td>platform repo</td></tr>
+    <tr><td>API</td><td>Serverless Container</td><td><code>api-development</code> / <code>api-production</code></td><td>560 mCPU, 1 GB. Dev 0–2 copies, prod 1–5</td><td>api repo</td></tr>
+    <tr><td>API worker</td><td>Instance</td><td><code>worker-development</code> / <code>worker-production</code></td><td>DEV1-S both</td><td>api repo, image <code>api:worker</code></td></tr>
+    <tr><td>Valkey</td><td>Instance</td><td><code>valkey-development</code> / <code>valkey-production</code></td><td>STARDUST1-S / DEV1-S</td><td>installed by Lumoflow</td></tr>
+    <tr><td>Lumowave</td><td>Serverless Container</td><td><code>wave.lumodev.cloud</code> / <code>wave.lumoview.com</code></td><td>280 mCPU, 512 MB, 0–1</td><td>lumowave repo</td></tr>
+    <tr><td>Lumoplan</td><td>Serverless Container</td><td><code>plan.lumodev.cloud</code> / <code>plan.lumoview.com</code></td><td>560 mCPU, 1 GB, 0–1</td><td>lumoplan repo</td></tr>
+    <tr><td>Marvin</td><td>Serverless Container</td><td><code>marvin.lumodev.cloud</code> / <code>marvin.lumoview.com</code></td><td>560 mCPU, 1 GB. Dev 0–1, prod 1</td><td>marvin repo</td></tr>
+    <tr><td>Workflows</td><td>Functions, containers, jobs</td><td>9 entries, each with queue <code>lumoflow-&lt;name&gt;</code></td><td>per workflow</td><td>separate workflow repos</td></tr>
+    <tr><td>File buckets</td><td>Object Storage</td><td><code>files-development</code>, <code>files-production</code>, <code>lumoprod</code> (old)</td><td>about 2 TB was copy leftovers in dev</td><td>made by hand, not in Lumoflow</td></tr>
+    <tr><td>Database</td><td>MongoDB Atlas</td><td>one cluster per environment</td><td>outside Scaleway</td><td>managed in the Atlas console</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="piece">
+<h3>API web server</h3>
+<p class="what">The program the Platform app talks to. It is an Express server written in TypeScript, bundled into one file and run by PM2, a process manager that restarts Node if it crashes. It answers on port 5500, and Scaleway checks <code>/healthz</code>.</p>
+<dl class="facts">
+  <dt>Defined in</dt><dd>Lumoflow <code>infra/opentofu/scaleway/main.tf</code>, resource <code>scaleway_container.api</code>. That file sets size, scaling, probe, hostnames and the non-secret environment variables.</dd>
+  <dt>Deployed by</dt><dd>api repo, <code>.github/workflows/deploy.yml</code>, on every push to <code>development</code> or <code>main</code>. OpenTofu ignores the image field, so the API's CI owns which code runs and Lumoflow owns everything else.</dd>
+  <dt>Look at it</dt><dd>Scaleway console, Serverless, Containers, container <code>api-&lt;env&gt;</code>. Lumowave <code>/infrastructure</code>. Logs in Lumowave <code>/logs</code> with origin <code>api</code>.</dd>
+  <dt>Change it</dt><dd>Code: push to api. Size, scaling or probes: edit Lumoflow. Settings: new version of secret <code>container-secrets</code>, then redeploy.</dd>
+  <dt>Watch out</dt><dd>Start-up takes up to about 60 seconds on half a CPU core, and the liveness probe gives exactly 60 seconds (12 checks × 5 s). One dev deploy failed on this on 20 November. It has no startup probe yet.</dd>
+</dl>
+</div>
+
+<div class="piece">
+<h3>API worker</h3>
+<p class="what">The same API image started with <code>ROLES=worker</code>, so it runs no web server. It reads tasks from the API's task queue and runs them: building copies, Notion sync, notifications, Airteam import and the hourly temp clean-up. Tasks get a 15-minute hold on their message and are cut off after 10 minutes.</p>
+<dl class="facts">
+  <dt>Defined in</dt><dd>Lumoflow <code>main.tf</code>, resource <code>scaleway_instance_server.api_worker</code>, plus <code>api-worker-cloud-init.yaml.tftpl</code>. That template installs Docker, writes the settings file, and adds a small supervisor script that pulls <code>api:worker</code> and keeps it running. It also starts Promtail to forward logs.</dd>
+  <dt>Deployed by</dt><dd>api repo, workflow "Deploy API worker", started by hand with a choice of environment. It reboots the VM, and on boot the supervisor pulls the newest <code>api:worker</code>. Run it only after the API deploy has finished, because that deploy builds the image.</dd>
+  <dt>Look at it</dt><dd>Scaleway console, Compute, Instances. Lumowave <code>/logs</code> with origin <code>worker</code>. Grafana in Cockpit, custom logs source <code>lumoflow-&lt;env&gt;</code>, label <code>job="lumoflow-api-worker"</code>.</dd>
+  <dt>Watch out</dt><dd>Prod worker logs were not arriving in Cockpit on 20 November. Node crash messages, such as running out of memory, never reach Lumo logs. The timers inside the worker restart from zero on every reboot.</dd>
+</dl>
+</div>
+
+<div class="piece">
+<h3>Valkey</h3>
+<p class="what">The relay that lets the worker reach browsers. The API and the worker both connect at start-up. Without it the worker logs <code>Socket.IO publisher not started</code> and toasts such as "Duplication completed" never appear.</p>
+<dl class="facts">
+  <dt>Defined in</dt><dd>Lumoflow <code>main.tf</code>, resource <code>scaleway_instance_server.valkey</code>, plus <code>valkey-cloud-init.yaml.tftpl</code>. OpenTofu generates the password and writes the connection settings into secret <code>api-valkey</code>.</dd>
+  <dt>Look at it</dt><dd>Compute, Instances, <code>valkey-&lt;env&gt;</code>. Its logs go to the same Cockpit custom source as the worker's.</dd>
+  <dt>Watch out</dt><dd>Port 6379 is open to the whole internet and protected only by the password.</dd>
+</dl>
+</div>
+
+<div class="piece">
+<h3>Queues and workflows</h3>
+<p class="what">Two families of queues exist. The API's own task queue feeds the worker. It was created by hand and its address lives in <code>container-secrets</code> as <code>SCALEWAY_SQS_TASKS_URL</code>. The Lumoflow queues, one per workflow, are named <code>lumoflow-&lt;workflow&gt;</code>. When a message lands there, Scaleway wakes the matching function or container directly.</p>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Workflow</th><th>Kind</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td>process-rcs</td><td>container, 2 CPU / 4 GB</td><td>Turns rotating-lidar point clouds into Autodesk RCS files. Runs Autodesk's converter through Wine, so it needs sandbox v1.</td></tr>
+    <tr><td>process-observation</td><td>container</td><td>Finds radiators in panorama tags and writes building objects.</td></tr>
+    <tr><td>audit-floor-plan</td><td>function, 2 GB, 15 min</td><td>Runs fixed rule checks on a floor-plan PDF.</td></tr>
+    <tr><td>floor-plan-audit</td><td>job</td><td>AI-based floor-plan audit.</td></tr>
+    <tr><td>export-to-ifc</td><td>function</td><td>Exports a building to an IFC file, the standard building-model format.</td></tr>
+    <tr><td>ifc-clash</td><td>function</td><td>Clash detection on IFC files.</td></tr>
+    <tr><td>qa-agent</td><td>job</td><td>AI agent with Blender tools.</td></tr>
+    <tr><td>send-email</td><td>function</td><td>Sends email through SendGrid.</td></tr>
+    <tr><td>hours-reminder</td><td>function on a timer</td><td>Lumoplan missing-hours reminder at 08:00, Monday to Friday.</td></tr>
+  </tbody>
+</table>
+</div>
+<dl class="facts">
+  <dt>Defined in</dt><dd>The hard-coded catalog at the top of Lumoflow <code>main.tf</code> (<code>locals.workflows</code>). Adding a workflow means adding an entry there.</dd>
+  <dt>Deployed by</dt><dd>Each workflow's own repository. Its CI uploads the code or image into the slot Lumoflow made.</dd>
+  <dt>Look at it</dt><dd>Lumowave <code>/infrastructure</code> shows each queue's waiting and in-flight message counts. In the Scaleway console, use Messaging and Queuing, then Serverless.</dd>
+</dl>
+</div>
+
+<div class="piece">
+<h3>Lumoflow itself</h3>
+<p class="what">The repository <code>Lumoview-Building-Analytics-GmbH/lumoflow</code>. The parts you will touch:</p>
+<dl class="facts">
+  <dt>main.tf</dt><dd>Every resource on this page, about 1,700 lines.</dd>
+  <dt>variables.tf</dt><dd>Inputs and defaults. Example: <code>cockpit_logs_retention_days = 7</code>.</dd>
+  <dt>*.tftpl</dt><dd>Boot scripts for the worker and Valkey VMs. They run only when a VM is created. To re-run one, raise its generation number variable, which rebuilds the VM.</dd>
+  <dt>CI</dt><dd><code>.github/workflows/infrastructure.yml</code> checks formatting and validity, then runs <code>tofu apply -auto-approve</code>. Production waits for approval in the GitHub <code>production</code> environment.</dd>
+  <dt>Docs</dt><dd><code>docs/operations/</code> (infrastructure, deployment, secrets) and <code>infra/opentofu/scaleway/README.md</code>.</dd>
+</dl>
+</div>
+</section>
+
+<section id="deploy">
+<h2><span class="n">5</span>How a change goes live</h2>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>You change…</th><th>You do</th><th>What happens</th></tr></thead>
+  <tbody>
+    <tr><td>API code</td><td>Push to <code>development</code>, or merge to <code>main</code></td><td>"Test and deploy API" runs the tests, builds the image, pushes <code>api:&lt;commit&gt;</code> and <code>api:worker</code>, and points the container at the new image. Scaleway starts it and waits for <code>/healthz</code>.</td></tr>
+    <tr><td>Worker code</td><td>Same push, <strong>then</strong> run "Deploy API worker" for that environment</td><td>The VM reboots and pulls <code>api:worker</code>. Nothing happens to the worker until you do this second step.</td></tr>
+    <tr><td>Platform</td><td>Push the platform repo</td><td>It builds the site and copies the files into the bucket with <code>aws s3 sync</code>.</td></tr>
+    <tr><td>Infrastructure</td><td>Push Lumoflow</td><td>Validates, then applies to dev right away. Prod applies after approval.</td></tr>
+    <tr><td>A workflow</td><td>Push its repo</td><td>Its own CI deploys. Dev is automatic and prod needs approval.</td></tr>
+    <tr><td>A setting or secret</td><td>New version in Secret Manager</td><td>Nothing until restart. Then redeploy the API and run "Deploy API worker".</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="note"><strong>Rule of thumb:</strong> Lumoflow decides <em>how big and how wired</em> a thing is. The app repo decides <em>which code</em> runs in it. Secret Manager decides <em>which settings</em> it starts with.</p>
+</section>
+
+<section id="secrets">
+<h2><span class="n">6</span>Secrets and settings</h2>
+<p>Settings come from three places, read in this order at start-up. The non-secret environment variables come from Lumoflow. Then the bootstrap code in the API (<code>bootstrap.ts</code>) fetches <code>container-secrets</code> and finally <code>api-valkey</code>. A later value wins. The bootstrap gives up after 4 seconds and starts anyway.</p>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Secret (path)</th><th>Written by</th><th>Read by</th><th>To change it</th></tr></thead>
+  <tbody>
+    <tr><td><code>container-secrets</code> (/api)</td><td>by hand in the console</td><td>API and worker</td><td>Add a version, redeploy the API, reboot the worker</td></tr>
+    <tr><td><code>api-valkey</code> (/api)</td><td>OpenTofu</td><td>API and worker</td><td>Raise <code>api_valkey_secret_generations</code> in Lumoflow</td></tr>
+    <tr><td><code>container-secrets</code> (/lumoplan)</td><td>by hand</td><td>Lumoplan</td><td>Add a version, redeploy Lumoplan</td></tr>
+    <tr><td><code>atlas-mongodb-write</code>, <code>atlas-mongodb</code>, <code>atlas-mongodb-lumoplan</code></td><td>by hand</td><td>workflows, Lumowave, hours-reminder</td><td>Add a version</td></tr>
+    <tr><td><code>sendgrid-api-key</code>, <code>openrouter-api-key</code></td><td>by hand</td><td>send-email, the AI workflows</td><td>Add a version</td></tr>
+    <tr><td><code>cockpit-read-only</code>, <code>hours-reminder-sqs</code></td><td>OpenTofu</td><td>Lumowave, hours-reminder</td><td>Through Lumoflow variables</td></tr>
+    <tr><td>GitHub environment secrets, such as <code>SCW_SECRET_KEY</code></td><td>GitHub repo settings</td><td>CI only</td><td>Repo settings, Environments</td></tr>
+  </tbody>
+</table>
+</div>
+<p>To see one, open the Scaleway console, then Security and Identity, Secret Manager. Pick the environment's project and open the secret's latest version. Never paste values into chat, tickets or git.</p>
+<p class="note">Naming trap: in dev, <code>MONGO_URL_PROD</code> and <code>MONGO_URL_PROD_AUTH</code> point at the <strong>development</strong> database. The names are historical.</p>
+</section>
+
+<section id="see">
+<h2><span class="n">7</span>Seeing what is happening</h2>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Place</th><th>Shows</th><th>Blind spot</th></tr></thead>
+  <tbody>
+    <tr><td>Lumowave <code>/infrastructure</code></td><td>Containers, functions, jobs and VMs with status. Queue counts. Per-resource logs.</td><td>No worker VM logs.</td></tr>
+    <tr><td>Lumowave <code>/logs</code></td><td>"Lumo logs": what the API and worker log themselves. Filters for origin, task, level, and the last 3 minutes to 12 hours.</td><td>No crashes or out-of-memory errors, because those bypass the app logger.</td></tr>
+    <tr><td>Scaleway Cockpit (Grafana)</td><td>Everything serverless automatically. Worker and Valkey through Promtail. CPU and memory charts.</td><td>Logs are kept 7 days. Prod worker logs were missing on 20 November.</td></tr>
+    <tr><td>GitHub Actions</td><td>Every test and deploy run per repo, with step logs.</td><td>Does not say whether the app is healthy after deploy.</td></tr>
+    <tr><td>Scaleway console</td><td>The real current state of every resource, including ones made by hand.</td><td>Easy to change something there that Lumoflow will later overwrite.</td></tr>
+    <tr><td>Sentry</td><td>API errors with stack traces, if a project key is set.</td><td>Not verified for this page.</td></tr>
+    <tr><td>MongoDB Atlas, Cloudflare</td><td>Database load and DNS records.</td><td>Separate logins.</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Nothing alerts anyone today. A problem is found when someone looks: an out-of-memory loop every 50 minutes, a 2 TB storage leak, or prod CPU at 60–70%.</p>
+</section>
+
+<section id="duplicate">
+<h2><span class="n">8</span>One click, end to end: Duplicate building</h2>
+<p>Following one real action ties the pieces together.</p>
+<ol class="steps">
+  <li>You click Duplicate in the Platform app, which your browser loaded from the Platform bucket.</li>
+  <li>The browser calls the API container. The API checks your Auth0 login and posts a "copy building" message on its task queue.</li>
+  <li>The worker VM takes the message. It writes a job record in MongoDB Atlas so only one attempt owns this copy.</li>
+  <li>It copies every file of the building inside Object Storage, under <code>building/&lt;new id&gt;/</code>, then writes the database rows.</li>
+  <li>Along the way it publishes progress to Valkey. The API instance holding your browser's Socket.IO connection forwards it, and you see the toast move.</li>
+  <li>In production only, it creates a page for the new building in Notion.</li>
+  <li>It deletes the queue message. If it needs more than 10 minutes, the queue hands the message out again. The job record now stops that second attempt.</li>
+  <li>Every step logs to Lumo logs, which you can search in Lumowave <code>/logs</code> under origin <code>worker</code>, task <code>copyBuilding</code>.</li>
+</ol>
+</section>
+
+<section id="improve">
+<h2><span class="n">9</span>Proposed improvements</h2>
+<p>Ordered by how much trouble each one prevents for the effort. None of these has been started. Each needs a go before anyone builds it.</p>
+
+<div class="imp">
+<h4><span class="tag high">High</span>Give the API container a startup probe</h4>
+<p>Deploys fail at random when boot takes longer than 60 seconds. Copy the startup probe the workflow containers already have: 30 checks × 5 s, so 150 seconds to boot before liveness checks start.</p>
+<p class="where">Where: Lumoflow <code>main.tf</code>, <code>scaleway_container.api</code>. Size: a few lines.</p>
+</div>
+
+<div class="imp">
+<h4><span class="tag high">High</span>Bring the API task queue into Lumoflow and line up its timers</h4>
+<p>The queue the worker reads was made by hand, so nobody can see its visibility timeout in git. The worker asks for a 15-minute hold and cuts tasks off at 10 minutes. Scaleway refused the worker's request to extend that hold in dev. Mismatched timers are how one copy ran about 130 times. Manage the queue in Lumoflow with a timeout longer than any task can run, and give long tasks their own limit.</p>
+<p class="where">Where: Lumoflow <code>main.tf</code>, plus the API's <code>services/tasks/consumers.ts</code>. Size: medium. Bringing an existing queue under OpenTofu needs an import step.</p>
+</div>
+
+<div class="imp">
+<h4><span class="tag high">High</span>Alerts, and worker logs that always arrive</h4>
+<p>Fix Promtail forwarding on the prod worker. Then add Cockpit alerts for these cases: a worker restarting repeatedly or running out of memory, queue messages stuck in flight, the API health check failing, and a deploy failing. Send them to email or Slack.</p>
+<p class="where">Where: Lumoflow (Cockpit alert rules, worker template), Lumowave for display. Size: medium.</p>
+</div>
+
+<div class="imp">
+<h4><span class="tag high">High</span>Deploy the worker in the same run as the API</h4>
+<p>Today the worker needs a second, manual run, and if it starts too early it reboots onto the old image. Add a job after "Deploy API" that restarts the worker. Tag the worker image with the commit too, so you can see which code the worker runs and go back to an older one.</p>
+<p class="where">Where: api <code>.github/workflows/deploy.yml</code>, Lumoflow worker template. Size: small to medium.</p>
+</div>
+
+<div class="imp">
+<h4><span class="tag med">Medium</span>Stop dev from writing into production storage</h4>
+<p>File rows in the dev database name the production buckets. So a Duplicate in dev writes new files into production storage, and clean-up there is risky. Point dev rows at a dev bucket, or copy the needed files once.</p>
+<p class="where">Where: one-off data migration plus a guard in the API. Size: medium.</p>
+</div>
+
+<div class="imp">
+<h4><span class="tag med">Medium</span>Close Valkey to the internet</h4>
+<p>Its port is open to every address and protected only by a password. Put Valkey, the worker and the containers on a Scaleway Private Network, or at least allow only known addresses.</p>
+<p class="where">Where: Lumoflow security group and network. Size: medium. First check which Private Network options Serverless Containers support.</p>
+</div>
+
+<div class="imp">
+<h4><span class="tag med">Medium</span>One key per service</h4>
+<p>One shared Scaleway runtime key is used by the API, the worker, Lumowave, Lumoplan and the workflows. If it leaks, everything is exposed, and rotating it touches everything. Lumoflow already supports creating dedicated keys (<code>create_runtime_iam_identity</code>). Extend that to one key per service, each with only the access it needs.</p>
+<p class="where">Where: Lumoflow IAM resources. Size: medium.</p>
+</div>
+
+<div class="imp">
+<h4><span class="tag med">Medium</span>Write down what belongs in <code>container-secrets</code></h4>
+<p>Its contents are edited by hand and invisible in git. A missing key shows up only as odd behaviour, like the empty Notion token. Keep a list of the expected key names in the api repo. At start-up, log the names that are missing, never the values.</p>
+<p class="where">Where: api <code>config.ts</code> or <code>bootstrap.ts</code>, plus <code>.env.dist</code>. Size: small.</p>
+</div>
+
+<div class="imp">
+<h4><span class="tag med">Medium</span>Move the worker's timers to real schedules</h4>
+<p>The hourly clean-up, the two-hourly notifications and the Airteam import are timers inside the worker. Every reboot restarts them from zero, and a second worker would run them twice. Scaleway cron triggers, like the one hours-reminder uses, would post the task on a fixed schedule instead.</p>
+<p class="where">Where: api <code>worker.ts</code>, Lumoflow. Size: small to medium.</p>
+</div>
+
+<div class="imp">
+<h4><span class="tag low">Low</span>Smaller clean-ups</h4>
+<p>Delete the old Kubernetes files in the api repo (<code>k8s/</code>), which no workflow uses. Keep prod worker logs longer than 7 days. Show worker VM logs in Lumowave <code>/infrastructure</code>. Confirm Sentry is reporting, and decide whether its start-up instrumentation is worth about 40% of API boot time.</p>
+</div>
+</section>
+
+<section id="sure">
+<h2><span class="n">10</span>How sure this page is</h2>
+<ul class="sure">
+  <li><span class="ok">Read from code:</span> Every name, size, timeout, hostname and deploy step above comes from Lumoflow <code>main.tf</code>, <code>variables.tf</code>, the CI files and the api repo as of 20 November 2026.</li>
+  <li><span class="ok">Seen in practice on 20 November:</span> Worker progress reached browsers through Valkey in dev. The dev deploy failed once on the 60-second limit. Prod worker logs were missing in Cockpit.</li>
+  <li><span class="unk">Not checked:</span> The live Scaleway state, which can differ from the files if someone clicked in the console. The contents of <code>container-secrets</code>. The workflow repositories, which are not cloned locally. Whether Sentry has a project key. Which Scaleway project owns the file buckets. Where the Lumo logs service is hosted.</li>
+</ul>
+</section>
+
+<footer>Project: Lumoview-Building-Analytics-GmbH/lumoflow. Also covers the api repo's deploy and runtime. Written 20 November 2026.</footer>
+</main>
+</div>
+</body>
+</html>
